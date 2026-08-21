@@ -24,7 +24,7 @@
     {
       "id": "tour.04",
       "kind": "tour",
-      "text": "India also has eight union territories. Those are smaller pieces, looked after by the government of the whole of India instead of a government of their own. Some are tiny islands, far out in the sea.",
+      "text": "India also has eight union territories. Those are smaller pieces, and the government of the whole of India helps to look after them. Some of them are tiny islands, far out in the sea.",
       "cues": [
         { "word": 4, "do": "highlightUnionTerritories" },
         { "word": 5, "do": "countTo", "arg": "8" }
