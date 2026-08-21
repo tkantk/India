@@ -260,8 +260,12 @@ describe('validate-content markup check', () => {
     const dir = fixture()
     tour(dir, 'The river runs on<br> and on.')
     ui(dir)
+    vocab(dir)
 
-    expect(run(dir).code).not.toBe(0)
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('markup')
+    expect(output).toContain('<br>')
   })
 
   it('accepts a bare less-than sign, which is legitimate prose', () => {
