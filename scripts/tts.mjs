@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { timingsFromAlignment, estimateTimings, cueTimes } from './lib/words.mjs'
+import { isCached } from './lib/cache.mjs'
 
 const flag = (name, def) => process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? def
 
@@ -52,11 +53,14 @@ function collectLines() {
 const keyOf = (line) =>
   createHash('sha256').update(`${provider.signature()} ${line.text}`).digest('hex').slice(0, 16)
 
-// `force` clears the CACHE, so everything re-renders. It must NOT clear
-// `previous`: that is also the merge base for `--only`, and zeroing both
-// means `--only=rajasthan --force` writes a timings file containing only
-// Rajasthan and silently deletes every other place's entry.
-const cache = existsSync(CACHE) && !force ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
+// The cache is never wiped wholesale. `force` means "re-render the lines in
+// scope even if they are cached" — not "forget every other line's key",
+// which would make the next unscoped run re-render, and re-bill, the lot.
+// `previous` is also the merge base for `--only` (see below), and was never
+// safe to zero on `force` either: --only=rajasthan --force would otherwise
+// write a timings file containing only Rajasthan and silently delete every
+// other place's entry.
+const cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
 const previous = existsSync(TIMINGS) ? JSON.parse(readFileSync(TIMINGS, 'utf8')) : {}
 // Start from the previous timings when rendering a subset, or --only=rajasthan
 // would write a timings.json containing ONLY Rajasthan and silently delete
@@ -64,12 +68,23 @@ const previous = existsSync(TIMINGS) ? JSON.parse(readFileSync(TIMINGS, 'utf8'))
 const timings = only ? { ...previous } : {}
 const tmp = mkdtempSync(join(tmpdir(), 'tts-'))
 
+// Both the cost preflight below and renderLine ask this same question — is
+// this line's on-disk audio still good enough to reuse? — via the single
+// isCached() import, so they cannot drift apart on the answer. `force` is
+// deliberately layered on here rather than folded into isCached() itself.
+const cachedFor = (line) => isCached({
+  cachedKey: cache[line.id],
+  currentKey: keyOf(line),
+  audioExists: existsSync(join(OUT_DIR, `${line.id}.m4a`)),
+  hasPrevious: previous[line.id],
+})
+
 let rendered = 0, reused = 0
 const lines = collectLines().filter(l => !only || l.id.startsWith(only))
 console.log(`${lines.length} lines, provider "${providerName}"`)
 
 if (providerName === 'elevenlabs') {
-  const todo = lines.filter(l => !(cache[l.id] === keyOf(l) && existsSync(join(OUT_DIR, `${l.id}.m4a`))))
+  const todo = lines.filter(l => force || !cachedFor(l))
   const chars = todo.reduce((a, l) => a + l.text.length, 0)
   console.log(`  ${todo.length} of ${lines.length} lines need rendering`)
   console.log(`  ${chars.toLocaleString()} characters, about $${(chars / 1000 * 0.10).toFixed(2)}`)
@@ -85,7 +100,7 @@ async function renderLine(line) {
   const rel = `audio/en/${line.id}.m4a`
   const abs = join(OUT_DIR, `${line.id}.m4a`)
 
-  if (cache[line.id] === key && existsSync(abs) && previous[line.id]) {
+  if (!force && cachedFor(line)) {
     // Audio is unchanged; still recompute cue times in case a cue moved.
     timings[line.id] = { ...previous[line.id], cues: cueTimes(line.cues, previous[line.id]) }
     reused++

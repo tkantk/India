@@ -167,6 +167,33 @@ describe('cache reuse, --only, and --force semantics', () => {
     expect(ids.some(k => k.startsWith(SECOND)), `${SECOND}'s entries were deleted by --only + --force`).toBe(true)
   }, 30_000)
 
+  it('REGRESSION: --only combined with --force must not wipe the other place\'s cache entries', () => {
+    // Inspects the cache file left behind by the previous test's
+    // `--only=${FIRST} --force` run, rather than issuing a new one: this is
+    // the artifact --force was wiping wholesale (Finding 4), even though
+    // the timings file (checked by the test above) survived thanks to the
+    // Finding 1 fix. A wiped cache doesn't lose data on its own, but it
+    // makes the *next* unscoped run re-render, and on the paid provider
+    // re-bill, every place --force didn't touch — proven by the next test.
+    const cache = JSON.parse(readFileSync(CACHE2, 'utf8'))
+    const ids = Object.keys(cache)
+    expect(ids.some(k => k.startsWith(SECOND)), `${SECOND}'s cache keys were wiped by --only + --force`).toBe(true)
+  })
+
+  it('a subsequent unscoped run reuses both places instead of re-rendering (re-billing) them', () => {
+    const beforeFirst = introMtime(FIRST)
+    const beforeSecond = introMtime(SECOND)
+    const out = run()
+    console.log(out)
+    // content/places also holds the single-fixture suite's "testland" while
+    // this file runs, so don't assert an exact total — just that at least
+    // both of ours (10 + 10) came from cache, and neither was touched.
+    const reused = Number(out.match(/(\d+) reused from cache/)?.[1])
+    expect(reused).toBeGreaterThanOrEqual(20)
+    expect(introMtime(FIRST)).toBe(beforeFirst)
+    expect(introMtime(SECOND), `${SECOND} was re-rendered instead of reused from cache`).toBe(beforeSecond)
+  }, 30_000)
+
   it('moving a cue updates its time without re-rendering the audio', () => {
     const before = introMtime(FIRST)
     const fixture = JSON.parse(readFileSync(fixturePath(FIRST), 'utf8'))
