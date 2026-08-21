@@ -14,6 +14,22 @@ function fixture() {
   return dir
 }
 
+/** The wanted list. An id here but absent from sound-credits.json is a
+ *  tracked gap, not a failure; an id in neither file is a typo. */
+function wantedSounds(dir, { sfx = [], ambience = [] }) {
+  writeFileSync(join(dir, 'content', 'sounds.json'), JSON.stringify({
+    sfx: sfx.map(id => ({ id, search: id })),
+    ambience: ambience.map(id => ({ id, search: id })),
+  }))
+}
+
+function sourcedSounds(dir, ids) {
+  mkdirSync(join(dir, 'src', 'data'), { recursive: true })
+  writeFileSync(join(dir, 'src', 'data', 'sound-credits.json'), JSON.stringify(
+    Object.fromEntries(ids.map(id => [id, { file: `audio/sfx/${id}.m4a` }])),
+  ))
+}
+
 function run(dir) {
   try {
     const stdout = execFileSync('node', [SCRIPT], { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
@@ -26,7 +42,7 @@ function run(dir) {
 }
 
 describe('validate-content sound references', () => {
-  it('rejects a playSfx cue whose sound is missing from sound-credits.json', () => {
+  it('rejects a playSfx cue whose sound is in neither file — a typo', () => {
     const dir = fixture()
     writeFileSync(join(dir, 'content', 'tour.json'), JSON.stringify({
       beats: [{
@@ -34,29 +50,27 @@ describe('validate-content sound references', () => {
         cues: [{ word: 1, do: 'playSfx', arg: 'totally-fake-sound-id' }],
       }],
     }))
-    mkdirSync(join(dir, 'src', 'data'), { recursive: true })
-    writeFileSync(join(dir, 'src', 'data', 'sound-credits.json'), JSON.stringify({
-      'some-other-sound': { file: 'audio/sfx/some-other-sound.m4a' },
-    }))
+    wantedSounds(dir, { sfx: ['tiger-growl'] })
+    sourcedSounds(dir, ['some-other-sound'])
 
     const { code, output } = run(dir)
     expect(code).not.toBe(0)
     expect(output).toContain('totally-fake-sound-id')
-    expect(output).toContain('has no file in')
+    expect(output).toContain('typo?')
   })
 
-  it('rejects a line-open sfx (l.sfx) whose sound is missing from sound-credits.json', () => {
+  it('rejects a line-open sfx (l.sfx) whose sound is in neither file', () => {
     const dir = fixture()
     writeFileSync(join(dir, 'content', 'ui.json'), JSON.stringify({
       lines: [{ id: 'test-ui', kind: 'ui', text: 'Tap to begin', sfx: 'another-fake-id' }],
     }))
-    mkdirSync(join(dir, 'src', 'data'), { recursive: true })
-    writeFileSync(join(dir, 'src', 'data', 'sound-credits.json'), JSON.stringify({}))
+    wantedSounds(dir, { sfx: ['chime-correct'] })
+    sourcedSounds(dir, [])
 
     const { code, output } = run(dir)
     expect(code).not.toBe(0)
     expect(output).toContain('another-fake-id')
-    expect(output).toContain('has no file in')
+    expect(output).toContain('typo?')
   })
 
   it('does not flag a sound reference that resolves to a real credit entry', () => {
@@ -67,19 +81,40 @@ describe('validate-content sound references', () => {
         cues: [{ word: 1, do: 'playSfx', arg: 'tiger-growl' }],
       }],
     }))
-    mkdirSync(join(dir, 'src', 'data'), { recursive: true })
-    writeFileSync(join(dir, 'src', 'data', 'sound-credits.json'), JSON.stringify({
-      'tiger-growl': { file: 'audio/sfx/tiger-growl.m4a' },
-    }))
+    wantedSounds(dir, { sfx: ['tiger-growl'] })
+    sourcedSounds(dir, ['tiger-growl'])
 
     const { output } = run(dir)
     // content/ui.json is still missing in this fixture, so the run still
     // exits non-zero overall — the point here is narrower: our sound check
     // specifically must not be one of the reported problems.
-    expect(output).not.toContain('tiger-growl" has no file in')
+    expect(output).not.toContain('tiger-growl')
   })
 
-  it('rejects any sound reference when sound-credits.json does not exist at all', () => {
+  it('reports a wanted-but-unsourced sound as a tracked gap without failing on it', () => {
+    const dir = fixture()
+    writeFileSync(join(dir, 'content', 'tour.json'), JSON.stringify({
+      beats: [{
+        id: 'test-beat', kind: 'tour', text: 'The tiger growls loudly.',
+        cues: [{ word: 1, do: 'playSfx', arg: 'tiger-growl' }],
+      }],
+    }))
+    writeFileSync(join(dir, 'content', 'ui.json'), JSON.stringify({
+      lines: [{ id: 'test-ui', kind: 'ui', text: 'Tap to begin' }],
+    }))
+    wantedSounds(dir, { sfx: ['tiger-growl'] })
+    sourcedSounds(dir, [])
+
+    const { code, output } = run(dir)
+    expect(output).toContain('not yet sourced')
+    expect(output).toContain('tiger-growl')
+    expect(output).not.toContain('typo?')
+    // The gap is the only thing wrong with this fixture, so it must still pass.
+    expect(code).toBe(0)
+    expect(output).toContain('content OK')
+  })
+
+  it('treats a sound reference as a typo when sound-credits.json does not exist at all', () => {
     const dir = fixture()
     writeFileSync(join(dir, 'content', 'tour.json'), JSON.stringify({
       beats: [{
@@ -90,7 +125,7 @@ describe('validate-content sound references', () => {
 
     const { code, output } = run(dir)
     expect(code).not.toBe(0)
-    expect(output).toContain('sound reference(s)')
-    expect(output).toContain('does not exist')
+    expect(output).toContain('yet-another-fake-id')
+    expect(output).toContain('typo?')
   })
 })

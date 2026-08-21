@@ -97,9 +97,19 @@ describe('cache reuse, --only, and --force semantics', () => {
   const TIMINGS2 = join(dir2, 'timings.json')
   const CACHE2 = join(dir2, 'cache.json')
 
+  // These cases exercise the UNSCOPED run, which renders every line
+  // tts.mjs can find. collectLines() reads content/places, content/tour.json
+  // and content/ui.json relative to the child's cwd, so the child is given a
+  // workspace holding nothing but this suite's two fixtures. Dropping the
+  // fixtures into the real content/places instead would make an unscoped run
+  // re-render the entire seed corpus into a cold scratch cache on every
+  // assertion — minutes of `say`, and slower with every state Plan 3 adds.
+  const WORK = mkdtempSync(join(tmpdir(), 'tts-work-'))
+  const SCRIPT = join(process.cwd(), 'scripts/tts.mjs')
+
   const FIRST = 'aaastateone'
   const SECOND = 'zzzstatetwo'
-  const fixturePath = (id) => `content/places/${id}.json`
+  const fixturePath = (id) => join(WORK, 'content/places', `${id}.json`)
 
   const place = (id, cap) => ({
     id, name: id, type: 'state', capital: cap, ambience: 'plains',
@@ -118,23 +128,22 @@ describe('cache reuse, --only, and --force semantics', () => {
   })
 
   const run = (...args) => execFileSync('node', [
-    'scripts/tts.mjs', '--provider=say',
+    SCRIPT, '--provider=say',
     `--audio-dir=${AUDIO2}`, `--timings=${TIMINGS2}`, `--cache=${CACHE2}`,
     ...args,
-  ], { encoding: 'utf8' })
+  ], { encoding: 'utf8', cwd: WORK })
 
   const timings2 = () => JSON.parse(readFileSync(TIMINGS2, 'utf8'))
   const introMtime = (id) => statSync(join(AUDIO2, `${id}.intro.m4a`)).mtimeMs
 
   beforeAll(() => {
-    mkdirSync('content/places', { recursive: true })
+    mkdirSync(join(WORK, 'content/places'), { recursive: true })
     writeFileSync(fixturePath(FIRST), JSON.stringify(place(FIRST, 'Aaapur')))
     writeFileSync(fixturePath(SECOND), JSON.stringify(place(SECOND, 'Zzzpur')))
   })
 
   afterAll(() => {
-    rmSync(fixturePath(FIRST), { force: true })
-    rmSync(fixturePath(SECOND), { force: true })
+    rmSync(WORK, { recursive: true, force: true })
     rmSync(dir2, { recursive: true, force: true })
   })
 
@@ -185,11 +194,9 @@ describe('cache reuse, --only, and --force semantics', () => {
     const beforeSecond = introMtime(SECOND)
     const out = run()
     console.log(out)
-    // content/places also holds the single-fixture suite's "testland" while
-    // this file runs, so don't assert an exact total — just that at least
-    // both of ours (10 + 10) came from cache, and neither was touched.
-    const reused = Number(out.match(/(\d+) reused from cache/)?.[1])
-    expect(reused).toBeGreaterThanOrEqual(20)
+    // The workspace holds exactly these two places, ten lines each, so an
+    // unscoped run must reuse all twenty and render none.
+    expect(out).toMatch(/0 rendered, 20 reused from cache/)
     expect(introMtime(FIRST)).toBe(beforeFirst)
     expect(introMtime(SECOND), `${SECOND} was re-rendered instead of reused from cache`).toBe(beforeSecond)
   }, 30_000)

@@ -1,0 +1,98 @@
+{
+  "id": "delhi",
+  "name": "Delhi",
+  "type": "ut",
+  "capital": "New Delhi",
+  "ambience": "city",
+  "intro": {
+    "id": "delhi.intro",
+    "kind": "intro",
+    "text": "This is Delhi, and Delhi is not a state. It is a union territory, which means the whole country looks after it together. India's capital city, New Delhi, sits right inside it. Haryana wraps around it. Delhi is enormous and busy, with the river Yamuna along one side and trains that run under the ground.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "delhi" },
+      { "word": 12, "do": "highlightUnionTerritories" },
+      { "word": 32, "do": "lightNeighbour", "arg": "haryana" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "delhi.card.animal",
+      "kind": "card",
+      "text": "The house sparrow is Delhi's own bird. It is small and brown and very noisy, and it likes to live close to people, in a hole in a wall or up under a roof.",
+      "sfx": "sparrow"
+    },
+    "food": {
+      "id": "delhi.card.food",
+      "kind": "card",
+      "text": "Chole bhature is spicy chickpeas with a bread called bhatura. The bhatura is fried until it puffs right up like a balloon, and it sighs when you tear it open."
+    },
+    "festival": {
+      "id": "delhi.card.festival",
+      "kind": "card",
+      "text": "Once a year Delhi holds an enormous parade. Bands march, dancers spin, camels stride past in a long line, and aeroplanes roar low over everybody's head."
+    },
+    "hello": {
+      "id": "delhi.card.hello",
+      "kind": "card",
+      "text": "In Delhi people say Namaste. Put your palms together, fingers pointing up, and dip your head. That is the whole of it, and everyone understands.",
+      "script": "नमस्ते"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "delhi.india-gate",
+      "name": "India Gate",
+      "photoQuery": "India Gate",
+      "scene": "arch",
+      "line": {
+        "id": "delhi.india-gate.line",
+        "kind": "landmark",
+        "text": "This stone arch stands at the end of a very long lawn, and it is far taller than any house. Names are carved right across the stone, so that people who are gone are still remembered. In the evening families sit on the grass and eat ice cream."
+      }
+    },
+    {
+      "id": "delhi.qutub-minar",
+      "name": "Qutub Minar",
+      "photoQuery": "Qutb Minar",
+      "scene": "minaret",
+      "line": {
+        "id": "delhi.qutub-minar.line",
+        "kind": "landmark",
+        "text": "This tower is built of red stone and it climbs up in five steps, each one thinner than the one below. Inside, a staircase of three hundred and seventy-nine steps curls round and round like a snail shell. Nobody may climb it now, so the top belongs to the birds."
+      }
+    },
+    {
+      "id": "delhi.red-fort",
+      "name": "Red Fort",
+      "photoQuery": "Red Fort",
+      "scene": "fort-walls",
+      "line": {
+        "id": "delhi.red-fort.line",
+        "kind": "landmark",
+        "text": "A wall of red stone runs right round this fort for about two and a half kilometres, so walking all the way beside it takes a long time. Inside there is a covered street of little shops. Water once ran through the rooms in a narrow channel to keep everybody cool."
+      }
+    },
+    {
+      "id": "delhi.lotus-temple",
+      "name": "Lotus Temple",
+      "photoQuery": "Lotus Temple",
+      "scene": "lotus-building",
+      "line": {
+        "id": "delhi.lotus-temple.line",
+        "kind": "landmark",
+        "text": "This building is a flower. Twenty-seven white marble petals lean in together to make the walls and the roof, and nine pools of water lie around the outside. Anybody at all may come in, sit down, and be quiet for a while."
+      }
+    },
+    {
+      "id": "delhi.humayuns-tomb",
+      "name": "Humayun's Tomb",
+      "photoQuery": "Humayun's Tomb",
+      "scene": "domed-garden",
+      "line": {
+        "id": "delhi.humayuns-tomb.line",
+        "kind": "landmark",
+        "text": "A great white dome sits in the middle of a garden, and thin channels of water cut that garden into neat green squares. Have a good look at it. One day you will see the Taj Mahal, and you will notice how much it looks like this."
+      }
+    }
+  ]
+}

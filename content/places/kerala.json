@@ -1,0 +1,99 @@
+{
+  "id": "kerala",
+  "name": "Kerala",
+  "type": "state",
+  "capital": "Thiruvananthapuram",
+  "ambience": "forest",
+  "intro": {
+    "id": "kerala.intro",
+    "kind": "intro",
+    "text": "This is Kerala, a long thin strip of land down the west side of India. The sea is on one side and green hills are on the other. It rains a great deal here, so everything grows, and coconut palms lean over every road. Tamil Nadu is its neighbour. The main city has a very long name. Thiruvananthapuram.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "kerala" },
+      { "word": 44, "do": "lightNeighbour", "arg": "tamil-nadu" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "kerala.card.animal",
+      "kind": "card",
+      "text": "The elephant belongs to Kerala. He is enormous, but he walks quietly. He uses his trunk for everything: pulling down branches, drinking, and having a shower.",
+      "sfx": "elephant"
+    },
+    "food": {
+      "id": "kerala.card.food",
+      "kind": "card",
+      "text": "A sadya is a feast served on a banana leaf instead of a plate. Twenty little heaps of different things go round the edge, and you eat it with your right hand."
+    },
+    "festival": {
+      "id": "kerala.card.festival",
+      "kind": "card",
+      "text": "At Onam, people lay flower petals on the ground in big round patterns. Long thin boats race on the water, with nearly a hundred men rowing and singing together."
+    },
+    "hello": {
+      "id": "kerala.card.hello",
+      "kind": "card",
+      "text": "In Kerala people say Namaskaram. The language here is Malayalam, and here is a funny thing: written in English, Malayalam reads the same backwards as forwards.",
+      "script": "നമസ്കാരം"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "kerala.backwaters",
+      "name": "The Backwaters",
+      "photoQuery": "Kerala backwaters",
+      "scene": "backwaters",
+      "line": {
+        "id": "kerala.backwaters.line",
+        "kind": "landmark",
+        "text": "Behind the beaches, lakes and canals are all joined up together, so you can travel a very long way by boat and never once touch a road. Some of the boats have a roof of woven palm leaves, and people sleep on board.",
+        "cues": [{ "word": 20, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    },
+    {
+      "id": "kerala.munnar",
+      "name": "Munnar Tea Hills",
+      "photoQuery": "Munnar",
+      "scene": "tea-hills",
+      "line": {
+        "id": "kerala.munnar.line",
+        "kind": "landmark",
+        "text": "Every green bump on these hills is a tea bush, clipped flat on top so a picker can reach right across it. For the best tea they take only the bud and the two young leaves under it. Those leaves dry small and dark, and become a cup of tea."
+      }
+    },
+    {
+      "id": "kerala.athirappilly",
+      "name": "Athirappilly Falls",
+      "photoQuery": "Athirappilly Falls",
+      "scene": "waterfall",
+      "line": {
+        "id": "kerala.athirappilly.line",
+        "kind": "landmark",
+        "text": "Here the river runs to the edge of a rock and simply falls off it. The water drops much further than a house is tall, and it lands so hard that mist hangs in the air above the pool. You hear this place long before you see it."
+      }
+    },
+    {
+      "id": "kerala.chinese-nets",
+      "name": "The Fishing Nets at Kochi",
+      "photoQuery": "Chinese fishing nets Kochi",
+      "scene": "fishing-nets",
+      "line": {
+        "id": "kerala.chinese-nets.line",
+        "kind": "landmark",
+        "text": "These nets look like huge wooden spiders standing in the water. Four or five men pull down together on a rope, big stones swing up as a counterweight, and the whole net lifts out of the sea, dripping, with fish shining inside it."
+      }
+    },
+    {
+      "id": "kerala.periyar",
+      "name": "Periyar",
+      "photoQuery": "Periyar National Park",
+      "scene": "lake-forest",
+      "line": {
+        "id": "kerala.periyar.line",
+        "kind": "landmark",
+        "text": "You go out on this lake in a boat, and then you wait. Wild elephants come down to the edge to drink, and they bring their babies with them. There are tigers back in those trees as well, but they are so good at hiding that hardly anybody sees one.",
+        "cues": [{ "word": 14, "do": "playSfx", "arg": "elephant" }]
+      }
+    }
+  ]
+}

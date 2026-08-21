@@ -15,6 +15,12 @@ mkdirSync('src/data', { recursive: true })
  */
 const OVERRIDES = {
   // 'Mysore Palace': 'File:Mysore Palace WLM 2022 India 14.jpg',
+  // The article's lead image and every Commons-search hit for this one are
+  // GFDL 1.2, which the licence allowlist deliberately rejects.
+  "Humayun's Tomb": "File:Humayun's tomb, Delhi in 2019.jpg",
+  // The Munnar article's lead image is the town, not the tea. The narration
+  // is entirely about the tea bushes, so the picture has to show them.
+  'Munnar': 'File:Munnar Tea Plantations-WUS07352.jpg',
 }
 
 function landmarks() {

@@ -56,17 +56,34 @@ for (const [file, schema, key] of [
   for (const l of parsed.data[key]) line(l, file)
 }
 
-// Every playSfx cue and every place's ambience must resolve to a real file.
-// Without this a cue can name a sound that was never found, and the tiger
-// simply never growls — silently, with no error anywhere.
-const soundsPath = 'src/data/sound-credits.json'
-if (existsSync(soundsPath)) {
-  const sounds = JSON.parse(readFileSync(soundsPath, 'utf8'))
-  for (const [id, where] of needSound) {
-    if (!sounds[id]) problems.push(`${where}: sound "${id}" has no file in ${soundsPath}`)
-  }
-} else if (needSound.size) {
-  problems.push(`${needSound.size} sound reference(s) but ${soundsPath} does not exist`)
+// Every sound reference is checked against two files, and the difference
+// between them matters:
+//   content/sounds.json      — the WANTED list. Curated by hand.
+//   src/data/sound-credits.json — what has actually been sourced.
+// Referencing an id in neither is a TYPO and fails the build. Referencing
+// one that is wanted but not yet sourced is a KNOWN GAP: it is reported
+// loudly every build but does not fail, because several sounds could not be
+// found on Commons and are waiting on a hand-picked replacement. Without
+// this split, content could not be authored at all until every last sound
+// existed; with it, a mistyped cue is still caught immediately.
+const wanted = new Set()
+if (existsSync('content/sounds.json')) {
+  const w = JSON.parse(readFileSync('content/sounds.json', 'utf8'))
+  for (const s of [...(w.sfx ?? []), ...(w.ambience ?? [])]) wanted.add(s.id)
+}
+const sourced = existsSync('src/data/sound-credits.json')
+  ? new Set(Object.keys(JSON.parse(readFileSync('src/data/sound-credits.json', 'utf8'))))
+  : new Set()
+
+const gaps = []
+for (const [id, where] of needSound) {
+  if (sourced.has(id)) continue
+  if (wanted.has(id)) gaps.push(`${id} (${where})`)
+  else problems.push(`${where}: sound "${id}" is in neither content/sounds.json nor sound-credits.json — typo?`)
+}
+if (gaps.length) {
+  console.log(`\n  ${gaps.length} sound(s) referenced but not yet sourced — these are silent for now:`)
+  for (const g of gaps) console.log(`    - ${g}`)
 }
 
 if (chars > CEILING) {

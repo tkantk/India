@@ -1,0 +1,99 @@
+{
+  "id": "odisha",
+  "name": "Odisha",
+  "type": "state",
+  "capital": "Bhubaneswar",
+  "ambience": "ocean",
+  "intro": {
+    "id": "odisha.intro",
+    "kind": "intro",
+    "text": "This is Odisha, over on the east side of India, right beside the Bay of Bengal. A bay is a wide curve of sea, and this one washes along the edge of Odisha for hundreds of kilometres. West Bengal is its neighbour. Its main city is Bhubaneswar, and Bhubaneswar is full of old stone temples.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "odisha" },
+      { "word": 37, "do": "lightNeighbour", "arg": "west-bengal" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "odisha.card.animal",
+      "kind": "card",
+      "text": "The Indian roller sits on a wire looking plain and brown. Then it opens its wings and flashes bright blue, as if a piece of the sky had gone flying past.",
+      "sfx": "indian-roller"
+    },
+    "food": {
+      "id": "odisha.card.food",
+      "kind": "card",
+      "text": "On hot days people here eat pakhala. It is cooked rice left sitting in water until it goes cool and a little bit sour. Fried fish goes on the side."
+    },
+    "festival": {
+      "id": "odisha.card.festival",
+      "kind": "card",
+      "text": "At Rath Yatra, three enormous wooden chariots are built new every year. Thousands of people take hold of long ropes and pull them slowly down the road."
+    },
+    "hello": {
+      "id": "odisha.card.hello",
+      "kind": "card",
+      "text": "In Odisha people say Namaskar. You put your palms together in front of you and dip your head a little as you say it. Try it now.",
+      "script": "ନମସ୍କାର"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "odisha.konark",
+      "name": "Konark Sun Temple",
+      "photoQuery": "Konark Sun Temple",
+      "scene": "chariot-wheel",
+      "line": {
+        "id": "odisha.konark.line",
+        "kind": "landmark",
+        "text": "The whole temple is carved to look like a giant chariot. Twenty-four great stone wheels stand along its sides, and stone horses lean forward at the front. Guides here show you how the shadow creeping across a wheel tells the time, like a clock made of rock."
+      }
+    },
+    {
+      "id": "odisha.jagannath",
+      "name": "Jagannath Temple, Puri",
+      "photoQuery": "Jagannath Temple, Puri",
+      "scene": "temple",
+      "line": {
+        "id": "odisha.jagannath.line",
+        "kind": "landmark",
+        "text": "The tower of this temple is as tall as a building with twenty floors, so you can see it from right across the town. Behind it is one of the largest kitchens in the world. Cooks pile clay pots on top of one another over a wood fire and feed thousands of people.",
+        "cues": [{ "word": 1, "do": "playSfx", "arg": "temple-bell" }]
+      }
+    },
+    {
+      "id": "odisha.chilika",
+      "name": "Chilika Lake",
+      "photoQuery": "Chilika Lake",
+      "scene": "lagoon",
+      "line": {
+        "id": "odisha.chilika.line",
+        "kind": "landmark",
+        "text": "Chilika is an enormous shallow lake where river water and sea water mix together. Dolphins live in it, with round heads and hardly any nose at all. When the cold months come, birds arrive here in their thousands, and some of them are pink.",
+        "cues": [{ "word": 14, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    },
+    {
+      "id": "odisha.puri-beach",
+      "name": "Puri Beach",
+      "photoQuery": "Puri Beach",
+      "scene": "beach",
+      "line": {
+        "id": "odisha.puri-beach.line",
+        "kind": "landmark",
+        "text": "The sand here is soft and golden and the waves come in long and loud. People build huge sculptures out of that wet sand, big enough to walk all the way around. Then the sea creeps up and takes every one of them away again."
+      }
+    },
+    {
+      "id": "odisha.udayagiri",
+      "name": "Udayagiri Caves",
+      "photoQuery": "Udayagiri and Khandagiri Caves",
+      "scene": "caves",
+      "line": {
+        "id": "odisha.udayagiri.line",
+        "kind": "landmark",
+        "text": "These little rooms were not built. They were cut straight into the rock of the hill with hammers and chisels, so that monks could sleep and sit quietly inside them. One is called the elephant cave, and by another doorway two stone elephants stand guard."
+      }
+    }
+  ]
+}

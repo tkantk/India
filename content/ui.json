@@ -1,0 +1,23 @@
+{
+  "lines": [
+    { "id": "ui.begin", "kind": "ui", "text": "Tap anywhere to begin." },
+    { "id": "ui.welcome", "kind": "ui", "text": "Namaste! Shall we go exploring?" },
+    { "id": "ui.tap-state", "kind": "ui", "text": "Tap a state to visit it." },
+    { "id": "ui.no-wrong-one", "kind": "ui", "text": "Pick any one you like. None of them is wrong." },
+    { "id": "ui.landmark-hint", "kind": "ui", "text": "Pick a picture at the bottom to see more." },
+    { "id": "ui.photo", "kind": "ui", "text": "Tap the camera to see a real photograph." },
+    { "id": "ui.again", "kind": "ui", "text": "Shall we hear that again?" },
+    { "id": "ui.slower", "kind": "ui", "text": "Tap the turtle and I will talk more slowly." },
+    { "id": "ui.paused", "kind": "ui", "text": "Take your time. I will wait right here." },
+    { "id": "ui.resume", "kind": "ui", "text": "Ready? Off we go again." },
+    { "id": "ui.home", "kind": "ui", "text": "Let us go back to India." },
+    { "id": "ui.loading", "kind": "ui", "text": "One moment. I am getting it ready for you." },
+    { "id": "ui.nice-work", "kind": "ui", "text": "You found it. Nice work!" },
+    { "id": "ui.keep-going", "kind": "ui", "text": "One more place, then? Come on." },
+    { "id": "ui.all-heard", "kind": "ui", "text": "You have heard everything here. Well done!" },
+    { "id": "ui.stamp", "kind": "ui", "text": "Well done! You have a new stamp.", "sfx": "chime-correct" },
+    { "id": "ui.passport", "kind": "ui", "text": "This is your passport. Look how far you have gone!" },
+    { "id": "ui.passport-hint", "kind": "ui", "text": "Every place you finish puts a stamp in here." },
+    { "id": "ui.bye", "kind": "ui", "text": "Bye for now. Come back and see me soon!" }
+  ]
+}
