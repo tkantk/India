@@ -1,0 +1,103 @@
+/* The map's four layers. See MapStage.tsx for why there are four of them.
+   Every rule here is scoped under .map: `base`, `hit`, `glow` and `stage` are
+   the names the architecture uses, and they are far too general to be loose
+   in a global stylesheet. */
+
+.map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  /* The map's own paper-and-ink. base.css keeps the app palette; these are
+     only ever used here. */
+  --land: #d9cfae;
+  --land-edge: var(--paper);
+  --lit-state: var(--saffron);
+  --lit-ut: var(--gold);
+}
+
+/* Layer 0 — the camera. An HTML box, and the only element in the map that is
+   ever transformed. `will-change: transform` is added and removed around the
+   flight by Task 6 rather than set here: a full-screen composited layer costs
+   about 12.6 MB on a 2048x1536 iPad, and WebKit drops tiles under memory
+   pressure, which a child sees as white flashes. */
+.map .stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+}
+
+/* All three layers share the viewBox, so they line up exactly. */
+.map .stage > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Layer 1 — the visible art. */
+.map .base path {
+  fill: var(--land);
+  stroke: var(--land-edge);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  /* fill, and nothing else. opacity on an SVG child is not composited in
+     WebKit's legacy engine either — it is a software repaint exactly like
+     fill, so the usual "animate opacity, it's free" advice does not apply. */
+  transition: fill 220ms ease-out;
+}
+
+.map .base path.lit { fill: var(--lit-state); }
+
+/* The union territories light in a second colour, straight off the data, so
+   `highlightUnionTerritories` needs no second entry point in the API. */
+.map .base path.lit[data-type='ut'] { fill: var(--lit-ut); }
+
+/* Layer 2 — the hit targets. The layer is transparent to taps; its children
+   are the targets. In SVG, as in HTML, a child may opt back in to hit testing
+   that an ancestor has opted out of. */
+.map .hit {
+  pointer-events: none;
+  /* Removes the 350 ms tap delay at every zoom scale, and stops a
+     double-tap being read as a zoom. */
+  touch-action: manipulation;
+}
+
+.map .hit > * { pointer-events: fill; }
+
+/* Layer 3 — the glow around whichever state is lit. */
+.map .glow { pointer-events: none; }
+
+.map .glow > path {
+  fill: none;
+  stroke: var(--lit-state);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  /* A CSS drop-shadow(), never an SVG <filter>: WebKit blurs SVG filters on
+     the CPU in three box-blur passes, and feDropShadow has been a known
+     performance cliff since 2012. drop-shadow must also be the LAST filter
+     operation in the list or WebKit refuses to composite it — here it is the
+     only one, and it must stay that way. */
+  filter: drop-shadow(0 0 7px var(--lit-state));
+}
+
+/* The DataMeet boundaries are CC BY 4.0, which obliges us to credit them
+   where the work is seen. Small, quiet, and never behind an interaction.
+   #3d4a41 on --paper is 8.8:1.
+
+   Whoever lays the map out must leave the bottom-left corner clear of the
+   fixed control bar — a credit hidden behind a toolbar is not a credit. */
+.map .credit {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #3d4a41;
+  /* Text, not a target: it must never swallow a tap meant for Kerala. */
+  pointer-events: none;
+}

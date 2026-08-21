@@ -10,6 +10,7 @@
     "test": "vitest run",
     "validate": "node scripts/validate-content.mjs",
     "build:map": "node scripts/build-map.mjs",
+    "build:hit": "node scripts/build-hitlayer.mjs",
     "tts:draft": "node scripts/tts.mjs --provider=say",
     "tts:final": "node scripts/tts.mjs --provider=elevenlabs",
     "fetch:photos": "node scripts/fetch-photos.mjs",
