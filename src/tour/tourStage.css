@@ -1,0 +1,31 @@
+/* Provisional: gives `.map` (100% x 100% of this) a definite box to fill
+   until Task 9/10 lay `IndiaScreen` out properly, with Mor, the play button
+   and the controls. `.tour-stage` assumes it is the flex-growing child of
+   `.india` — see base.css — which is the one thing that makes this task's
+   job (the map actually visible on screen) true without anticipating a
+   layout that is not this task's to design. */
+.tour-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* A clearly-marked stand-in for art Task 8 has not drawn yet — see
+   src/tour/overlays.tsx. Loud on purpose: nobody should mistake this for a
+   finished effect and ship it. */
+.tour-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.cue-placeholder {
+  padding: 8px 16px;
+  border: 2px dashed var(--saffron, #f0851f);
+  border-radius: 8px;
+  background: rgba(253, 248, 239, 0.9);
+  color: var(--ink, #12241c);
+  font-weight: 600;
+}

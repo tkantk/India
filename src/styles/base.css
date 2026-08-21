@@ -73,6 +73,21 @@ body {
   -webkit-box-decoration-break: clone;
 }
 
+/* IndiaScreen's root, until Task 9/10 give it a proper layout with Mor, the
+   play button and the controls. A flex column so `.tour-stage` (see
+   src/tour/tourStage.css) gets the height left over after the heading,
+   rather than 100% of `.india` stacked on top of it. */
+.india {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.india h1 {
+  margin: 8px 16px;
+  flex: 0 0 auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* The tapped-state highlight stays — WCAG's "essential" clause covers
      animation that carries the information. Camera flights and parallax go. */
