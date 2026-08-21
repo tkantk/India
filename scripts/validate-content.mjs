@@ -9,13 +9,20 @@ const problems = []
 const ids = new Map()
 let chars = 0
 
+const needSound = new Map()
+
 function line(l, where) {
   if (ids.has(l.id)) problems.push(`duplicate line id "${l.id}" in ${where} and ${ids.get(l.id)}`)
   ids.set(l.id, where)
   chars += l.text.length
+  if (l.sfx) needSound.set(l.sfx, `${where} (${l.id}.sfx)`)
+  for (const c of l.cues ?? []) {
+    if (c.do === 'playSfx' && c.arg) needSound.set(c.arg, `${where} (${l.id} cue)`)
+  }
 }
 
 function walkPlace(p, where) {
+  needSound.set(p.ambience, `${where} (ambience)`)
   line(p.intro, where)
   for (const l of Object.values(p.card)) line(l, where)
   for (const lm of p.landmarks) line(lm.line, where)
@@ -47,6 +54,19 @@ for (const [file, schema, key] of [
     continue
   }
   for (const l of parsed.data[key]) line(l, file)
+}
+
+// Every playSfx cue and every place's ambience must resolve to a real file.
+// Without this a cue can name a sound that was never found, and the tiger
+// simply never growls — silently, with no error anywhere.
+const soundsPath = 'src/data/sound-credits.json'
+if (existsSync(soundsPath)) {
+  const sounds = JSON.parse(readFileSync(soundsPath, 'utf8'))
+  for (const [id, where] of needSound) {
+    if (!sounds[id]) problems.push(`${where}: sound "${id}" has no file in ${soundsPath}`)
+  }
+} else if (needSound.size) {
+  problems.push(`${needSound.size} sound reference(s) but ${soundsPath} does not exist`)
 }
 
 if (chars > CEILING) {

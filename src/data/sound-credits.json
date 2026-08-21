@@ -1,84 +1,4 @@
 {
-  "peacock-call": {
-    "file": "audio/sfx/peacock-call.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/DM550170_Pavo_cristatus_call_in_farm_Slovakia.oga",
-    "fileTitle": "File:DM550170 Pavo cristatus call in farm Slovakia.oga",
-    "licenceShort": "CC BY-SA 4.0",
-    "artist": "SanoAK: Alexander Kürthy",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:DM550170_Pavo_cristatus_call_in_farm_Slovakia.oga",
-    "seconds": 10.95
-  },
-  "elephant": {
-    "file": "audio/sfx/elephant.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/4/40/Elephant_voice_-_trumpeting.ogg",
-    "fileTitle": "File:Elephant voice - trumpeting.ogg",
-    "licenceShort": "CC0",
-    "artist": "தகவலுழவன்",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg",
-    "seconds": 1.44
-  },
-  "hornbill": {
-    "file": "audio/sfx/hornbill.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Great_hornbill_%2C_Buceros_bicornis%2Csound.wav",
-    "fileTitle": "File:Great hornbill , Buceros bicornis,sound.wav",
-    "licenceShort": "CC BY-SA 4.0",
-    "artist": "Shino jacob koottanad",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Great_hornbill_,_Buceros_bicornis,sound.wav",
-    "seconds": 15.54
-  },
-  "indian-roller": {
-    "file": "audio/sfx/indian-roller.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/0/05/Indian_roller_call_recorded_in_February_2002_at_Nagzira_Wildlife_Sanctuary%2C_Maharashtra.wav",
-    "fileTitle": "File:Indian roller call recorded in February 2002 at Nagzira Wildlife Sanctuary, Maharashtra.wav",
-    "licenceShort": "CC BY-SA 4.0",
-    "artist": "Sharadapte",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_roller_call_recorded_in_February_2002_at_Nagzira_Wildlife_Sanctuary,_Maharashtra.wav",
-    "seconds": 10.43
-  },
-  "gibbon": {
-    "file": "audio/sfx/gibbon.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Hoolock_Gibbon_Call.ogg",
-    "fileTitle": "File:Hoolock Gibbon Call.ogg",
-    "licenceShort": "CC BY-SA 4.0",
-    "artist": "Chinmayisk",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Hoolock_Gibbon_Call.ogg",
-    "seconds": 26.73
-  },
-  "sparrow": {
-    "file": "audio/sfx/sparrow.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/0/00/House_Sparrows_chirping.ogg",
-    "fileTitle": "File:House Sparrows chirping.ogg",
-    "licenceShort": "CC BY-SA 3.0",
-    "artist": "QWerk",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:House_Sparrows_chirping.ogg",
-    "seconds": 9.61
-  },
-  "water-ripple": {
-    "file": "audio/sfx/water-ripple.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Water_flowing_pouring_trickling.ogg",
-    "fileTitle": "File:Water flowing pouring trickling.ogg",
-    "licenceShort": "Public domain",
-    "artist": "stephan",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Water_flowing_pouring_trickling.ogg",
-    "seconds": 96.29
-  },
-  "chime-correct": {
-    "file": "audio/sfx/chime-correct.m4a",
-    "kind": "sfx",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Soothing_jingling_little_bells_ambience.ogg",
-    "fileTitle": "File:Soothing jingling little bells ambience.ogg",
-    "licenceShort": "Public domain",
-    "artist": "stephan",
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Soothing_jingling_little_bells_ambience.ogg",
-    "seconds": 43.83
-  },
   "ocean": {
     "file": "audio/ambience/ocean.m4a",
     "kind": "ambience",
@@ -108,5 +28,85 @@
     "artist": "jackthemurray",
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:433589_jackthemurray_stream-river-water-up-close.wav",
     "seconds": 20
+  },
+  "peacock-call": {
+    "file": "audio/sfx/peacock-call.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/DM550170_Pavo_cristatus_call_in_farm_Slovakia.oga",
+    "fileTitle": "File:DM550170 Pavo cristatus call in farm Slovakia.oga",
+    "licenceShort": "CC BY-SA 4.0",
+    "artist": "SanoAK: Alexander Kürthy",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:DM550170_Pavo_cristatus_call_in_farm_Slovakia.oga",
+    "seconds": 3
+  },
+  "elephant": {
+    "file": "audio/sfx/elephant.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/40/Elephant_voice_-_trumpeting.ogg",
+    "fileTitle": "File:Elephant voice - trumpeting.ogg",
+    "licenceShort": "CC0",
+    "artist": "தகவலுழவன்",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg",
+    "seconds": 1.44
+  },
+  "hornbill": {
+    "file": "audio/sfx/hornbill.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Great_hornbill_%2C_Buceros_bicornis%2Csound.wav",
+    "fileTitle": "File:Great hornbill , Buceros bicornis,sound.wav",
+    "licenceShort": "CC BY-SA 4.0",
+    "artist": "Shino jacob koottanad",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Great_hornbill_,_Buceros_bicornis,sound.wav",
+    "seconds": 5
+  },
+  "indian-roller": {
+    "file": "audio/sfx/indian-roller.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/05/Indian_roller_call_recorded_in_February_2002_at_Nagzira_Wildlife_Sanctuary%2C_Maharashtra.wav",
+    "fileTitle": "File:Indian roller call recorded in February 2002 at Nagzira Wildlife Sanctuary, Maharashtra.wav",
+    "licenceShort": "CC BY-SA 4.0",
+    "artist": "Sharadapte",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_roller_call_recorded_in_February_2002_at_Nagzira_Wildlife_Sanctuary,_Maharashtra.wav",
+    "seconds": 3
+  },
+  "gibbon": {
+    "file": "audio/sfx/gibbon.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Hoolock_Gibbon_Call.ogg",
+    "fileTitle": "File:Hoolock Gibbon Call.ogg",
+    "licenceShort": "CC BY-SA 4.0",
+    "artist": "Chinmayisk",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Hoolock_Gibbon_Call.ogg",
+    "seconds": 6
+  },
+  "sparrow": {
+    "file": "audio/sfx/sparrow.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/00/House_Sparrows_chirping.ogg",
+    "fileTitle": "File:House Sparrows chirping.ogg",
+    "licenceShort": "CC BY-SA 3.0",
+    "artist": "QWerk",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:House_Sparrows_chirping.ogg",
+    "seconds": 3
+  },
+  "water-ripple": {
+    "file": "audio/sfx/water-ripple.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Water_flowing_pouring_trickling.ogg",
+    "fileTitle": "File:Water flowing pouring trickling.ogg",
+    "licenceShort": "Public domain",
+    "artist": "stephan",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Water_flowing_pouring_trickling.ogg",
+    "seconds": 3
+  },
+  "chime-correct": {
+    "file": "audio/sfx/chime-correct.m4a",
+    "kind": "sfx",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Soothing_jingling_little_bells_ambience.ogg",
+    "fileTitle": "File:Soothing jingling little bells ambience.ogg",
+    "licenceShort": "Public domain",
+    "artist": "stephan",
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Soothing_jingling_little_bells_ambience.ogg",
+    "seconds": 2
   }
 }

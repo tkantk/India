@@ -64,7 +64,13 @@ async function grab(kind, item) {
       { stdio: 'inherit' })
     toM4a(looped, out, 56000)
   } else {
-    toM4a(wav, out, 64000)
+    // Trim. A one-shot fires on a single narrated word, so it must be short —
+    // raw Commons sources run to 96 seconds and would still be playing several
+    // sentences later, over the top of the narration.
+    const cut = join(tmp, `${item.id}.cut.wav`)
+    execFileSync('python3', ['scripts/lib/trim.py', wav, cut, String(item.maxSeconds ?? 3)],
+      { stdio: 'inherit' })
+    toM4a(cut, out, 64000)
   }
 
   credits[item.id] = {
