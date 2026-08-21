@@ -53,25 +53,48 @@ export const realWidth = url => Number(stripQuery(url).match(/\/(\d+)px-/)?.[1])
 const text = html => (html ?? '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
 const absolutise = html => (html ?? '').replace(/href="\/\//g, 'href="https://')
 
-export function vet(ii) {
+/**
+ * THE licence rule, for every kind of media. Photographs and bird calls differ
+ * in mime type, pixel size and aspect ratio; they do not differ in one bit of
+ * what makes a licence shippable, so both fetchers ask this same function.
+ * vet() below layers the photo-specific checks on top, and fetch-sounds.mjs
+ * layers the audio-specific ones.
+ *
+ * `hostedOnCommons` has to come from the caller and cannot be read off the
+ * response, because `imagerepository` describes the file relative to THE WIKI
+ * THAT ANSWERED. Ask en.wikipedia, as fetch-photos does, and a Commons file
+ * reports "shared" while a fair-use upload reports "local" — the one check
+ * that eliminates the entire fair-use category. Ask commons.wikimedia.org, as
+ * fetch-sounds does, and every file reports "local", free ones included,
+ * because Commons hosts no fair use at all.
+ */
+export function licencePolicy(ii, { hostedOnCommons }) {
   const g = k => ii.extmetadata?.[k]?.value
 
-  // Fair-use uploads live on en.wikipedia, never on Commons. This one check
-  // eliminates the entire category.
-  if (ii.imagerepository !== 'shared') return { ok: false, why: 'local upload, not Commons' }
+  if (!hostedOnCommons) return { ok: false, why: 'local upload, not Commons' }
   if (String(g('NonFree')).toLowerCase() === 'true') return { ok: false, why: 'NonFree' }
 
   const short = String(g('LicenseShortName') ?? '')
   if (/fair use|non-?free/i.test(short)) return { ok: false, why: `LicenseShortName "${short}"` }
 
-  // Allowlist, never a denylist. A legitimately-licensed file can have no
-  // machine code at all (GFDL), and those must be rejected.
+  // Allowlist, never a denylist, and always against the machine-readable
+  // `License` code rather than the human-readable short name, which is free
+  // text: a legitimately-licensed file can have no machine code at all
+  // (GFDL), and those must be rejected.
   const code = String(g('License') ?? '').toLowerCase()
   if (!ALLOWED_LICENCE.test(code)) return { ok: false, why: `licence "${code || short || 'unknown'}" not allowlisted` }
 
   if (/trademark|personality/i.test(String(g('Restrictions') ?? ''))) {
     return { ok: false, why: `Restrictions ${g('Restrictions')}` }
   }
+  return { ok: true }
+}
+
+/** licencePolicy plus the checks that only mean anything for a photograph. */
+export function vet(ii) {
+  const licence = licencePolicy(ii, { hostedOnCommons: ii.imagerepository === 'shared' })
+  if (!licence.ok) return licence
+
   if (NOT_A_PHOTO.test(ii.fileTitle)) return { ok: false, why: 'title suggests a montage, map or satellite image' }
   if (!GOOD_MIME.has(ii.mime)) return { ok: false, why: `mime ${ii.mime}` }
   if (ii.width < 800) return { ok: false, why: `only ${ii.width}px wide` }

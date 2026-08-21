@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { vet, attribution, realWidth, stripQuery } from './wiki.mjs'
+import { licencePolicy, vet, attribution, realWidth, stripQuery } from './wiki.mjs'
 
 const freeFile = {
   imagerepository: 'shared',
@@ -26,6 +26,82 @@ describe('stripQuery', () => {
   it('removes the tracking parameters Wikimedia now appends', () => {
     expect(stripQuery(freeFile.thumburl)).not.toContain('utm_source')
     expect(stripQuery(freeFile.thumburl)).toMatch(/960px-Konarka_Temple\.jpg$/)
+  })
+})
+
+// One licence rule, one implementation. fetch-photos and fetch-sounds used to
+// carry separate ones — wiki.mjs matched the machine-readable License code and
+// checked NonFree, Restrictions and imagerepository; fetch-sounds re-derived
+// the same policy from the human-readable LicenseShortName with none of those
+// checks — so the two could and did disagree about the same file.
+describe('licencePolicy', () => {
+  const onCommons = { hostedOnCommons: true }
+
+  it('accepts a CC BY-SA file hosted on Commons', () => {
+    expect(licencePolicy(freeFile, onCommons).ok).toBe(true)
+  })
+
+  it('rejects a file the caller says is not on Commons, where fair use lives', () => {
+    expect(licencePolicy(freeFile, { hostedOnCommons: false }).ok).toBe(false)
+  })
+
+  it('rejects an explicitly non-free file', () => {
+    const nonFree = { ...freeFile, extmetadata: { ...freeFile.extmetadata, NonFree: { value: 'true' } } }
+    expect(licencePolicy(nonFree, onCommons).ok).toBe(false)
+  })
+
+  it('rejects a fair-use LicenseShortName even before the code allowlist', () => {
+    const fu = { ...freeFile, extmetadata: { LicenseShortName: { value: 'Fair use' } } }
+    expect(licencePolicy(fu, onCommons).ok).toBe(false)
+  })
+
+  it('rejects GFDL, which has no machine licence code and cannot be shipped', () => {
+    const gfdl = { ...freeFile, extmetadata: { LicenseShortName: { value: 'GFDL 1.2' } } }
+    expect(licencePolicy(gfdl, onCommons).ok).toBe(false)
+  })
+
+  it('accepts public domain and CC0', () => {
+    for (const code of ['pd', 'cc0']) {
+      const f = { ...freeFile, extmetadata: { License: { value: code } } }
+      expect(licencePolicy(f, onCommons).ok, code).toBe(true)
+    }
+  })
+
+  it('rejects a file carrying personality or trademark restrictions', () => {
+    const r = { ...freeFile, extmetadata: { ...freeFile.extmetadata, Restrictions: { value: 'personality' } } }
+    expect(licencePolicy(r, onCommons).ok).toBe(false)
+  })
+
+  it('tolerates the empty Restrictions string Commons actually returns', () => {
+    const r = { ...freeFile, extmetadata: { ...freeFile.extmetadata, Restrictions: { value: '' } } }
+    expect(licencePolicy(r, onCommons).ok).toBe(true)
+  })
+
+  // The whole point of extracting it: a bird call has no mime image type, no
+  // pixel width and no aspect ratio, and must still be judged by the same
+  // licence rule as a photograph.
+  it('judges an audio file, which has none of a photograph\'s properties', () => {
+    const sound = {
+      mime: 'application/ogg',
+      fileTitle: 'File:House Sparrows chirping.ogg',
+      extmetadata: {
+        License: { value: 'cc-by-sa-3.0' },
+        LicenseShortName: { value: 'CC BY-SA 3.0' },
+        LicenseUrl: { value: 'https://creativecommons.org/licenses/by-sa/3.0' },
+        Artist: { value: '<a href="//commons.wikimedia.org/wiki/User:QWerk">QWerk</a>' },
+        AttributionRequired: { value: 'true' },
+        Restrictions: { value: '' },
+      },
+      descriptionurl: 'https://commons.wikimedia.org/wiki/File:House_Sparrows_chirping.ogg',
+    }
+    expect(licencePolicy(sound, onCommons).ok).toBe(true)
+    // ...and the photo layer on top of it still rejects the same file.
+    expect(vet({ ...sound, imagerepository: 'shared' }).ok).toBe(false)
+  })
+
+  it('rejects an unfree sound by exactly the same rule', () => {
+    const sound = { extmetadata: { LicenseShortName: { value: 'GFDL' } } }
+    expect(licencePolicy(sound, onCommons).ok).toBe(false)
   })
 })
 
