@@ -2,7 +2,8 @@
 import { createHash } from 'node:crypto'
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, dirname } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { timingsFromAlignment, estimateTimings, cueTimes } from './lib/words.mjs'
 import { isCached } from './lib/cache.mjs'
@@ -13,7 +14,15 @@ const providerName = flag('provider', 'say')
 const only = process.argv.find(a => a.startsWith('--only='))?.split('=')[1]
 const force = process.argv.includes('--force')
 
-const provider = await import(`./tts-providers/${providerName}.mjs`)
+// A bare name selects a module from scripts/tts-providers/. A value with a
+// path separator in it is imported as-is, which is how scripts/tts.test.mjs
+// injects a provider that throws partway through a run without dropping a
+// test-only file into the production provider directory.
+const provider = await import(
+  providerName.includes('/')
+    ? pathToFileURL(resolve(providerName)).href
+    : `./tts-providers/${providerName}.mjs`,
+)
 // Overridable so scripts/tts.test.mjs can point at scratch directories
 // instead of the tracked public/audio/en and src/data/timings.json — the
 // production npm scripts never pass these flags, so they keep the defaults
@@ -132,22 +141,73 @@ async function renderLine(line) {
   process.stdout.write(`\r  rendered ${rendered}, reused ${reused}   `)
 }
 
+// Every line that reaches the end of renderLine has already been paid for on
+// the paid provider, so a failure partway through must never throw that away:
+// the .m4a files are on disk, and if timings.json and the render cache do not
+// record them, the next run re-renders — and re-bills — every one. A quota
+// 401, "gave up after 5 attempts", a missing alignment and the zero-duration
+// guard all get a run here.
+//
+// So: a worker that hits an error records it and stops taking new lines
+// rather than throwing. Its three siblings finish the line already in flight
+// instead of being abandoned mid-request by Promise.all's fast reject, and
+// the bookkeeping is written in a finally, which also covers anything that
+// throws outside renderLine.
+let failure = null
+const failed = new Set()
+
+/** Write both bookkeeping files. Always runs, however the render loop ended. */
+function persist() {
+  // Merge over the file read at startup rather than replacing it. A run that
+  // died partway holds no entry for the lines it never reached, and writing
+  // that thin object would delete theirs — which makes the NEXT run see no
+  // previous timing, treat them as uncached, and re-render them. A run that
+  // completes still replaces the file wholesale, which is what drops the
+  // entries of lines that no longer exist in the content.
+  const out = failure ? { ...previous, ...timings } : timings
+  // A line whose render threw may have left a truncated .m4a behind, and
+  // under --force its cache key can still match. Drop both records so the
+  // next run re-renders it rather than trusting half a file.
+  for (const id of failed) { delete out[id]; delete cache[id] }
+  writeFileSync(TIMINGS, JSON.stringify(out))
+  writeFileSync(CACHE, JSON.stringify(cache, null, 2))
+  return out
+}
+
 // Creator's Multilingual-v2 concurrency limit is 5, so use 4. The local
 // draft voice is CPU-bound and gains nothing from parallelism.
 const POOL = providerName === 'elevenlabs' ? 4 : 1
 const queue = [...lines]
-await Promise.all(Array.from({ length: POOL }, async () => {
-  for (let line; (line = queue.shift()); ) await renderLine(line)
-}))
+let written
+try {
+  await Promise.all(Array.from({ length: POOL }, async () => {
+    for (let line; !failure && (line = queue.shift()); ) {
+      try {
+        await renderLine(line)
+      } catch (err) {
+        failed.add(line.id)
+        failure ??= err
+      }
+    }
+  }))
+} finally {
+  rmSync(tmp, { recursive: true, force: true })
+  written = persist()
+}
 
-rmSync(tmp, { recursive: true, force: true })
-writeFileSync(TIMINGS, JSON.stringify(timings))
-writeFileSync(CACHE, JSON.stringify(cache, null, 2))
-
-const seconds = Object.values(timings).reduce((a, t) => a + t.duration, 0)
-console.log(`\nwrote ${Object.keys(timings).length} clips, ${(seconds / 60).toFixed(1)} minutes of narration`)
+const seconds = Object.values(written).reduce((a, t) => a + t.duration, 0)
+console.log(`\nwrote ${Object.keys(written).length} clips, ${(seconds / 60).toFixed(1)} minutes of narration`)
 console.log(`  ${rendered} rendered, ${reused} reused from cache`)
 if (provider.charactersSpent) {
   const spent = provider.charactersSpent()
   console.log(`  ${spent.toLocaleString()} characters billed, about $${(spent / 1000 * 0.10).toFixed(2)}`)
+}
+
+if (failure) {
+  console.error(`\n${failure.stack ?? failure.message}`)
+  console.error(
+    `\n  ${rendered} line(s) rendered before this failure are on disk, cached and ` +
+    `recorded in\n  ${TIMINGS} — re-running will reuse them rather than re-billing them.`,
+  )
+  process.exit(1)
 }

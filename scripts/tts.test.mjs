@@ -219,3 +219,160 @@ describe.skipIf(!MACOS)('cache reuse, --only, and --force semantics', () => {
     expect(introMtime(FIRST)).toBe(before)
   }, 30_000)
 })
+
+// Every rendered line is already paid for on the paid provider. A failure
+// partway through a run must therefore never discard the lines that already
+// succeeded: their .m4a files are on disk, so if timings.json and the render
+// cache do not record them, the next run re-renders — and re-bills — the lot.
+// The triggers are all plausible: a quota 401, "gave up after 5 attempts", a
+// missing alignment, the zero-duration guard.
+describe.skipIf(!MACOS)('persisting partial progress when a run fails partway', () => {
+  const WORK3 = mkdtempSync(join(tmpdir(), 'tts-fail-work-'))
+  const OUT3 = mkdtempSync(join(tmpdir(), 'tts-fail-out-'))
+  const AUDIO3 = join(OUT3, 'audio')
+  const TIMINGS3 = join(OUT3, 'timings.json')
+  const CACHE3 = join(OUT3, 'cache.json')
+  const SCRIPT3 = join(process.cwd(), 'scripts/tts.mjs')
+  const STUB = join(WORK3, 'stub-provider.mjs')
+
+  const PLACE = 'failland'
+  // collectLines() order for one place, which is also the order a POOL=1
+  // provider is called in: intro, the four card lines, then the landmarks.
+  const ORDER = [
+    `${PLACE}.intro`, `${PLACE}.card.animal`, `${PLACE}.card.food`,
+    `${PLACE}.card.festival`, `${PLACE}.card.hello`,
+    ...Array.from({ length: 5 }, (_, i) => `${PLACE}.lm${i}.line`),
+  ]
+  const FAIL_AT = 4                       // 1-based: the fourth line synthesised
+  const FAILED_ID = ORDER[FAIL_AT - 1]
+  const DONE_IDS = ORDER.slice(0, FAIL_AT - 1)
+
+  const place = (id) => ({
+    id, name: id, type: 'state', capital: 'Failpur', ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} is a place where one line will fail.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  // A provider with the same interface as say.mjs that throws on the Nth
+  // call, standing in for the paid provider's failure modes without spending
+  // anything. tts.mjs takes a path here, not just a bare provider name, so
+  // this stub can live in scratch instead of scripts/tts-providers/.
+  const stubSource = `
+import { execFileSync } from 'node:child_process'
+import { join } from 'node:path'
+export const name = 'stub'
+export const signature = () => 'stub:v1'
+let calls = 0
+export async function synth(text, { tmpDir, id }) {
+  calls++
+  const failAt = Number(process.env.STUB_FAIL_AT || 0)
+  if (failAt && calls === failAt) throw new Error(\`stub provider failed on purpose at call \${calls} ("\${id}")\`)
+  const out = join(tmpDir, \`\${id}.aiff\`)
+  execFileSync('say', ['-v', 'Tara', '-r', '130', '-o', out, text])
+  return { audioPath: out, alignment: null }
+}
+`
+
+  const run = (failAt, ...extra) => {
+    const args = [SCRIPT3, `--provider=${STUB}`,
+      `--audio-dir=${AUDIO3}`, `--timings=${TIMINGS3}`, `--cache=${CACHE3}`, ...extra]
+    const opts = { encoding: 'utf8', cwd: WORK3, stdio: 'pipe',
+                   env: { ...process.env, STUB_FAIL_AT: String(failAt) } }
+    try {
+      return { code: 0, output: execFileSync('node', args, opts) }
+    } catch (e) {
+      return { code: e.status, output: `${e.stdout ?? ''}${e.stderr ?? ''}` }
+    }
+  }
+
+  beforeAll(() => {
+    mkdirSync(join(WORK3, 'content/places'), { recursive: true })
+    writeFileSync(join(WORK3, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
+    writeFileSync(STUB, stubSource)
+  })
+
+  afterAll(() => {
+    rmSync(WORK3, { recursive: true, force: true })
+    rmSync(OUT3, { recursive: true, force: true })
+  })
+
+  const timings3 = () => JSON.parse(readFileSync(TIMINGS3, 'utf8'))
+
+  it('fails the run, but still writes both bookkeeping files', () => {
+    const { code } = run(FAIL_AT)
+    expect(code, 'a failed render must not exit 0').not.toBe(0)
+    expect(existsSync(TIMINGS3), 'timings.json was never written').toBe(true)
+    expect(existsSync(CACHE3), 'the render cache was never written').toBe(true)
+  }, 60_000)
+
+  it('records the lines that completed before the failure', () => {
+    const t = timings3()
+    for (const id of DONE_IDS) {
+      expect(existsSync(join(AUDIO3, `${id}.m4a`)), `${id}.m4a is missing`).toBe(true)
+      expect(Object.keys(t), `${id} was rendered but not persisted`).toContain(id)
+      expect(t[id].duration).toBeGreaterThan(0)
+    }
+    const cache = JSON.parse(readFileSync(CACHE3, 'utf8'))
+    for (const id of DONE_IDS) expect(Object.keys(cache), `${id} is not cached`).toContain(id)
+  })
+
+  it('writes no timings entry for the line whose audio failed', () => {
+    expect(Object.keys(timings3())).not.toContain(FAILED_ID)
+    expect(Object.keys(JSON.parse(readFileSync(CACHE3, 'utf8')))).not.toContain(FAILED_ID)
+  })
+
+  it('does not re-render (re-bill) the completed lines on the next run', () => {
+    const { code, output } = run(0)
+    expect(code).toBe(0)
+    expect(output).toMatch(new RegExp(`${10 - DONE_IDS.length} rendered, ${DONE_IDS.length} reused from cache`))
+  }, 60_000)
+
+  // A partial write must still be a VALID timings file, not just a non-empty
+  // one. --only seeds it from the previous file so a scoped run does not
+  // delete every other clip's entry; a failure partway through must not undo
+  // that seeding and reintroduce the very data loss --only was fixed for.
+  it('keeps the entries a --only run was seeded with when it fails partway', () => {
+    const before = Object.keys(timings3())
+    expect(before).toHaveLength(10)
+
+    // --force re-renders all ten in scope; the third of them throws, so lines
+    // four to ten are never reached at all.
+    const { code } = run(3, `--only=${PLACE}`, '--force')
+    expect(code).not.toBe(0)
+
+    const after = timings3()
+    expect(Object.keys(after)).not.toContain(ORDER[2])
+    for (const id of [...ORDER.slice(0, 2), ...ORDER.slice(3)]) {
+      expect(Object.keys(after), `${id} was dropped by the failed run`).toContain(id)
+      expect(after[id].duration).toBeGreaterThan(0)
+    }
+  }, 60_000)
+
+  // The unscoped half of the same guarantee. An unscoped run starts from an
+  // empty timings object on purpose — that is what prunes clips whose line no
+  // longer exists — so a partial write of that object would delete the entry
+  // for every line the run never reached, and the next run would see no
+  // previous timing, treat them as uncached, and re-render (re-bill) them.
+  it('keeps the entries an unscoped run never reached when it fails partway', () => {
+    const before = Object.keys(timings3())
+    const untouched = before.filter(id => id !== ORDER[0] && id !== ORDER[1])
+    expect(untouched.length).toBeGreaterThan(3)
+
+    const { code } = run(2, '--force')
+    expect(code).not.toBe(0)
+
+    const after = timings3()
+    for (const id of untouched) {
+      expect(Object.keys(after), `${id} was never reached, yet its entry was deleted`).toContain(id)
+    }
+  }, 60_000)
+})
