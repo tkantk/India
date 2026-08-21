@@ -761,26 +761,35 @@ execFileSync('npx', [
 
 const raw = JSON.parse(readFileSync(`${RAW}/india-states.geojson`, 'utf8'))
 
-// 3. DEPICTION GATE. The official Survey of India rendering reaches 37.07N
+// 3. Rewind rings clockwise. MANDATORY, AND IT MUST COME BEFORE THE GATE.
+//    mapshaper emits RFC 7946 (CCW outer rings); d3-geo's spherical clipper
+//    needs CW. Two things break on CCW input, not one:
+//      a) every polygon renders as its own complement, giving one giant blob;
+//      b) geoBounds returns [[-180,-90],[180,90]] — the whole globe — because
+//         each ring reads as pole-enclosing. Measured: geoBounds(raw) gives
+//         north = 90, geoBounds(fc) gives north = 37.077.
+//    So a depiction gate placed before the rewind sees north = 90, passes
+//    unconditionally, and would wave through the de-facto dataset it exists
+//    to reject. Order is load-bearing.
+const fc = rewind(raw, true)
+
+// 4. DEPICTION GATE. The official Survey of India rendering reaches 37.07N
 //    (the tip of Gilgit-Baltistan). The de-facto rendering stops at 35.5N.
 //    Verified by point-in-polygon: Muzaffarabad and Mirpur fall in
 //    Jammu & Kashmir; Gilgit, Skardu, Aksai Chin and the Shaksgam Valley
-//    fall in Ladakh. Do not remove this check.
-const [, [, north]] = geoBounds(raw)
+//    fall in Ladakh. Do not remove this check, and do not move it above
+//    the rewind.
+const [, [, north]] = geoBounds(fc)
+console.log(`northern bound: ${north.toFixed(3)}N`)
 if (north < 36.5) {
   throw new Error(
     `northern bound is ${north.toFixed(3)}N, expected ~37.07N. ` +
     `This dataset uses the de-facto depiction, not the official one. Rejected.`,
   )
 }
-if (raw.features.length !== 36) {
-  throw new Error(`expected 36 states and union territories, got ${raw.features.length}`)
+if (fc.features.length !== 36) {
+  throw new Error(`expected 36 states and union territories, got ${fc.features.length}`)
 }
-
-// 4. Rewind rings clockwise. MANDATORY. mapshaper emits RFC 7946 (CCW outer
-//    rings); d3-geo's spherical clipper needs CW. Feed it CCW and every
-//    polygon renders as its own complement — one giant blob over the viewBox.
-const fc = rewind(raw, true)
 
 const projection = geoConicConformal()
   .parallels([12.4729, 35.1728])   // Survey of India LCC standard parallels
