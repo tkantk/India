@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MapStage, nearestPlace } from './MapStage'
+import { PICK_ROOT } from './hitLayer'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
 
@@ -102,12 +103,59 @@ describe('MapStage', () => {
     expect(container.innerHTML).not.toContain('filter="url(')
   })
 
+  // The three tests below exist because of a bug none of the others could
+  // see. The listener used to sit on `.hit`, whose root is
+  // `pointer-events: none` so that its children can be `fill` — so a tap that
+  // landed on no place never targeted anything inside it and the handler was
+  // never called. Measured in Chrome: of 13,761 taps that hit no place,
+  // 13,761 targeted `svg.base` and 0 reached `svg.hit`. Every pick test still
+  // passed, because they all dispatch on an element that IS a place.
+
+  it('hangs the listener above every layer, not on one of them', () => {
+    // The structural half. jsdom does no hit testing at all, so no test here
+    // can discover which element a stray tap lands on — but it can check that
+    // whichever one it is, the handler is above it.
+    const { container } = mount()
+    const host = container.querySelector(`.${PICK_ROOT}`)!
+    for (const layer of ['svg.base', 'svg.hit', 'svg.glow']) {
+      const el = container.querySelector(layer)!
+      expect(host.contains(el), `${layer} is outside the pick root`).toBe(true)
+      expect(host, `the pick root must not BE ${layer}`).not.toBe(el)
+    }
+  })
+
+  it('keeps the shape the headless probe rebuilds', () => {
+    // scripts/probe-map-hits.mjs writes its own page shell — it cannot render
+    // React — so this is the contract that stops the two drifting apart. The
+    // markup inside the layers is shared code; only this skeleton is copied.
+    const { container } = mount()
+    const map = container.querySelector('.map')!
+    const root = map.querySelector(`:scope > .${PICK_ROOT}`)!
+    expect([...root.children].map((el) => `${el.tagName}.${el.getAttribute('class')}`))
+      .toEqual(['svg.base', 'svg.hit', 'svg.glow'])
+    expect(root.querySelector(':scope > svg.base > g')!.getAttribute('pointer-events')).toBe('none')
+    // The credit is inside the map but outside the stage, so the camera never
+    // scales or flies it off the screen.
+    expect(map.querySelector(':scope > p.credit')).not.toBeNull()
+    expect(root.querySelector('p.credit')).toBeNull()
+  })
+
+  it('picks from an event that arrives via a different layer', () => {
+    // The behavioural half. `svg.base` is where a stray tap actually lands,
+    // measured in Chrome — an element the hit layer does not contain. If the
+    // handler cannot be reached from there, the snap is dead code.
+    const { onPick, container } = mount()
+    const fromBase = container.querySelector('.base path[data-slug="rajasthan"]')!
+    fromBase.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }))
+    expect(onPick).toHaveBeenCalledExactlyOnceWith('rajasthan')
+  })
+
   it('survives a tap on nothing in an environment with no SVG geometry', () => {
     // jsdom implements no getScreenCTM, so the snap cannot run here. It must
     // decline quietly rather than throw inside a pointerdown handler.
     const { onPick, container } = mount()
-    const layer = container.querySelector('.hit')!
-    expect(() => layer.dispatchEvent(
+    const stray = container.querySelector('svg.base')!
+    expect(() => stray.dispatchEvent(
       new MouseEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }),
     )).not.toThrow()
     expect(onPick).not.toHaveBeenCalled()

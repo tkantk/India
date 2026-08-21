@@ -11,6 +11,7 @@
     "validate": "node scripts/validate-content.mjs",
     "build:map": "node scripts/build-map.mjs",
     "build:hit": "node scripts/build-hitlayer.mjs",
+    "probe:map": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/probe-map-hits.mjs",
     "tts:draft": "node scripts/tts.mjs --provider=say",
     "tts:final": "node scripts/tts.mjs --provider=elevenlabs",
     "fetch:photos": "node scripts/fetch-photos.mjs",
