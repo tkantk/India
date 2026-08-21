@@ -301,7 +301,19 @@ describe('PlaceSchema', () => {
     expect(PlaceSchema.safeParse(fat).success).toBe(false)
   })
 
-  it('rejects a cue pointing past the end of the line', () => {
+  it('rejects a cue exactly one word past the end', () => {
+    // Must be n, not some large number like 99. With 99 the test still passes
+    // when the check is loosened from `>= n` to `> n`, so it would not catch
+    // the off-by-one that lets an unreachable cue through.
+    const n = wordsOf(validLine.text).length
+    const bad = {
+      ...validPlace,
+      intro: { ...validLine, cues: [{ word: n, do: 'revealSymbol', arg: 'camel' }] },
+    }
+    expect(PlaceSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects a wildly out-of-range cue too', () => {
     const bad = {
       ...validPlace,
       intro: { ...validLine, cues: [{ word: 99, do: 'revealSymbol', arg: 'camel' }] },
@@ -443,7 +455,7 @@ export type Line = { id: string; kind: LineKind; text: string; cues?: Cue[]; sfx
 - [ ] **Step 4: Run it and watch it pass**
 
 Run: `npx vitest run content/schema.test.ts`
-Expected: PASS, 7 tests.
+Expected: PASS, 8 tests.
 
 - [ ] **Step 5: Write the validator `scripts/validate-content.mjs`**
 
@@ -453,7 +465,7 @@ The schema catches per-line problems. The validator catches whole-corpus problem
 #!/usr/bin/env node
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { PlaceSchema, TourSchema, UiSchema, LINE_BUDGET, wordsOf } from '../content/schema.ts'
+import { PlaceSchema, TourSchema, UiSchema } from '../content/schema.ts'
 
 const CEILING = 99_100
 const TARGET = 95_000
@@ -517,15 +529,32 @@ if (problems.length) {
 console.log('content OK')
 ```
 
-- [ ] **Step 6: Verify the validator runs and reports zero places**
+- [ ] **Step 6: Put `content/` under the type-checker**
+
+`tsconfig.app.json` includes only `src`, so nothing in CI type-checks
+`content/schema.ts`. Both the Vitest run and Node's native stripping only
+erase types; neither reports a type error. Add `content` to the app
+tsconfig's `include` array so `npm run build` covers it:
+
+```jsonc
+// tsconfig.app.json
+"include": ["src", "content"]
+```
+
+Run: `npm run build`
+Expected: succeeds. Then prove the check is live by temporarily giving
+`wordsOf` a bogus return type (`: number[]`), re-running `npm run build`,
+and confirming it now FAILS. Revert the bogus type.
+
+- [ ] **Step 7: Verify the validator runs and reports zero places**
 
 Run: `npm run validate`
 Expected: exit 1 with `missing content/tour.json` — correct, nothing is authored yet. This proves the validator actually checks rather than passing vacuously.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add content/schema.ts content/schema.test.ts scripts/validate-content.mjs
+git add content/schema.ts content/schema.test.ts scripts/validate-content.mjs tsconfig.app.json
 git commit -m "feat: content schema with character budgets and word-index cues
 
 Cues address a word index, not a timestamp, so re-rendering the narration
