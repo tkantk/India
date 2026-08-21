@@ -19,7 +19,7 @@
  * circular pin on top of their outline.
  *
  * Output: src/data/hit.json
- *   { places: { [slug]: { d: string, pin: [x, y], r: number } } }
+ *   { places: { [slug]: { d, pin: [x, y], r: number, pinR: number } } }
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 
@@ -32,6 +32,19 @@ const POINT_BUDGET = 100
  *  resolves the pole to well under a thousandth of a viewBox unit. */
 const GRID = 24
 const PASSES = 6
+
+/**
+ * The ideal pin radius, in viewBox units.
+ *
+ * Nielsen Norman Group's figure for under-nines is 2cm square, which is
+ * 104 CSS px on a 264 ppi iPad. The map's worst realistic scale — landscape,
+ * with the control bar and the read-along line taking their share of the
+ * height — is 0.462 CSS px per viewBox unit, so 104 px of diameter is
+ * 104 / 0.462 = 225.1 units, and half of that is the radius.
+ *
+ * Almost nothing gets it: it is clamped hard by the neighbour rule below.
+ */
+const TARGET_PIN_R = Math.round((104 / 0.462 / 2) * 10) / 10   // 112.6
 
 // ---------------------------------------------------------------- geometry
 
@@ -237,6 +250,35 @@ for (const [slug, place] of Object.entries(geo.places)) {
   }
 }
 
+/**
+ * How big each pin may be: as close to a child-sized target as it can get
+ * without reaching another place's pole.
+ *
+ * A pole is a place's tap point of last resort — the one spot in it that is
+ * furthest from every edge. A pin that swallowed a neighbour's pole would
+ * make that neighbour genuinely unreachable, so half the distance to the
+ * nearest other pole is the ceiling. Because every pin obeys it, no two pins
+ * can overlap either: each is at most half the distance between them.
+ *
+ * A single radius for everyone cannot work. Andaman & Nicobar is 406 units
+ * from its nearest neighbour and can afford a pin eight times the size of
+ * Delhi's, which sits 32 units from Haryana's pole — and Andaman is exactly
+ * the territory a child cannot find, while Delhi is the one whose oversized
+ * pin was eating a quarter of Haryana.
+ */
+const slugs = Object.keys(places)
+for (const slug of slugs) {
+  let nearest = Infinity
+  for (const other of slugs) {
+    if (other === slug) continue
+    const dx = places[other].pin[0] - places[slug].pin[0]
+    const dy = places[other].pin[1] - places[slug].pin[1]
+    const d = Math.hypot(dx, dy)
+    if (d < nearest) nearest = d
+  }
+  places[slug].pinR = Math.round(Math.min(TARGET_PIN_R, nearest / 2) * 10) / 10
+}
+
 writeFileSync('src/data/hit.json', JSON.stringify({ places }))
 
 const visible = Object.values(geo.places).reduce((a, p) => a + p.d.length, 0)
@@ -244,5 +286,8 @@ const hits = Object.values(places).reduce((a, p) => a + p.d.length, 0)
 const points = Object.values(places).reduce((a, p) => a + (p.d.match(/,/g)?.length ?? 0), 0)
 console.log(`wrote src/data/hit.json — ${Object.keys(places).length} places, ${points} points`)
 console.log(`  hit geometry is ${((hits / visible) * 100).toFixed(1)}% of the visible geometry`)
-const tiny = Object.entries(places).filter(([, p]) => p.r < 22).map(([s]) => s)
-console.log(`  ${tiny.length} places smaller than a 22-unit pin: ${tiny.join(', ')}`)
+const tiny = Object.entries(places).filter(([, p]) => p.r < 22)
+console.log(`  ${tiny.length} places too small for a fingertip, with pin radii:`)
+for (const [slug, p] of tiny.sort((a, b) => b[1].pinR - a[1].pinR)) {
+  console.log(`    ${slug.padEnd(42)} room ${String(p.r).padStart(5)}  pin ${String(p.pinR).padStart(6)}`)
+}

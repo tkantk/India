@@ -90,9 +90,10 @@ describe('the hit geometry is actually usable', () => {
       expect(p.r, `${slug} has no inscribed radius`).toBeTypeOf('number')
       expect(p.r, `${slug}`).toBeGreaterThan(0)
     }
-    // The 22-unit pin radius falls in a real gap in the data: Manipur, the
-    // smallest place without a pin, has 20.9 units of room; Haryana, the
-    // largest with one, has 24.4. Nothing is borderline.
+    // The 22-unit eligibility threshold falls in a real gap in the data:
+    // Manipur, the LARGEST place that still gets a pin, has 20.9 units of
+    // room; Haryana, the SMALLEST that does not, has 24.4. Nothing is
+    // borderline. (`pinned` is `r < 22`, so small radius means pinned.)
     const radii = Object.values(hit.places).map((p) => p.r).sort((a, b) => a - b)
     expect(radii.filter((r) => r > 20.5 && r < 24)).toHaveLength(1)
   })
@@ -118,5 +119,67 @@ describe('the injected geometry', () => {
     for (const [slug, p] of Object.entries(hit.places)) {
       expect(PATH_ONLY.test(p.d), `hit.json: ${slug} has non-path characters`).toBe(true)
     }
+  })
+})
+
+// A single pin radius for all fourteen places cannot work: the two offshore
+// territories have hundreds of units of empty sea around them and are exactly
+// the ones a child cannot find, while Delhi and Chandigarh sit on top of their
+// neighbours' poles. These are the invariants that let each pin be as big as
+// its own surroundings allow.
+describe('per-place pin radii', () => {
+  const entries = Object.entries(hit.places)
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
+
+  it('gives every place a pin radius', () => {
+    for (const [slug, p] of entries) {
+      expect(p.pinR, `${slug} has no pin radius`).toBeTypeOf('number')
+      expect(p.pinR, `${slug}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('never lets a pin swallow another place´s pole', () => {
+    // A pole is a place's tap point of last resort. Covering one would make
+    // that place unreachable however carefully a child aimed.
+    for (const [slug, p] of entries) {
+      for (const [other, q] of entries) {
+        if (other === slug) continue
+        expect(dist(p.pin, q.pin), `${slug}'s pin covers ${other}'s pole`)
+          .toBeGreaterThanOrEqual(p.pinR)
+      }
+    }
+  })
+
+  it('never lets two pins overlap', () => {
+    // Falls out of the rule above, and is worth asserting separately because
+    // it is what makes the painting order of the pins irrelevant.
+    for (const [slug, p] of entries) {
+      for (const [other, q] of entries) {
+        if (other === slug) continue
+        expect(dist(p.pin, q.pin), `${slug} and ${other} have overlapping pins`)
+          .toBeGreaterThanOrEqual(p.pinR + q.pinR - 0.2) // 0.1 rounding, twice
+      }
+    }
+  })
+
+  it('always reaches past the shape it is standing in for', () => {
+    // If the pin were smaller than the place's own inscribed circle it would
+    // sit uselessly inside a shape that was already easier to hit.
+    for (const [slug, p] of entries.filter(([, q]) => q.r < 22)) {
+      expect(p.pinR, `${slug}'s pin is smaller than the place itself`).toBeGreaterThan(p.r)
+    }
+  })
+
+  it('gives the offshore territories a genuinely child-sized target', () => {
+    // Empty sea all around, and the two places a child is least able to find.
+    expect(hit.places['andaman-nicobar'].pinR).toBeGreaterThanOrEqual(100)
+    expect(hit.places.lakshadweep.pinR).toBeGreaterThanOrEqual(70)
+  })
+
+  it('holds Delhi and Chandigarh back, because their neighbours are underneath', () => {
+    // These two are why a uniform 22 was wrong in the other direction: it was
+    // taking a quarter of Haryana's interior.
+    expect(hit.places.delhi.pinR).toBeLessThan(22)
+    expect(hit.places.chandigarh.pinR).toBeLessThan(22)
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import { MapStage } from './MapStage'
 import { useMapNodes } from './useMapNodes'
 import type { MapApi } from './useMapNodes'
@@ -51,8 +51,14 @@ describe('useMapNodes', () => {
 
     // Ten states, the size of a real cue wave. If any of this went through
     // React state, the reconciler would walk 269 KB of path data ten times.
+    //
+    // The `act()` is what makes this assertion mean anything. Outside it, a
+    // scheduled render has not flushed by the time the next line runs, so a
+    // highlight built on useState would slip through untouched.
     const ten = Object.keys(geo.places).slice(0, 10)
-    for (const slug of ten) api.highlight(slug, true)
+    act(() => {
+      for (const slug of ten) api.highlight(slug, true)
+    })
 
     expect(renderCount()).toBe(before)
     for (const slug of ten) expect(lit(api, slug), `${slug} did not light`).toBe(true)
@@ -122,6 +128,44 @@ describe('useMapNodes', () => {
     vi.advanceTimersByTime(1000)
     expect(lit(second.api, 'haryana')).toBe(false)
     expect(lit(second.api, 'delhi')).toBe(false)
+  })
+
+  it('promotes the glow layer only while something is actually glowing', () => {
+    // The filter is what forces WebKit to composite this full-screen layer,
+    // about 12.6 MB on a 2048x1536 iPad. It must not be standing by.
+    const { view, api } = mount()
+    const layer = view.container.querySelector('svg.glow')!
+    expect(layer.classList.contains('on')).toBe(false)
+    api.highlight('rajasthan', true)
+    expect(layer.classList.contains('on')).toBe(true)
+    api.highlight('rajasthan', false)
+    expect(layer.classList.contains('on')).toBe(false)
+  })
+
+  it('leaves the glow out of a wave entirely', () => {
+    // Chasing 28 states with the glow would re-parse and re-blur a
+    // full-detail path 28 times in two seconds, on the main thread, during
+    // the busiest moment of the tour.
+    vi.useFakeTimers()
+    const { view, api } = mount()
+    const layer = view.container.querySelector('svg.glow')!
+    const glowPath = view.container.querySelector('.glow path')!
+
+    api.highlightMany(['punjab', 'haryana', 'delhi'], 50)
+    vi.advanceTimersByTime(500)
+
+    expect(lit(api, 'delhi'), 'the wave itself must still run').toBe(true)
+    expect(glowPath.getAttribute('d')).toBeNull()
+    expect(layer.classList.contains('on')).toBe(false)
+  })
+
+  it('drops a single state glow when a wave starts on top of it', () => {
+    vi.useFakeTimers()
+    const { view, api } = mount()
+    api.highlight('rajasthan', true)
+    api.highlightMany(['punjab', 'haryana'], 50)
+    expect(view.container.querySelector('.glow path')!.getAttribute('d')).toBeNull()
+    expect(view.container.querySelector('svg.glow')!.classList.contains('on')).toBe(false)
   })
 
   it('copies the lit path into the glow layer, and takes it away again', () => {

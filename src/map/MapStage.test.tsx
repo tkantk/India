@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MapStage } from './MapStage'
+import { MapStage, nearestPlace } from './MapStage'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
 
@@ -101,9 +102,88 @@ describe('MapStage', () => {
     expect(container.innerHTML).not.toContain('filter="url(')
   })
 
+  it('survives a tap on nothing in an environment with no SVG geometry', () => {
+    // jsdom implements no getScreenCTM, so the snap cannot run here. It must
+    // decline quietly rather than throw inside a pointerdown handler.
+    const { onPick, container } = mount()
+    const layer = container.querySelector('.hit')!
+    expect(() => layer.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }),
+    )).not.toThrow()
+    expect(onPick).not.toHaveBeenCalled()
+  })
+
+  it('never puts a CSS filter on an SVG child, and keeps drop-shadow last', () => {
+    // An SVG child is a LegacyRenderSVGModelObject — RenderElement, not
+    // RenderLayerModelObject — so it can never own a compositor layer, and a
+    // filter on one runs through WebKit's software three-pass box blur. Only
+    // the <svg> root, a replaced element, can composite it. Vitest does not
+    // process CSS, so this reads the stylesheet as the source of truth.
+    const css = readFileSync('src/map/map.css', 'utf8')
+    const rules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+      .filter(([, , body]) => /(^|[^-\w])filter\s*:/.test(body))
+
+    expect(rules.length, 'no filter rule at all — did the glow lose its shadow?')
+      .toBeGreaterThan(0)
+    for (const [, selector, body] of rules) {
+      expect(selector.trim(), 'a filter on an SVG child is a CPU blur')
+        .not.toMatch(/\b(path|circle|g|polygon|rect|line|ellipse)\b/)
+      const value = /(?:^|[^-\w])filter\s*:([^;]*)/.exec(body)![1].trim()
+      // `var()` is substitution, not a filter operation, so it does not count.
+      const ops = [...value.matchAll(/([a-z-]+)\(/g)]
+        .map((m) => m[1])
+        .filter((fn) => fn !== 'var')
+      expect(ops.at(-1), 'drop-shadow must be the LAST filter operation')
+        .toBe('drop-shadow')
+    }
+  })
+
   it('shows the CC BY 4.0 credit the map data legally requires', () => {
     mount()
     // Not behind a tap, a menu or a colophon page: on the map, always.
     expect(screen.getByText(geo.attribution)).toBeVisible()
+  })
+})
+
+/**
+ * The snapping half of the pick. jsdom implements no SVG coordinate API at
+ * all — no getScreenCTM, no createSVGPoint, no DOMMatrix — so the browser
+ * plumbing cannot be exercised here; this tests the geometry it feeds.
+ * Distances are viewBox units.
+ */
+describe('nearestPlace', () => {
+  it('finds nothing out in the open ocean', () => {
+    // A child who taps the empty sea meant to tap the empty sea. This point
+    // is in the deep Bay of Bengal, 255 units from the nearest coast — and
+    // 16.7% of the water inside the viewBox is that remote, so the ocean
+    // stays inert at any snap radius the map could reasonably use.
+    expect(nearestPlace(650, 1094, 157)).toBeNull()
+  })
+
+  it('finds the place a hair outside its own simplified outline', () => {
+    // Rajasthan's pole, nudged out past where its coarse outline can be.
+    const [x, y] = hit.places.rajasthan.pin
+    expect(nearestPlace(x, y, 130)).toBe('rajasthan')
+  })
+
+  it('recovers an island the simplifier dropped', () => {
+    // Andaman & Nicobar loses most of its 52 islands to the point budget, so
+    // a tap on one is a tap on nothing. It is also the territory a child is
+    // least able to find in the first place.
+    const [x, y] = geo.places['andaman-nicobar'].centroid
+    expect(nearestPlace(x, y, 130)).toBe('andaman-nicobar')
+  })
+
+  it('respects the reach it is given', () => {
+    const [x, y] = hit.places.lakshadweep.pin
+    expect(nearestPlace(x + 200, y, 130)).not.toBe('lakshadweep')
+    expect(nearestPlace(x + 5, y, 130)).toBe('lakshadweep')
+  })
+
+  it('never invents a place that is not on the map', () => {
+    for (const probe of [[0, 0], [999, 1099], [500, 550], [1, 1]]) {
+      const got = nearestPlace(probe[0], probe[1], 130)
+      if (got !== null) expect(slugs).toContain(got)
+    }
   })
 })

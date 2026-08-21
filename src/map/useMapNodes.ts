@@ -28,8 +28,16 @@ const STAGGER_MS = 70
 
 const LIT = 'lit'
 
+/** The class that turns the glow layer's filter on. See map.css. */
+const GLOWING = 'on'
+
 const nodes = new Map<string, SVGPathElement>()
-let glow: SVGPathElement | null = null
+/** The <svg class="glow"> root — the element that carries the filter. */
+let glowLayer: SVGSVGElement | null = null
+/** The single <path> inside it that carries the geometry. */
+let glowPath: SVGPathElement | null = null
+/** Whose geometry the glow is currently showing, if anyone's. */
+let glowSlug: string | null = null
 let wave: ReturnType<typeof setTimeout>[] = []
 
 function stopWave() {
@@ -37,42 +45,70 @@ function stopWave() {
   wave = []
 }
 
-function highlight(slug: string, on: boolean) {
+/** The class toggle, with no glow attached. */
+function setLit(slug: string, on: boolean): SVGPathElement | null {
   const node = nodes.get(slug)
   // Cues carry authored arguments; a typo in the content must not end a
   // child's tour, so an unknown slug is simply nothing happening.
-  if (!node) return
+  if (!node) return null
   node.classList.toggle(LIT, on)
+  return node
+}
 
-  // The glow layer holds one copy of the lit path. Copying the geometry costs
-  // a single attribute write; the alternative — a CSS drop-shadow on the
-  // visible path itself — would put a filter on a layer WebKit repaints for
-  // every other state too. It is absent in cheap mode (Task 6).
-  if (!glow) return
-  if (on) {
-    glow.setAttribute('d', node.getAttribute('d') ?? '')
-    glow.dataset.slug = slug
-  } else if (glow.dataset.slug === slug) {
-    glow.removeAttribute('d')
-    delete glow.dataset.slug
+/**
+ * Show the glow around one state, or take it away.
+ *
+ * The `on` class is what puts `filter: drop-shadow()` on the glow layer, and
+ * it is added and removed rather than left in place: a filter forces WebKit to
+ * composite the element it sits on, and this one is full-screen — about
+ * 12.6 MB on a 2048x1536 iPad, which WebKit will drop tiles from under memory
+ * pressure. The layer only exists while something is actually glowing.
+ *
+ * Both references are null in cheap mode, where Task 6 does not render the
+ * glow layer at all, so every call here is a no-op.
+ */
+function showGlow(node: SVGPathElement | null, slug: string | null) {
+  if (!glowPath || !glowLayer) return
+  if (node && slug) {
+    glowPath.setAttribute('d', node.getAttribute('d') ?? '')
+    glowLayer.classList.add(GLOWING)
+    glowSlug = slug
+  } else {
+    glowPath.removeAttribute('d')
+    glowLayer.classList.remove(GLOWING)
+    glowSlug = null
   }
 }
 
+function highlight(slug: string, on: boolean) {
+  const node = setLit(slug, on)
+  if (!node) return
+  if (on) showGlow(node, slug)
+  else if (glowSlug === slug) showGlow(null, null)
+}
+
+/**
+ * A staggered wave, with no glow.
+ *
+ * The glow is single-selection emphasis. Carrying it through a wave would
+ * rewrite the layer's geometry once per state — 28 times in two seconds,
+ * each one a full-detail visible path (22,038 characters for Madhya Pradesh)
+ * re-parsed and re-blurred on the main thread, during the busiest moment of
+ * the tour. It is dropped, not chased.
+ */
 function highlightMany(slugs: string[], staggerMs = STAGGER_MS) {
   stopWave()
+  showGlow(null, null)
   slugs.forEach((slug, i) => {
-    if (i === 0 || staggerMs <= 0) highlight(slug, true)
-    else wave.push(setTimeout(() => highlight(slug, true), i * staggerMs))
+    if (i === 0 || staggerMs <= 0) setLit(slug, true)
+    else wave.push(setTimeout(() => setLit(slug, true), i * staggerMs))
   })
 }
 
 function clear() {
   stopWave()
   for (const node of nodes.values()) node.classList.remove(LIT)
-  if (glow) {
-    glow.removeAttribute('d')
-    delete glow.dataset.slug
-  }
+  showGlow(null, null)
 }
 
 const api: MapApi = { nodes, highlight, highlightMany, clear }
@@ -87,12 +123,15 @@ const api: MapApi = { nodes, highlight, highlightMany, clear }
 export function bindMapNodes(root: Element | null): void {
   stopWave()
   nodes.clear()
-  glow = null
+  glowLayer = null
+  glowPath = null
+  glowSlug = null
   if (!root) return
   for (const node of root.querySelectorAll<SVGPathElement>('.base path[data-slug]')) {
     nodes.set(node.dataset.slug!, node)
   }
-  glow = root.querySelector<SVGPathElement>('.glow path')
+  glowLayer = root.querySelector<SVGSVGElement>('svg.glow')
+  glowPath = root.querySelector<SVGPathElement>('.glow path')
 }
 
 /** The map's public surface. Stable for the life of the app — it never

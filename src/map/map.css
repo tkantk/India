@@ -67,20 +67,34 @@
 
 .map .hit > * { pointer-events: fill; }
 
-/* Layer 3 — the glow around whichever state is lit. */
+/* Layer 3 — the glow around whichever state is lit.
+
+   The filter goes on the <svg> ROOT, not on the path inside it, and this is
+   the whole point of the layer existing. An SVG child is a
+   LegacyRenderSVGModelObject, which derives from RenderElement and can never
+   own a compositor layer — so a drop-shadow on the path would be run by
+   WebKit's software filter path: exactly the CPU three-pass box blur this
+   architecture exists to avoid. The <svg> root is a replaced element, a
+   RenderLayerModelObject, and can composite the blur instead.
+
+   The filter is attached by the `on` class rather than left in place: a
+   filter forces that composited layer into existence, and a full-screen one
+   costs about 12.6 MB on a 2048x1536 iPad. useMapNodes adds the class when a
+   state starts glowing and removes it when the glow goes away, so the layer
+   exists only while it is doing something. */
 .map .glow { pointer-events: none; }
+
+.map .glow.on {
+  /* drop-shadow must be the LAST filter operation or WebKit refuses to
+     composite it. Here it is the only one, and it must stay that way. */
+  filter: drop-shadow(0 0 7px var(--lit-state));
+}
 
 .map .glow > path {
   fill: none;
   stroke: var(--lit-state);
   stroke-width: 3;
   stroke-linejoin: round;
-  /* A CSS drop-shadow(), never an SVG <filter>: WebKit blurs SVG filters on
-     the CPU in three box-blur passes, and feDropShadow has been a known
-     performance cliff since 2012. drop-shadow must also be the LAST filter
-     operation in the list or WebKit refuses to composite it — here it is the
-     only one, and it must stay that way. */
-  filter: drop-shadow(0 0 7px var(--lit-state));
 }
 
 /* The DataMeet boundaries are CC BY 4.0, which obliges us to credit them
