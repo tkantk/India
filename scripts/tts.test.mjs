@@ -7,6 +7,11 @@ import { join } from 'node:path'
 const FIXTURE = 'content/places/testland.json'
 const line = (id, kind, text, cues) => ({ id, kind, text, ...(cues ? { cues } : {}) })
 
+// The whole suite drives the real say -> afconvert pipeline, both of which
+// are macOS-only, and CI runs on ubuntu-latest. Without this guard the first
+// push to main fails the build job and the site never deploys.
+const MACOS = process.platform === 'darwin'
+
 // Runs the real pipeline (say -> afconvert -> timings), but writes to a
 // scratch directory rather than the tracked public/audio/en and
 // src/data/timings.json. tts.mjs's --audio-dir/--timings/--cache flags exist
@@ -17,39 +22,39 @@ const AUDIO_DIR = join(dir, 'audio')
 const TIMINGS = join(dir, 'timings.json')
 const CACHE = join(dir, 'cache.json')
 
-beforeAll(() => {
-  mkdirSync('content/places', { recursive: true })
-  writeFileSync(FIXTURE, JSON.stringify({
-    id: 'testland', name: 'Testland', type: 'state', capital: 'Testpur', ambience: 'plains',
-    intro: line('testland.intro', 'intro', 'Testland is a friendly place with one big tiger.',
-                [{ word: 7, do: 'playSfx', arg: 'tiger-growl' }]),
-    card: {
-      animal: line('testland.card.animal', 'card', 'The tiger lives here.'),
-      food: line('testland.card.food', 'card', 'People eat rice.'),
-      festival: line('testland.card.festival', 'card', 'They dance in spring.'),
-      hello: line('testland.card.hello', 'card', 'People say hello.'),
-    },
-    landmarks: Array.from({ length: 5 }, (_, i) => ({
-      id: `testland.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
-      line: line(`testland.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
-    })),
-  }))
-  execFileSync('node', [
-    'scripts/tts.mjs',
-    '--provider=say',
-    '--only=testland',
-    `--audio-dir=${AUDIO_DIR}`,
-    `--timings=${TIMINGS}`,
-    `--cache=${CACHE}`,
-  ], { stdio: 'inherit' })
-})
+describe.skipIf(!MACOS)('tts pipeline with the draft voice', () => {
+  beforeAll(() => {
+    mkdirSync('content/places', { recursive: true })
+    writeFileSync(FIXTURE, JSON.stringify({
+      id: 'testland', name: 'Testland', type: 'state', capital: 'Testpur', ambience: 'plains',
+      intro: line('testland.intro', 'intro', 'Testland is a friendly place with one big tiger.',
+                  [{ word: 7, do: 'playSfx', arg: 'tiger-growl' }]),
+      card: {
+        animal: line('testland.card.animal', 'card', 'The tiger lives here.'),
+        food: line('testland.card.food', 'card', 'People eat rice.'),
+        festival: line('testland.card.festival', 'card', 'They dance in spring.'),
+        hello: line('testland.card.hello', 'card', 'People say hello.'),
+      },
+      landmarks: Array.from({ length: 5 }, (_, i) => ({
+        id: `testland.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+        line: line(`testland.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+      })),
+    }))
+    execFileSync('node', [
+      'scripts/tts.mjs',
+      '--provider=say',
+      '--only=testland',
+      `--audio-dir=${AUDIO_DIR}`,
+      `--timings=${TIMINGS}`,
+      `--cache=${CACHE}`,
+    ], { stdio: 'inherit' })
+  })
 
-afterAll(() => {
-  rmSync(FIXTURE, { force: true })
-  rmSync(dir, { recursive: true, force: true })
-})
+  afterAll(() => {
+    rmSync(FIXTURE, { force: true })
+    rmSync(dir, { recursive: true, force: true })
+  })
 
-describe('tts pipeline with the draft voice', () => {
   const timings = () => JSON.parse(readFileSync(TIMINGS, 'utf8'))
 
   it('produces an audio file for every line', () => {
@@ -91,7 +96,7 @@ describe('tts pipeline with the draft voice', () => {
 // relies on, or a partial re-render silently deletes every other place's
 // entry from timings.json. Uses its own scratch dir and its own two-place
 // fixture pair so it doesn't interfere with the single-fixture suite above.
-describe('cache reuse, --only, and --force semantics', () => {
+describe.skipIf(!MACOS)('cache reuse, --only, and --force semantics', () => {
   const dir2 = mkdtempSync(join(tmpdir(), 'tts-test2-'))
   const AUDIO2 = join(dir2, 'audio')
   const TIMINGS2 = join(dir2, 'timings.json')

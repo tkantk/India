@@ -10,11 +10,18 @@ const long = join(dir, 'long.wav')
 const short = join(dir, 'short.wav')
 const quiet = join(dir, 'quiet.wav')
 
-beforeAll(() => {
-  // A 5-second constant-amplitude tone: long enough to need trimming down
-  // to a one-shot length, with no built-in envelope of its own so any fade
-  // we see at the tail is provably ours, not the source's.
-  execFileSync('python3', ['-c', `
+// python3 + numpy are not on the ubuntu-latest CI runner, and `probe()`
+// shells out to macOS-only afinfo. Without this guard the first push to main
+// fails the build job and the site never deploys. The fixture hook lives
+// inside the guarded describe so a skipped suite spawns no python either.
+const MACOS = process.platform === 'darwin'
+
+describe.skipIf(!MACOS)('trim.py', () => {
+  beforeAll(() => {
+    // A 5-second constant-amplitude tone: long enough to need trimming down
+    // to a one-shot length, with no built-in envelope of its own so any fade
+    // we see at the tail is provably ours, not the source's.
+    execFileSync('python3', ['-c', `
 import numpy as np, wave
 sr, n = 44100, 44100*5
 t = np.arange(n)/sr
@@ -23,8 +30,8 @@ w = wave.open(${JSON.stringify(long)}, 'wb'); w.setnchannels(1); w.setsampwidth(
 w.writeframes(x.tobytes()); w.close()
 `])
 
-  // A 1-second tone, shorter than any maxSeconds we will ask for.
-  execFileSync('python3', ['-c', `
+    // A 1-second tone, shorter than any maxSeconds we will ask for.
+    execFileSync('python3', ['-c', `
 import numpy as np, wave
 sr, n = 44100, 44100*1
 t = np.arange(n)/sr
@@ -33,8 +40,8 @@ w = wave.open(${JSON.stringify(short)}, 'wb'); w.setnchannels(1); w.setsampwidth
 w.writeframes(x.tobytes()); w.close()
 `])
 
-  // A quiet 5-second tone, to prove peak normalisation actually raises it.
-  execFileSync('python3', ['-c', `
+    // A quiet 5-second tone, to prove peak normalisation actually raises it.
+    execFileSync('python3', ['-c', `
 import numpy as np, wave
 sr, n = 44100, 44100*5
 t = np.arange(n)/sr
@@ -42,9 +49,8 @@ x = (0.01*np.sin(2*np.pi*440*t)*32767).astype('<i2')
 w = wave.open(${JSON.stringify(quiet)}, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr)
 w.writeframes(x.tobytes()); w.close()
 `])
-})
+  })
 
-describe('trim.py', () => {
   it('cuts a long source to exactly the requested length', () => {
     const out = join(dir, 'cut.wav')
     execFileSync('python3', ['scripts/lib/trim.py', long, out, '2'])

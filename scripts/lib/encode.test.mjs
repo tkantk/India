@@ -8,11 +8,17 @@ import { toMonoWav, toM4a, durationOf, probe } from './encode.mjs'
 const dir = mkdtempSync(join(tmpdir(), 'encode-'))
 const spoken = join(dir, 'spoken.aiff')
 
-beforeAll(() => {
-  execFileSync('say', ['-v', 'Tara', '-r', '130', '-o', spoken, 'Hello little one, this is India.'])
-})
+// `say` and `afconvert` are macOS-only, and CI runs the whole suite on
+// ubuntu-latest. Without this guard the first push to main fails the build
+// job on a missing binary and the site never deploys. The hooks live inside
+// the guarded describe so a skipped suite runs no `say` either.
+const MACOS = process.platform === 'darwin'
 
-describe('encode', () => {
+describe.skipIf(!MACOS)('encode', () => {
+  beforeAll(() => {
+    execFileSync('say', ['-v', 'Tara', '-r', '130', '-o', spoken, 'Hello little one, this is India.'])
+  })
+
   it('converts to 16-bit mono 44.1 kHz PCM', () => {
     const wav = join(dir, 'mono.wav')
     toMonoWav(spoken, wav)

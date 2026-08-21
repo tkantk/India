@@ -8,10 +8,17 @@ import { probe } from './encode.mjs'
 const dir = mkdtempSync(join(tmpdir(), 'loop-'))
 const source = join(dir, 'src.wav')
 
-beforeAll(() => {
-  // A 20-second tone that fades in and out: the worst case for a naive
-  // hard-cut loop, because the head and tail levels differ enormously.
-  execFileSync('python3', ['-c', `
+// python3 + numpy are not on the ubuntu-latest CI runner, and `probe()`
+// shells out to macOS-only afinfo. Without this guard the first push to main
+// fails the build job and the site never deploys. The fixture hook lives
+// inside the guarded describe so a skipped suite spawns no python either.
+const MACOS = process.platform === 'darwin'
+
+describe.skipIf(!MACOS)('loop.py', () => {
+  beforeAll(() => {
+    // A 20-second tone that fades in and out: the worst case for a naive
+    // hard-cut loop, because the head and tail levels differ enormously.
+    execFileSync('python3', ['-c', `
 import numpy as np, wave
 sr, n = 44100, 44100*20
 t = np.arange(n)/sr
@@ -20,9 +27,8 @@ x = (0.4*np.sin(2*np.pi*220*t)*env*32767).astype('<i2')
 w = wave.open(${JSON.stringify(source)}, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr)
 w.writeframes(x.tobytes()); w.close()
 `])
-})
+  })
 
-describe('loop.py', () => {
   it('produces a file of exactly the requested length', () => {
     const out = join(dir, 'loop.wav')
     execFileSync('python3', ['scripts/lib/loop.py', source, out, '12', '3'])
