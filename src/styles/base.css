@@ -1,0 +1,63 @@
+:root {
+  /* 2cm on a 264ppi iPad. Nielsen Norman Group's figure for under-nines,
+     four times the adult recommendation. Apple's 44pt is 8.5mm here. */
+  --tap: 104px;
+  /* The system edge back-swipe cannot be intercepted from a web page. */
+  --gutter: 28px;
+  --text: 24px;
+
+  --ink: #12241c;
+  --paper: #fdf8ef;
+  --deep: #0b3d2e;
+  --saffron: #f0851f;
+  --gold: #ffd400;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  /* This, not overscroll-behavior, is what stops the rubber-band bounce.
+     WebKit's overscroll-behavior has no effect on a container with no
+     scrollable overflow, which is exactly this page. */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 var(--text)/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+
+  padding:
+    max(0px, env(safe-area-inset-top))
+    max(var(--gutter), env(safe-area-inset-right))
+    max(0px, env(safe-area-inset-bottom))
+    max(var(--gutter), env(safe-area-inset-left));
+}
+
+/* Every interactive thing. The visible art may be smaller than this box. */
+.tap {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  font: inherit;
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The tapped-state highlight stays — WCAG's "essential" clause covers
+     animation that carries the information. Camera flights and parallax go. */
+  .decorative-motion { animation: none !important; transition: none !important; }
+}
