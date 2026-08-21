@@ -191,8 +191,16 @@ try {
     }
   }))
 } finally {
-  rmSync(tmp, { recursive: true, force: true })
+  // persist() must run first and must not be skippable: every line that
+  // reached renderLine is already paid for, so if cleaning up the scratch
+  // directory throws (a locked file, a permissions problem, an interrupted
+  // filesystem) that must never take the billing bookkeeping down with it.
   written = persist()
+  try {
+    rmSync(tmp, { recursive: true, force: true })
+  } catch (err) {
+    console.error(`\n  warning: could not remove temp directory ${tmp}: ${err.message}`)
+  }
 }
 
 const seconds = Object.values(written).reduce((a, t) => a + t.duration, 0)

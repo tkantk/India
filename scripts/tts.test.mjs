@@ -380,3 +380,118 @@ export async function synth(text, { tmpDir, id }) {
     }
   }, 60_000)
 })
+
+// The ordering fix: persist() must run before the temp-directory cleanup,
+// and the cleanup must not be able to stop it. Provoked with a real
+// filesystem failure — chflags uchg (BSD "user immutable") on the scratch
+// directory tts.mjs creates for itself — rather than a mock, so this
+// exercises the actual rmSync(tmp, { recursive: true, force: true }) call in
+// tts.mjs, not a stand-in for it. force:true only swallows an already-missing
+// path; it does nothing for a real permission error, which is the point.
+describe.skipIf(!MACOS)('a cleanup failure must not lose the persisted state', () => {
+  const WORK4 = mkdtempSync(join(tmpdir(), 'tts-cleanup-work-'))
+  const OUT4 = mkdtempSync(join(tmpdir(), 'tts-cleanup-out-'))
+  const AUDIO4 = join(OUT4, 'audio')
+  const TIMINGS4 = join(OUT4, 'timings.json')
+  const CACHE4 = join(OUT4, 'cache.json')
+  const SCRIPT4 = join(process.cwd(), 'scripts/tts.mjs')
+  const STUB4 = join(WORK4, 'stub-provider.mjs')
+  // The stub records tts.mjs's own scratch directory here so afterAll can
+  // find and un-poison it — tts.mjs's cleanup is expected to fail on
+  // purpose, so nothing else removes it.
+  const TMP_RECORD = join(WORK4, 'poisoned-tmp-path.txt')
+
+  const PLACE = 'poisonland'
+  const ORDER = [
+    `${PLACE}.intro`, `${PLACE}.card.animal`, `${PLACE}.card.food`,
+    `${PLACE}.card.festival`, `${PLACE}.card.hello`,
+    ...Array.from({ length: 5 }, (_, i) => `${PLACE}.lm${i}.line`),
+  ]
+  const FAIL_AT = 4                       // 1-based: the fourth line synthesised
+  const DONE_IDS = ORDER.slice(0, FAIL_AT - 1)
+
+  const place = (id) => ({
+    id, name: id, type: 'state', capital: 'Poisonpur', ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} is a place where cleanup itself will fail.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  // On the FAIL_AT call, poisons tts.mjs's own tmpDir (chflags uchg blocks
+  // adding/removing entries in a directory, without needing root) and then
+  // throws, so the same call both stops the render loop AND dooms the
+  // rmSync(tmp, ...) cleanup that runs afterwards.
+  const stubSource = `
+import { execFileSync } from 'node:child_process'
+import { join } from 'node:path'
+import { writeFileSync } from 'node:fs'
+export const name = 'stub'
+export const signature = () => 'stub:v1'
+let calls = 0
+export async function synth(text, { tmpDir, id }) {
+  calls++
+  writeFileSync(${JSON.stringify(TMP_RECORD)}, tmpDir)
+  if (calls === ${FAIL_AT}) {
+    execFileSync('chflags', ['uchg', tmpDir])
+    throw new Error(\`stub provider failed on purpose at call \${calls} ("\${id}")\`)
+  }
+  const out = join(tmpDir, \`\${id}.aiff\`)
+  execFileSync('say', ['-v', 'Tara', '-r', '130', '-o', out, text])
+  return { audioPath: out, alignment: null }
+}
+`
+
+  beforeAll(() => {
+    mkdirSync(join(WORK4, 'content/places'), { recursive: true })
+    writeFileSync(join(WORK4, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
+    writeFileSync(STUB4, stubSource)
+  })
+
+  afterAll(() => {
+    // tts.mjs's cleanup failed on purpose, so the poisoned directory it left
+    // behind is still there and still immutable — un-poison it by hand so
+    // this suite doesn't leak a stuck directory into the real OS temp folder.
+    if (existsSync(TMP_RECORD)) {
+      const poisoned = readFileSync(TMP_RECORD, 'utf8')
+      if (existsSync(poisoned)) {
+        execFileSync('chflags', ['nouchg', poisoned])
+        rmSync(poisoned, { recursive: true, force: true })
+      }
+    }
+    rmSync(WORK4, { recursive: true, force: true })
+    rmSync(OUT4, { recursive: true, force: true })
+  })
+
+  it('still persists every already-rendered line to timings.json and the cache, even though cleanup itself throws', () => {
+    const args = [SCRIPT4, `--provider=${STUB4}`,
+      `--audio-dir=${AUDIO4}`, `--timings=${TIMINGS4}`, `--cache=${CACHE4}`]
+    let result
+    try {
+      result = { code: 0, output: execFileSync('node', args, { encoding: 'utf8', cwd: WORK4, stdio: 'pipe' }) }
+    } catch (e) {
+      result = { code: e.status, output: `${e.stdout ?? ''}${e.stderr ?? ''}` }
+    }
+
+    expect(result.code, 'a failed render must not exit 0').not.toBe(0)
+    // Proves the cleanup itself is the thing that broke, not just the render.
+    expect(result.output).toContain('could not remove temp directory')
+
+    expect(existsSync(TIMINGS4), 'timings.json was never written — persist() was skipped').toBe(true)
+    expect(existsSync(CACHE4), 'the render cache was never written — persist() was skipped').toBe(true)
+
+    const timings = JSON.parse(readFileSync(TIMINGS4, 'utf8'))
+    const cache = JSON.parse(readFileSync(CACHE4, 'utf8'))
+    for (const id of DONE_IDS) {
+      expect(Object.keys(timings), `${id} was rendered but its bookkeeping was lost`).toContain(id)
+      expect(Object.keys(cache), `${id} is not cached — it will be re-rendered and re-billed`).toContain(id)
+    }
+  }, 60_000)
+})
