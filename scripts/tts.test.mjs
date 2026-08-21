@@ -4,7 +4,6 @@ import { mkdirSync, mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const FIXTURE = 'content/places/testland.json'
 const line = (id, kind, text, cues) => ({ id, kind, text, ...(cues ? { cues } : {}) })
 
 // The whole suite drives the real say -> afconvert pipeline, both of which
@@ -12,19 +11,24 @@ const line = (id, kind, text, cues) => ({ id, kind, text, ...(cues ? { cues } : 
 // push to main fails the build job and the site never deploys.
 const MACOS = process.platform === 'darwin'
 
-// Runs the real pipeline (say -> afconvert -> timings), but writes to a
-// scratch directory rather than the tracked public/audio/en and
-// src/data/timings.json. tts.mjs's --audio-dir/--timings/--cache flags exist
-// for exactly this: without them, running this suite would leave a
-// "testland" clip and timings entry committed alongside real content.
+// Runs the real pipeline (say -> afconvert -> timings), but reads and writes
+// entirely inside scratch directories. tts.mjs's --audio-dir/--timings/--cache
+// flags exist for exactly this: without them, running this suite would leave a
+// "testland" clip and timings entry committed alongside real content. The
+// fixture place goes in a scratch workspace for the same reason — written into
+// the tracked content/places, an interrupted run leaves a stray testland.json
+// behind, and an unscoped run would pick it up.
 const dir = mkdtempSync(join(tmpdir(), 'tts-test-'))
 const AUDIO_DIR = join(dir, 'audio')
 const TIMINGS = join(dir, 'timings.json')
 const CACHE = join(dir, 'cache.json')
+const WORK1 = mkdtempSync(join(tmpdir(), 'tts-test-work-'))
+const FIXTURE = join(WORK1, 'content/places/testland.json')
+const SCRIPT1 = join(process.cwd(), 'scripts/tts.mjs')
 
 describe.skipIf(!MACOS)('tts pipeline with the draft voice', () => {
   beforeAll(() => {
-    mkdirSync('content/places', { recursive: true })
+    mkdirSync(join(WORK1, 'content/places'), { recursive: true })
     writeFileSync(FIXTURE, JSON.stringify({
       id: 'testland', name: 'Testland', type: 'state', capital: 'Testpur', ambience: 'plains',
       intro: line('testland.intro', 'intro', 'Testland is a friendly place with one big tiger.',
@@ -41,17 +45,17 @@ describe.skipIf(!MACOS)('tts pipeline with the draft voice', () => {
       })),
     }))
     execFileSync('node', [
-      'scripts/tts.mjs',
+      SCRIPT1,
       '--provider=say',
       '--only=testland',
       `--audio-dir=${AUDIO_DIR}`,
       `--timings=${TIMINGS}`,
       `--cache=${CACHE}`,
-    ], { stdio: 'inherit' })
+    ], { stdio: 'inherit', cwd: WORK1 })
   })
 
   afterAll(() => {
-    rmSync(FIXTURE, { force: true })
+    rmSync(WORK1, { recursive: true, force: true })
     rmSync(dir, { recursive: true, force: true })
   })
 

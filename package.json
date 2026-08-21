@@ -13,6 +13,7 @@
     "tts:draft": "node scripts/tts.mjs --provider=say",
     "tts:final": "node scripts/tts.mjs --provider=elevenlabs",
     "fetch:photos": "node scripts/fetch-photos.mjs",
+    "contact-sheet": "node scripts/contact-sheet.mjs",
     "fetch:sounds": "node scripts/fetch-sounds.mjs"
   },
   "dependencies": {
