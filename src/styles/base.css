@@ -11,6 +11,10 @@
   --deep: #0b3d2e;
   --saffron: #f0851f;
   --gold: #ffd400;
+  /* Pale gold, for the word being spoken right now. A background box reads
+     calmly next to a page of text; recolouring the ink itself would risk
+     dropping below AAA. --ink on this is ~13.4:1, comfortably past 7:1. */
+  --highlight: #ffe8a3;
 }
 
 * { box-sizing: border-box; }
@@ -54,6 +58,19 @@ body {
   touch-action: manipulation;
   font: inherit;
   color: inherit;
+}
+
+/* ReadAlong: the sentence a child follows along while it is narrated. */
+.read-along {
+  margin: 0;
+  font-size: var(--text);
+}
+
+.word[data-current] {
+  background: var(--highlight);
+  border-radius: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 @media (prefers-reduced-motion: reduce) {
