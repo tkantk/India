@@ -61,12 +61,9 @@
   white-space: normal;
 }
 
-/* Stuck: the bar replaces itself with one full-width way out. */
-.controls--stuck {
-  padding-left: max(var(--gutter), env(safe-area-inset-left));
-  padding-right: max(var(--gutter), env(safe-area-inset-right));
-}
-
+/* Stuck: the bar replaces itself with one full-width way out. It always
+   carries the .controls class alongside .controls--stuck, so it already has
+   .controls's safe-area padding — nothing stuck-specific to add here yet. */
 .controls .carry-on {
   width: 100%;
   min-height: var(--tap);

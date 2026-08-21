@@ -1,13 +1,7 @@
 import { useState, useSyncExternalStore } from 'react'
-import { useInRouterContext, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getNarrator } from '../audio/Narrator'
 import './Controls.css'
-
-/** No-op subscription used only when the engine has no `subscribe` to give
- *  us (the unit-test double keeps `playing`/`stuck` as plain fields). The
- *  real `Narrator` always has one, so production always gets the reactive
- *  path. */
-const NO_SUBSCRIBE = () => () => {}
 
 /**
  * The five things a child can always reach: play/pause, say it again,
@@ -23,22 +17,16 @@ const NO_SUBSCRIBE = () => () => {}
  */
 export function Controls() {
   const n = getNarrator()
-  const subscribe = n.subscribe ?? NO_SUBSCRIBE
-  const playing = useSyncExternalStore(subscribe, () => n.playing)
-  const stuck = useSyncExternalStore(subscribe, () => n.stuck)
+  const playing = useSyncExternalStore(n.subscribe, () => n.playing)
+  const stuck = useSyncExternalStore(n.subscribe, () => n.stuck)
 
   const [slow, setSlow] = useState(false)
   const [muted, setMuted] = useState(false)
 
-  // useNavigate() throws when rendered outside a <Router>. Production
-  // always has one (main.tsx wraps <App /> in <HashRouter>); this only
-  // matters so Controls can also be mounted on its own, e.g. in isolation.
-  const inRouter = useInRouterContext()
-  const routerNavigate = inRouter ? useNavigate() : null
-  const goHome = () => {
-    if (routerNavigate) routerNavigate('/')
-    else window.location.hash = '#/'
-  }
+  // Always inside a Router in production (main.tsx wraps <App /> in
+  // <HashRouter>) and in the test double (MemoryRouter).
+  const navigate = useNavigate()
+  const goHome = () => navigate('/')
 
   // On iOS an AudioContext can stick in "interrupted" through a phone call
   // or Siri and never come back (WebKit bug 263627). There is no other way
