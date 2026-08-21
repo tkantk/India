@@ -26,6 +26,12 @@ const SLOWEST = 0.8
  *  compressed size and exhausting memory kills the tab with no catchable
  *  error. */
 const MAX_DECODED = 2
+/** How long the ambient bed stays ducked after a line ends, waiting to see
+ *  whether another one follows. Fourteen tour beats run back to back, and a
+ *  bed that swelled and sank between every sentence would be the loudest
+ *  thing in the room. Long enough to bridge a beat change, short enough that
+ *  a real silence gets its birdsong back within about a second. */
+const SETTLE_MS = 1200
 
 /** `sound-credits.json` is the manifest of the sounds that actually exist.
  *  Content references five that do not (`tiger-growl`, `camel`,
@@ -82,6 +88,8 @@ export class Narrator {
   private effects = new Map<string, AudioBuffer | null>()
   private ambientName: string | null = null
   private stuckFlag = false
+  /** Pending "let the bed back up" from settle(). */
+  private settleTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(ctx: AudioContext) {
     this.ctx = ctx
@@ -130,6 +138,7 @@ export class Narrator {
       const s = this.ctx.createBufferSource()
       s.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate)
       s.connect(this.ctx.destination)
+      s.onended = () => { try { s.disconnect() } catch { /* gone already */ } }
       s.start(0)
     } catch { /* fall through: resumeContext reports whether we are usable */ }
 
@@ -150,8 +159,16 @@ export class Narrator {
     return ok
   }
 
-  /** True when the context could not be resumed. Controls turns this into a
-   *  full-width "Tap to carry on", because there is no other way out. */
+  /**
+   * True when the context could not be resumed. Controls turns this into a
+   * full-width "Tap to carry on", because there is no other way out.
+   *
+   * It is reactive: every change goes through setStuck, which emits. Read it
+   * as `useSyncExternalStore(n.subscribe, () => n.stuck)` — a primitive
+   * selector, so React compares it correctly. Do not poll it after awaiting
+   * resumeContext() instead: the visibilitychange path flips it with no user
+   * action at all, and a poll would never see that.
+   */
   get stuck(): boolean { return this.stuckFlag }
 
   private onStateChange = () => {
@@ -183,9 +200,11 @@ export class Narrator {
 
     await this.resumeContext()
     const buffer = await this.load(clip)
-    // A newer play() landed while we were decoding; that one owns the engine.
+    // A newer play() landed while we were decoding; that one owns the engine,
+    // including the bed.
     if (this.clip !== clip) return
-    if (!buffer) return
+    // Nothing is going to speak, so nothing may stay ducked for it.
+    if (!buffer) { this.unduck(); return }
 
     this.buffer = buffer
     this.duck()
@@ -228,10 +247,12 @@ export class Narrator {
     const next = Math.min(1, Math.max(SLOWEST, rate))
     if (next === this.rate) return
     const at = this.position
-    this.rate = next
-    if (!this.src) { this.offset = at; return }
+    if (!this.src) { this.rate = next; this.offset = at; return }
     // One-shot node: a rate change is a fresh node from the same position.
+    // The new rate lands only after stopSource(), which recomputes the offset
+    // off the clock and would otherwise read it back at the wrong rate.
     this.stopSource()
+    this.rate = next
     this.startFrom(at)
     this.tick()
   }
@@ -249,6 +270,8 @@ export class Narrator {
    *  back down between them. */
   private teardown() {
     this.stopSource()
+    // A line is on its way in; the bed must not rise between the two.
+    this.cancelSettle()
     this.clip = null
     this.buffer = null
     this.cues = []
@@ -289,7 +312,8 @@ export class Narrator {
     const clip = this.clip
     this.stopSource()
     if (clip) this.offset = clip.duration
-    this.unduck()
+    // Not unduck(): the tour's next beat is usually milliseconds away.
+    this.settle()
     this.curWord = -1
     this.emit()
     this.onEnd?.()
@@ -408,8 +432,25 @@ export class Narrator {
    * explicit that volume "is not settable in JavaScript. Reading the volume
    * property always returns 1."
    */
-  private duck() { this.ramp(this.amb.gain, DUCK) }
-  private unduck() { this.ramp(this.amb.gain, FULL) }
+  private duck() { this.cancelSettle(); this.ramp(this.amb.gain, DUCK) }
+  private unduck() { this.cancelSettle(); this.ramp(this.amb.gain, FULL) }
+
+  /** Let the bed back up, but only once we are sure nothing follows. Any
+   *  duck() — a new line, a resume, a replay — cancels the pending rise, so a
+   *  continuous sequence holds one steady level from first word to last. */
+  private settle() {
+    this.cancelSettle()
+    this.settleTimer = setTimeout(() => {
+      this.settleTimer = null
+      this.unduck()
+    }, SETTLE_MS)
+  }
+
+  private cancelSettle() {
+    if (this.settleTimer === null) return
+    clearTimeout(this.settleTimer)
+    this.settleTimer = null
+  }
 
   /** 0..1. The child's sound button; also the mute toggle. */
   setVolume(v: number): void {
