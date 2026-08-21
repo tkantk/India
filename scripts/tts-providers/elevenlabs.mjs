@@ -22,8 +22,20 @@ export const signature = () =>
   `elevenlabs:${voiceId()}:${MODEL}:${FORMAT}:${JSON.stringify(SETTINGS)}`
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
+
 let spent = 0
-export const charactersSpent = () => spent
+let delivered = 0   // responses that returned audio
+let priced = 0      // ...of those, how many carried a character-cost header
+
+/**
+ * Characters the API said it billed, or null when it did not say.
+ *
+ * Zero and "unknown" are completely different answers, and returning 0 for
+ * both made tts.mjs print "0 characters billed, about $0.00" after a run that
+ * may have spent thousands — a false all-clear at the one moment real money
+ * is involved. A run that made no request at all is a truthful zero.
+ */
+export const charactersSpent = () => (priced < delivered ? null : spent)
 
 export async function synth(text, { tmpDir, id }) {
   if (!key()) throw new Error('ELEVENLABS_API_KEY is not set')
@@ -63,8 +75,9 @@ export async function synth(text, { tmpDir, id }) {
     const audioPath = join(tmpDir, `${id}.mp3`)
     writeFileSync(audioPath, Buffer.from(audio_base64, 'base64'))
 
+    delivered++
     const cost = res.headers.get('character-cost')
-    if (cost) spent += Number(cost)
+    if (cost) { spent += Number(cost); priced++ }
     return { audioPath, alignment }
   }
   throw new Error(`ElevenLabs gave up after 5 attempts on "${id}"`)

@@ -109,3 +109,52 @@ describe('elevenlabs provider', () => {
     expect(b.signature()).not.toBe(sigA)
   })
 })
+
+// "0 characters billed, about $0.00" reads like a successful free run. It is
+// what tts.mjs printed whenever the character-cost header was absent, which
+// hides real spend behind a number that looks like good news.
+describe('charactersSpent', () => {
+  it('sums the cost header across calls', async () => {
+    const { synth, charactersSpent } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }, { 'character-cost': '40' }))
+
+    await synth('Hi big', { tmpDir: dir, id: 'c1' })
+    await synth('Hi big', { tmpDir: dir, id: 'c2' })
+    expect(charactersSpent()).toBe(80)
+  })
+
+  it('reports unknown, not zero, when the provider sends no cost header', async () => {
+    const { synth, charactersSpent } = await load()
+    globalThis.fetch.mockResolvedValue({
+      ok: true, status: 200, headers: new Headers({}),
+      json: async () => ({ audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT }),
+      text: async () => '',
+    })
+
+    await synth('Hi big', { tmpDir: dir, id: 'c3' })
+    expect(charactersSpent()).toBeNull()
+  })
+
+  it('reports unknown when only some responses priced themselves', async () => {
+    const { synth, charactersSpent } = await load()
+    globalThis.fetch.mockResolvedValueOnce(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }, { 'character-cost': '40' }))
+    globalThis.fetch.mockResolvedValueOnce({
+      ok: true, status: 200, headers: new Headers({}),
+      json: async () => ({ audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT }),
+      text: async () => '',
+    })
+
+    await synth('Hi big', { tmpDir: dir, id: 'c4' })
+    await synth('Hi big', { tmpDir: dir, id: 'c5' })
+    expect(charactersSpent()).toBeNull()
+  })
+
+  it('reports a truthful zero when no request was made at all', async () => {
+    const { charactersSpent } = await load()
+    expect(charactersSpent()).toBe(0)
+  })
+})

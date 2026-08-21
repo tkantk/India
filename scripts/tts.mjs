@@ -200,7 +200,15 @@ console.log(`\nwrote ${Object.keys(written).length} clips, ${(seconds / 60).toFi
 console.log(`  ${rendered} rendered, ${reused} reused from cache`)
 if (provider.charactersSpent) {
   const spent = provider.charactersSpent()
-  console.log(`  ${spent.toLocaleString()} characters billed, about $${(spent / 1000 * 0.10).toFixed(2)}`)
+  // null means the provider sent no character-cost header. Printing "0
+  // characters billed, about $0.00" for that reads like a free run and hides
+  // whatever was actually spent.
+  if (spent === null) {
+    console.log(`  characters billed: NOT REPORTED by the provider — no character-cost`)
+    console.log(`  header on at least one response. Check your usage page for the real spend.`)
+  } else {
+    console.log(`  ${spent.toLocaleString()} characters billed, about $${(spent / 1000 * 0.10).toFixed(2)}`)
+  }
 }
 
 if (failure) {
