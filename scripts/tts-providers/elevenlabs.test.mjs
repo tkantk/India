@@ -62,6 +62,18 @@ describe('elevenlabs provider', () => {
       .rejects.toThrow(/markup/i)
   })
 
+  // The backstop shares one pattern with validate-content.mjs, and that
+  // pattern is deliberately narrower than /<[^>]+>/: refusing to speak a
+  // sentence that merely compares two numbers would be a false alarm at the
+  // most expensive possible moment.
+  it('does not mistake a bare less-than sign for markup', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    await expect(synth('Three is 3 < 5 today', { tmpDir: dir, id: 'lt' })).resolves.toBeTruthy()
+  })
+
   it('decodes the base64 audio to a real file and returns the alignment', async () => {
     const { synth } = await load()
     globalThis.fetch.mockResolvedValue(okResponse({

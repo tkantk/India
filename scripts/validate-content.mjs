@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { PlaceSchema, TourSchema, UiSchema } from '../content/schema.ts'
+import { findMarkup } from './lib/markup.mjs'
 
 const CEILING = 99_100
 const TARGET = 95_000
@@ -20,6 +21,16 @@ function line(l, where) {
   if (ids.has(l.id)) problems.push(`duplicate line id "${l.id}" in ${where} and ${ids.get(l.id)}`)
   ids.set(l.id, where)
   chars += l.text.length
+  // Cheapest possible place to catch this. The ElevenLabs provider rejects
+  // markup too, but only once a paid pass is already in flight — by then some
+  // of the corpus has been rendered and billed and the run aborts halfway.
+  const tag = findMarkup(l.text)
+  if (tag) {
+    problems.push(
+      `${where}: line "${l.id}" contains markup ${tag} — narration must be plain ` +
+      `text, or the provider's character alignment shifts and word highlighting breaks`,
+    )
+  }
   if (l.sfx) needSound.set(l.sfx, `${where} (${l.id}.sfx)`)
   for (const c of l.cues ?? []) {
     if (c.do === 'playSfx' && c.arg) needSound.set(c.arg, `${where} (${l.id} cue)`)

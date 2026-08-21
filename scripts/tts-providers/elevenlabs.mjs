@@ -1,5 +1,6 @@
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { findMarkup } from '../lib/markup.mjs'
 
 export const name = 'elevenlabs'
 
@@ -28,10 +29,13 @@ export async function synth(text, { tmpDir, id }) {
   if (!key()) throw new Error('ELEVENLABS_API_KEY is not set')
   if (!voiceId()) throw new Error('ELEVENLABS_VOICE_ID is not set. Run: node scripts/voices.mjs')
 
-  // alignment.characters is a character-for-character image of what we send.
-  // Any markup shifts every index after it and silently breaks word highlighting.
-  if (/<[^>]+>/.test(text)) {
-    throw new Error(`line "${id}" contains markup; content must be plain text only: ${text}`)
+  // Backstop only: validate-content.mjs makes this same check before a single
+  // character is spent. Reaching it here means content changed since the last
+  // validate, and aborting now costs whatever the run has already billed.
+  // Same pattern on both sides, imported from one place, so they cannot drift.
+  const tag = findMarkup(text)
+  if (tag) {
+    throw new Error(`line "${id}" contains markup ${tag}; content must be plain text only: ${text}`)
   }
 
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId()}/with-timestamps` +

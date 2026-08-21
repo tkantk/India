@@ -218,3 +218,47 @@ describe('validate-content place references', () => {
     expect(output).toContain('npm run build:map')
   })
 })
+
+// Narration must be plain text: ElevenLabs' alignment.characters is a
+// character-for-character image of what is sent, so a stray tag shifts every
+// index after it and silently breaks word highlighting. The provider still
+// carries a backstop, but a check that only fires there aborts a paid pass
+// mid-flight, after money has been spent. Here it costs nothing.
+describe('validate-content markup check', () => {
+  const tour = (dir, text) => writeFileSync(join(dir, 'content', 'tour.json'), JSON.stringify({
+    beats: [{ id: 'tour.01', kind: 'tour', text }],
+  }))
+  const ui = (dir) => writeFileSync(join(dir, 'content', 'ui.json'), JSON.stringify({
+    lines: [{ id: 'ui.begin', kind: 'ui', text: 'Tap to begin' }],
+  }))
+
+  it('rejects a line containing an HTML tag', () => {
+    const dir = fixture()
+    tour(dir, 'The tiger is <b>very</b> big indeed.')
+    ui(dir)
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('markup')
+    expect(output).toContain('<b>')
+  })
+
+  it('rejects a self-closing or unpaired tag just as firmly', () => {
+    const dir = fixture()
+    tour(dir, 'The river runs on<br> and on.')
+    ui(dir)
+
+    expect(run(dir).code).not.toBe(0)
+  })
+
+  it('accepts a bare less-than sign, which is legitimate prose', () => {
+    const dir = fixture()
+    tour(dir, 'A baby elephant weighs less than its mother, so 3 < 5 is easy.')
+    ui(dir)
+
+    const { code, output } = run(dir)
+    expect(output).not.toContain('markup')
+    expect(code).toBe(0)
+    expect(output).toContain('content OK')
+  })
+})
