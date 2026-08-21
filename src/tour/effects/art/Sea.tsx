@@ -75,10 +75,12 @@ function rows(w: Water) {
 
 function Body({ water, now, zoom }: { water: Water; now: boolean; zoom: number }) {
   const still = useStill()
-  /** Water that never moves is a puddle. But this is the only animation in
-   *  the tour that runs for the whole hold rather than landing and stopping,
-   *  and every frame of it is a software repaint on WebKit's legacy SVG
-   *  engine — so a slow iPad gets still water, drawn whole. */
+  /** Water that never moves is a puddle. But this is one of the few
+   *  animations in the tour that runs for the whole hold rather than
+   *  landing and stopping — Mor (src/tour/Mor.tsx) bobs and blinks for far
+   *  longer once Task 10 wires him in — and every frame of it is a software
+   *  repaint on WebKit's legacy SVG engine, so a slow iPad gets still water,
+   *  drawn whole. */
   const moving = !still && !isCheap()
   const drift = DRIFT * zoom
 

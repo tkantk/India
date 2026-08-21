@@ -34,6 +34,7 @@ import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { MotionConfig, MotionGlobalConfig } from 'motion/react'
 import geo from '../../src/data/geo.json'
+import { isCheap, startFrameProbe } from '../../src/lib/cheapMode'
 import { MapStage } from '../../src/map/MapStage'
 import { OVERLAYS } from '../../src/tour/overlays'
 import { Mor } from '../../src/tour/Mor'
@@ -56,6 +57,37 @@ import './mor.css'
  * and not inside a component.
  */
 MotionGlobalConfig.skipAnimations = true
+
+/**
+ * Latch cheap mode BEFORE the first render, the same way `skipAnimations`
+ * above has to be — `isCheap()` is read synchronously inside `Mor`'s render,
+ * not from an effect, so the verdict has to already exist.
+ *
+ * `isCheap()` is the hardware verdict OR the reduced-motion setting
+ * (src/lib/cheapMode.ts), and the sheet already has its own cell for the
+ * setting below. This is the other half: a device that measured itself as
+ * too slow, which a child never toggles and this sheet can otherwise never
+ * show. `requestAnimationFrame` is overridden just long enough to feed the
+ * probe two seconds of 20 fps — the same technique `cheapMode.test.ts` and
+ * `Mor.test.tsx`'s cheap-mode test use — then restored, so nothing else on
+ * the page inherits a fake clock.
+ */
+function latchCheapMode() {
+  const real = window.requestAnimationFrame
+  let now = 0
+  const queue: FrameRequestCallback[] = []
+  window.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+    queue.push(cb)
+    return queue.length
+  }) as typeof window.requestAnimationFrame
+  startFrameProbe()
+  for (let i = 0; i < 200 && queue.length; i++) {
+    now += 50 // 20 fps: below the 50 fps floor SLOW_FRAME_MS enforces
+    queue.shift()?.(now)
+  }
+  window.requestAnimationFrame = real
+  if (!isCheap()) throw new Error('the sheet failed to latch cheap mode for its own cell')
+}
 
 const NOOP = () => {}
 const places = Object.entries(geo.places as Record<string, { d: string; type: string }>)
@@ -143,7 +175,7 @@ function Sheet() {
         />
       </div>
 
-      <h2>Reduced motion, and the drawing itself</h2>
+      <h2>Reduced motion, cheap mode, and the drawing itself</h2>
       <div className="row">
         <MotionConfig reducedMotion="always">
           <Pose
@@ -152,6 +184,17 @@ function Sheet() {
             caption="<b>reduced motion</b> — the same pose, held. No bob, no blink."
           />
         </MotionConfig>
+
+        {/* Cheap mode is latched module-wide, above, before this page's
+            first render — a genuinely different code path from the setting
+            (isCheap() OR's a measured verdict with prefers-reduced-motion),
+            so this and the cell to its left are not the same claim
+            photographed twice: they must simply agree. */}
+        <Pose
+          playing
+          showing={null}
+          caption="<b>cheap mode</b> — a slow iPad's own verdict, not the child's setting. Same held pose, same still eye: the standard reduced motion already meets."
+        />
 
         {/* A magnifying glass held over the same corner of the same stage:
             the real component at its real size, enlarged, with none of its
@@ -357,6 +400,10 @@ if (panel === 'device') {
   )
   setTimeout(measure, 400)
 } else {
+  // Only the sheet gets the synthetic slow-hardware verdict — device panels
+  // stay faithful to the real app's own probe (never run, so never cheap),
+  // which is the whole point of photographing them.
+  latchCheapMode()
   root.render(
     <MotionConfig reducedMotion="user">
       <Sheet />

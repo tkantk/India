@@ -67,7 +67,11 @@ function shoot(page, out, w, h) {
 
 // ------------------------------------------------------------- the sheet
 
-shoot('mor-panel.html', 'mor.png', 1740, 1210)
+// Wide enough for the second row's five 400px cells side by side — reduced
+// motion, cheap mode, the 2x zoom, beat 8's reveal, and the blink pair.
+// Narrower than this and the row wraps, which silently pushes the last cell
+// below the fixed capture height rather than failing loudly.
+shoot('mor-panel.html', 'mor.png', 2180, 1210)
 
 // ----------------------------------------------------------- the devices
 

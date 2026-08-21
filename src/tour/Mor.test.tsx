@@ -1,9 +1,33 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MotionConfig } from 'motion/react'
 import { Mor } from './Mor'
 import { Peacock } from './effects/art/Peacock'
 import { PALETTE } from './effects/art/palette'
+
+/**
+ * A fake `requestAnimationFrame`, in the shape of `cheapMode.test.ts`'s own
+ * `fakeFrames` — copied rather than imported, because what it feeds has to
+ * be a module loaded fresh (below).
+ */
+function fakeSlowFrames() {
+  const queue: ((now: number) => void)[] = []
+  let now = 1000
+  vi.stubGlobal('requestAnimationFrame', (cb: (now: number) => void) => {
+    queue.push(cb)
+    return queue.length
+  })
+  return {
+    paint(count: number, ms: number) {
+      for (let i = 0; i < count; i++) {
+        const cb = queue.shift()
+        if (!cb) return
+        now += ms
+        cb(now)
+      }
+    },
+  }
+}
 
 /** Every drawn shape, as a string that ignores styles and transforms — so
  *  two drawings compare by their GEOMETRY and their paint, which is what
@@ -62,6 +86,43 @@ describe('Mor', () => {
     // attribute hardcoded to "true".
     const { container } = render(<Mor playing showing={null} />)
     expect(container.firstElementChild).toHaveAttribute('data-still', 'false')
+  })
+
+  it('holds a settled pose in cheap mode, with neither the bob nor the blink running', async () => {
+    // isCheap()'s hardware verdict LATCHES on module state (src/lib/cheapMode.ts),
+    // and is separate from reduced motion — which Mor already gated before
+    // this test existed. Tripping it without also tripping `still` (so this
+    // fails for the RIGHT reason if the `!isCheap()` gate is ever removed,
+    // and not merely because reduced motion also gates the same loops) means
+    // driving the hardware-probe path directly, on a fresh copy of the
+    // module — the same technique cheapMode.test.ts uses on itself.
+    vi.resetModules()
+    const frames = fakeSlowFrames()
+    const cheapMode = await import('../lib/cheapMode')
+    cheapMode.startFrameProbe()
+    frames.paint(200, 50) // a steady 20 fps: below the 50 fps floor
+    expect(cheapMode.isCheap(), 'the probe never latched cheap').toBe(true)
+
+    const { Mor: CheapMor } = await import('./Mor')
+    const { container } = render(<CheapMor playing showing={null} />)
+    const root = container.firstElementChild as HTMLElement
+
+    // Settled for the RIGHT reason — cheap mode, not reduced motion, which
+    // has its own test above and must stay a separate claim.
+    expect(root).toHaveAttribute('data-still', 'false')
+    expect(root).toHaveAttribute('data-bob', 'false')
+    expect(root.querySelector('[data-blink]')).not.toBeInTheDocument()
+
+    // Not vanished, not frozen mid-gesture: still the whole bird, and the
+    // exact pose `talking` always holds — the same one a bob would have
+    // bounced away from and back to. A missing scale, or one stuck at a
+    // bobbed offset, would fail this.
+    expect(root).toHaveAttribute('data-state', 'talking')
+    expect(root.getAttribute('style')).toBe('transform: scale(1.34);')
+    expect(root.querySelectorAll('.mor__tail > g')).toHaveLength(9)
+    expect(root.querySelector('circle')).toBeInTheDocument() // the eye, open and still
+
+    vi.unstubAllGlobals()
   })
 
   // --------------------------------------------------------------------

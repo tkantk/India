@@ -18,12 +18,15 @@
  * in from outside — is the engine speaking, and is there art on stage — so he
  * can never drift out of step with the narration by keeping his own time. The
  * only loops here are the two that make him look alive (a bob and a blink),
- * and both are Motion's, both stop dead under reduced motion, and neither
+ * and both are Motion's, both stop dead under reduced motion AND under cheap
+ * mode — he runs longer than anything else in the tour, so a `repeat:
+ * Infinity` loop left ungated is a permanent tax on a slow iPad — and neither
  * decides anything.
  *
  * WHERE HE STANDS is in `mor.css`, next to why.
  */
 import { motion } from 'motion/react'
+import { isCheap } from '../lib/cheapMode'
 import { EYE, FEATHERS, Feather, PeacockBody } from './effects/art/Peacock'
 import { PALETTE as C } from './effects/art/palette'
 import { EASE_OUT, useStill } from './effects/Reveal'
@@ -75,10 +78,16 @@ const POSE: Record<MorState, { fan: number; tail: number; tilt: number; body: nu
 const SETTLE = { duration: 0.55, ease: EASE_OUT }
 /** A gentle bob while he talks. Not a beat-matched one: the engine publishes
  *  a word index, but nodding on every word would be a twitch at four words a
- *  second, and the point of this is only that he is not a sticker. */
+ *  second, and the point of this is only that he is not a sticker.
+ *
+ *  `repeat: Infinity`, and `talking` is almost the whole tour — so, like
+ *  `Sea.tsx` and `Outline.tsx`, this only ever runs behind `!isCheap()`. */
 const BOB = { duration: 1.7, repeat: Infinity, ease: 'easeInOut' } as const
 /** One slow blink about every five seconds. Almost all of the cycle is the
- *  eye simply open; `times` is what makes it occasional rather than a wink. */
+ *  eye simply open; `times` is what makes it occasional rather than a wink.
+ *
+ *  Also `repeat: Infinity`, and unlike the bob it runs in ALL three states —
+ *  the whole tour — so it is gated the same way. */
 const BLINK = {
   duration: 5.2,
   times: [0, 0.9, 0.945, 1],
@@ -103,13 +112,25 @@ export function Mor({ playing, showing }: Props) {
   // Motion drops a transform animation under reduced motion by itself; this
   // is the same answer said out loud, so that `data-still` and what he
   // actually does can never disagree.
-  const bob = state === 'talking' && !still
+  //
+  // `talking` is almost the whole 2:41 tour, so the bob is also gated on
+  // `!isCheap()` — the same rule `Sea.tsx` and `Outline.tsx` apply to their
+  // own `repeat: Infinity` loops — and `data-bob` says that out loud too, for
+  // the same reason `data-still` does: so it can never quietly disagree with
+  // what he actually does.
+  const bob = state === 'talking' && !still && !isCheap()
+  // The blink runs in all three states, so it needs the same gate. Cheap
+  // mode then meets exactly the standard reduced motion already does: no
+  // <Blink/>, so PeacockBody falls back to its own plain, fully-open eye —
+  // never a loop stopped mid-frame.
+  const blinking = !still && !isCheap()
 
   return (
     <motion.div
       className="mor"
       data-state={state}
       data-still={String(still)}
+      data-bob={String(bob)}
       aria-hidden="true"
       // `initial` as well as `animate`, here and on every feather: without it
       // Motion has nothing to render until its first frame, so he would mount
@@ -138,7 +159,7 @@ export function Mor({ playing, showing }: Props) {
             )
           })}
         </g>
-        <PeacockBody eye={still ? undefined : <Blink />} />
+        <PeacockBody eye={blinking ? <Blink /> : undefined} />
       </svg>
     </motion.div>
   )
@@ -149,11 +170,16 @@ export function Mor({ playing, showing }: Props) {
  *
  * A `<circle>` and not an `<ellipse>`, and the same cx/cy/r/fill, because the
  * blink must not be the one thing that stops Mor being that peacock — the
- * closing is a transform, so the shape underneath is untouched.
+ * closing is a transform, so the shape underneath is untouched. `data-blink`
+ * carries no paint of its own — it is not part of `Mor.test.tsx`'s GEOMETRY
+ * or PAINT lists — but it is only ever mounted while the loop that scales it
+ * is actually running, so its presence is the loop said out loud, the same
+ * job `data-still`/`data-bob` do for the rest of him.
  */
 function Blink() {
   return (
     <motion.circle
+      data-blink="true"
       cx={EYE.x}
       cy={EYE.y}
       r={EYE.r}
