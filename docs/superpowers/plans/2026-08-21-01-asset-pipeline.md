@@ -1428,8 +1428,12 @@ function collectLines() {
 const keyOf = (line) =>
   createHash('sha256').update(`${provider.signature()} ${line.text}`).digest('hex').slice(0, 16)
 
+// `force` clears the CACHE, so everything re-renders. It must NOT clear
+// `previous`: that is also the merge base for `--only`, and zeroing both
+// means `--only=rajasthan --force` writes a timings file containing only
+// Rajasthan and silently deletes every other place's entry.
 const cache = existsSync(CACHE) && !force ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
-const previous = existsSync(TIMINGS) && !force ? JSON.parse(readFileSync(TIMINGS, 'utf8')) : {}
+const previous = existsSync(TIMINGS) ? JSON.parse(readFileSync(TIMINGS, 'utf8')) : {}
 // Start from the previous timings when rendering a subset, or --only=rajasthan
 // would write a timings.json containing ONLY Rajasthan and silently delete
 // every other clip's entry.
@@ -1473,6 +1477,15 @@ async function renderLine(line) {
   toM4a(wav, abs, 56000)
 
   const duration = durationOf(abs)
+  // A zero duration means afinfo's output did not match probe()'s regexes —
+  // its format varies by macOS version. Left unguarded, estimateTimings
+  // would put every word at t=0 and the highlight would never advance.
+  if (!(duration > 0)) {
+    throw new Error(
+      `could not read a duration from ${abs}. Run \`afinfo\` on it by hand and ` +
+      `fix the regexes in scripts/lib/encode.mjs — do not ship zero timings.`,
+    )
+  }
   const t = alignment
     ? timingsFromAlignment(line.text, alignment)
     : estimateTimings(line.text, duration)
