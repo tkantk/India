@@ -55,6 +55,11 @@ const fc = rewind(raw, true)
 //    Jammu & Kashmir; Gilgit, Skardu, Aksai Chin and the Shaksgam Valley
 //    fall in Ladakh. Do not remove this check.
 const [, [, north]] = geoBounds(fc)
+// Rounded to three places and written into geo.json below, so the committed
+// map carries the evidence with it. This gate only runs when someone
+// regenerates the file — build-map.test.mjs re-asserts the recorded value on
+// every test run, including in CI, where the shapefile is never fetched.
+const northernBound = Math.round(north * 1000) / 1000
 console.log(`northern bound: ${north.toFixed(3)}N`)
 if (north < 36.5) {
   throw new Error(
@@ -106,7 +111,7 @@ for (let i = 0; i < slugs.length; i++) {
 for (const p of Object.values(places)) p.neighbours.sort()
 
 writeFileSync('src/data/geo.json',
-  JSON.stringify({ viewBox: [0, 0, W, H], attribution: ATTRIBUTION, places }))
+  JSON.stringify({ viewBox: [0, 0, W, H], northernBound, attribution: ATTRIBUTION, places }))
 
 const kb = (JSON.stringify(places).length / 1024).toFixed(0)
 console.log(`wrote src/data/geo.json — ${slugs.length} places, ${kb} KB`)

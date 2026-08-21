@@ -69,6 +69,21 @@ describe('generated geo.json', () => {
     }
   })
 
+  // The depiction gate in build-map.mjs only fires when someone regenerates
+  // this file, and it was silently inert at one point during the build. This
+  // asserts the property of the map that is actually committed and shipped.
+  //
+  // Rendering the official Survey of India depiction is a legal requirement
+  // for a map published in India. The official rendering reaches 37.07N at
+  // the tip of Gilgit-Baltistan; the de-facto rendering stops at 35.5N.
+  it('ships the official Survey of India depiction, which reaches ~37.07N', () => {
+    expect(geo.northernBound, 'geo.json records no northernBound — regenerate it')
+      .toBeTypeOf('number')
+    expect(geo.northernBound,
+      `northern bound is ${geo.northernBound}N; a value near 35.5 means the de-facto depiction`)
+      .toBeGreaterThanOrEqual(36.5)
+  })
+
   it('credits DataMeet, as CC BY 4.0 requires', () => {
     expect(geo.attribution).toContain('DataMeet')
     expect(geo.attribution).toContain('CC BY 4.0')
