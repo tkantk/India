@@ -300,6 +300,14 @@ let bound: Bound | null = null
  * never be given an element whose viewBox React might re-render.
  */
 export function bindCamera(stage: HTMLElement | null): void {
+  // Land anything still in the air over the map being let go of. A browser
+  // stops ticking an animation whose target has left the render tree, so
+  // `finished` never settles: measured in Chrome, six seconds after the map
+  // was detached mid-flight the promise was still pending, the wrapper still
+  // carried its transform and its will-change, and the viewBox had never been
+  // committed. Task 7 awaits that promise — the tour would hang for good, and
+  // the whole detached 269 KB map would be retained behind it.
+  if (bound && bound.stage !== stage) landInFlight(bound.stage)
   bound = null
   if (!stage) return
   const layers = [...stage.querySelectorAll<SVGSVGElement>(':scope > svg')]

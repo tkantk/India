@@ -430,6 +430,53 @@ describe('the bound camera', () => {
     await expect(camera.flyTo([0, 0, 10, 10], { duration: 0 })).resolves.toBeUndefined()
   })
 
+  it('lands a flight whose map is torn down in mid-air', async () => {
+    const started = stubAnimate()
+    const { stage, base, hit, glow } = map()
+    bindCamera(stage)
+    const flight = camera.flyTo([316.2, 306.2, 16.3, 17.2], { duration: 400 })
+    expect(started).toHaveLength(1)
+
+    // React detaches the DOM before a passive effect's cleanup runs, and a
+    // browser stops ticking an animation whose target has left the render
+    // tree — `finished` never settles. Measured in Chrome: six seconds after
+    // the map was removed, the promise was still pending, the transform and
+    // will-change were still on the element, and the viewBox had never been
+    // committed. Task 7 awaits this promise, so the tour would hang for good.
+    stage.remove()
+    bindCamera(null)
+
+    const outcome = await Promise.race([
+      flight.then(() => 'landed'),
+      new Promise((r) => setTimeout(() => r('still in the air'), 50)),
+    ])
+    expect(outcome).toBe('landed')
+    expect(stage.style.transform).toBe('')
+    expect(stage.style.willChange).toBe('')
+    for (const l of [base, hit, glow]) {
+      expect(l.getAttribute('viewBox'), 'the flight never committed').not.toBe('0 0 1000 1100')
+    }
+  })
+
+  it('lands the old map before it starts flying a new one', async () => {
+    const started = stubAnimate()
+    const first = map()
+    bindCamera(first.stage)
+    const flight = camera.flyTo([316.2, 306.2, 16.3, 17.2], { duration: 400 })
+
+    const second = map()
+    bindCamera(second.stage)
+    expect(started[0].playState, 'the old flight was left running').toBe('idle')
+
+    const outcome = await Promise.race([
+      flight.then(() => 'landed'),
+      new Promise((r) => setTimeout(() => r('still in the air'), 50)),
+    ])
+    expect(outcome).toBe('landed')
+    expect(first.stage.style.willChange).toBe('')
+    expect(camera.view()).toEqual([0, 0, 1000, 1100])
+  })
+
   it('stays inert rather than throwing when handed a stage with no layers', async () => {
     const stage = document.createElement('div')
     document.body.append(stage)

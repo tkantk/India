@@ -16,6 +16,9 @@
  * setting rather than a measurement: a parent who turns it on halfway through
  * means it now.
  *
+ * The measurement runs whatever that setting says, because the setting can be
+ * withdrawn and nothing would think to start the probe again afterwards.
+ *
  * The measurement is started by the app, in `main.tsx`, and never implicitly
  * by whoever asks the question first. A probe that started itself would run
  * under every test that so much as renders the map, and jsdom's own frame
@@ -45,6 +48,23 @@ const MIN_SAMPLES = 24
  */
 const SLOW_FRAME_MS = 20
 
+/**
+ * The longest gap that counts as a frame at all.
+ *
+ * A background tab throttles rAF to about 1 Hz and a hidden one stops it
+ * altogether, so a session that starts with the child switching apps would
+ * otherwise hand back a median of a thousand milliseconds and latch a fast
+ * iPad into cheap mode for good. Anything past this is not a slow device, it
+ * is a device that was not being looked at, and it is dropped rather than
+ * counted. The threshold sits far above anything real hardware does — 250 ms
+ * is 4 fps, and a device at 5 fps still latches cheap on its own evidence.
+ *
+ * Dropping rather than restarting is also self-healing: a throttled stretch
+ * collects no samples, so the probe simply keeps watching until the frames
+ * that mean something arrive.
+ */
+const MAX_SAMPLE_MS = 250
+
 /** The measured verdict, once it exists. Never goes back to false. */
 let slow = false
 let decided = false
@@ -65,8 +85,10 @@ function prefersLessMotion(): boolean {
  */
 export function startFrameProbe(): void {
   if (decided || watching) return
-  // Nothing to measure: the answer is already yes, and it cannot change back.
-  if (prefersLessMotion()) return
+  // Deliberately measured even when the child has already asked for less
+  // motion. That is a setting, and a setting can be turned off mid-session —
+  // at which point the app needs a real answer about the hardware, and there
+  // is nothing that would think to restart the probe to get one.
   const raf = globalThis.requestAnimationFrame
   if (typeof raf !== 'function') return
   watching = true
@@ -78,8 +100,10 @@ export function startFrameProbe(): void {
 
   const tick = (now: number) => {
     // The gap either side of the first frame is startup, not steady state.
-    if (started) deltas.push(now - last)
-    else {
+    if (started) {
+      const delta = now - last
+      if (delta <= MAX_SAMPLE_MS) deltas.push(delta)
+    } else {
       first = now
       started = true
     }

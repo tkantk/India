@@ -5,7 +5,7 @@
  *   npm run probe:camera                    fly to Delhi, measure, draw frames
  *   npm run probe:camera -- --place=kerala  somewhere else
  *
- * Two questions nothing in the vitest suite can answer, because jsdom has no
+ * Three questions nothing in the vitest suite can answer, because jsdom has no
  * layout, no hit testing, no getScreenCTM and no Web Animations API:
  *
  *   1. IS THE COMMIT SEAMLESS? The flight animates a CSS transform on the
@@ -25,6 +25,13 @@
  *      many viewBox units a fingertip's forgiveness is worth. A camera that
  *      left the hit layer behind would make the map go dead the moment a
  *      child zoomed in, and every unit test would still pass.
+ *
+ *   3. WHAT HAPPENS IF THE MAP IS TORN OUT MID-FLIGHT? A browser stops
+ *      ticking an animation whose target has left the render tree, so the
+ *      flight's promise never settles and it never lands: a detached map with
+ *      a transform still on it, held alive by a chain nobody can resolve. The
+ *      cue registry awaits that promise, and a child tapping a state during
+ *      the tour is exactly how a map gets torn out mid-flight.
  *
  * The camera itself is not reimplemented here: `src/map/camera.ts` and
  * `src/lib/cheapMode.ts` are read, type-stripped by Node, and inlined into
@@ -127,6 +134,7 @@ const SNAP_PX = ${SNAP_PX}
 const SCRUB_MS = ${SCRUB_MS}
 const PHASE = Number(new URLSearchParams(location.search).get('phase') || 0)
 const MEASURE = new URLSearchParams(location.search).has('measure')
+const UNMOUNT = new URLSearchParams(location.search).has('unmount')
 
 const stage = document.querySelector('.${PICK_ROOT}')
 const layers = [...stage.querySelectorAll(':scope > svg')]
@@ -272,6 +280,38 @@ async function measure() {
   document.getElementById('out').textContent = JSON.stringify(out)
 }
 
+/**
+ * Tear the map out of the page while a flight is still in the air.
+ *
+ * A browser stops ticking an animation whose target has left the render tree,
+ * so the finished promise never settles and the flight never lands. Task 7
+ * awaits it, and a child tapping a state mid-tour is exactly how it happens.
+ */
+async function unmount() {
+  const out = { place: PLACE, window: [innerWidth, innerHeight] }
+  bindCamera(stage)
+  let settled = false
+  camera.flyTo(TARGET, { duration: 400 }).then(() => { settled = true })
+
+  await new Promise((r) => setTimeout(r, 50))
+  out.airborne = stage.getAnimations().length
+  out.airborneWillChange = stage.style.willChange
+
+  // React detaches the DOM first and runs the passive cleanup afterwards, so
+  // this is the harder of the two orders.
+  document.querySelector('.map').remove()
+  bindCamera(null)
+
+  // Far longer than the flight, and longer than the reviewer waited.
+  await new Promise((r) => setTimeout(r, 3000))
+  out.settled = settled
+  out.transform = stage.style.transform
+  out.willChange = stage.style.willChange
+  out.viewBoxes = layers.map((l) => l.getAttribute('viewBox'))
+  out.stillAnimating = stage.getAnimations().filter((a) => a.playState === 'running').length
+  document.getElementById('out').textContent = JSON.stringify(out)
+}
+
 async function draw() {
   bindCamera(stage)
   if (PHASE <= 0) return
@@ -287,6 +327,7 @@ const boom = (e) => {
   document.getElementById('out').textContent = JSON.stringify({ error: String(e && e.stack || e) })
 }
 if (MEASURE) measure().catch(boom)
+else if (UNMOUNT) unmount().catch(boom)
 else draw().catch(boom)
 `
 
@@ -315,11 +356,11 @@ const chrome = (extra, url) =>
 const unescape = (s) => s
   .replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
 
-function measureAt(w, h) {
-  const dump = chrome(['--dump-dom', `--window-size=${w},${h}`], `file://${pagePath}?measure`)
+function run(query, w, h) {
+  const dump = chrome(['--dump-dom', `--window-size=${w},${h}`], `file://${pagePath}?${query}`)
   const raw = /<pre id="out">(.*?)<\/pre>/s.exec(dump)
   if (!raw) {
-    console.error(`No output at ${w}x${h}. Open build/camera-probe.html?measure to see why.`)
+    console.error(`No output at ${w}x${h}. Open build/camera-probe.html?${query} to see why.`)
     process.exit(1)
   }
   return JSON.parse(unescape(raw[1]))
@@ -328,6 +369,7 @@ function measureAt(w, h) {
 // -------------------------------------------------------------- measure
 
 const maxAbs = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])))
+const ctmScale = (m) => Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2]))
 const maxPoint = (a, b) => Math.max(...a.map((p, i) => Math.hypot(p[0] - b[i][0], p[1] - b[i][1])))
 
 let failures = 0
@@ -337,7 +379,7 @@ const pass = (msg) => console.log(`  ok    ${msg}`)
 console.log(`\nflying to ${PLACE} — ${geo.places[PLACE].name}`)
 
 for (const [name, w, h] of SHAPES) {
-  const r = measureAt(w, h)
+  const r = run('measure', w, h)
   console.log(`\n${name} ${w}x${h}`)
 
   const seamCtm = maxAbs(r.ctmEnd, r.ctmAfter)
@@ -352,6 +394,17 @@ for (const [name, w, h] of SHAPES) {
   } else {
     fail(`an SVG element is being animated: ${JSON.stringify(r.midSvgTransforms)}`)
   }
+  // Halfway through, at the exact place the maths says it should be. The
+  // transform interpolates linearly and the easing is symmetric about its
+  // midpoint, so the scale must be the mean of the two ends. This is also
+  // what makes the seam figure above meaningful: if an ancestor's CSS
+  // transform did not reach getScreenCTM, this would read as no movement.
+  const flown = ctmScale(r.ctmEnd) / ctmScale(r.ctmHome)
+  const wantMid = ctmScale(r.ctmHome) * (1 + flown) / 2
+  const offBy = Math.abs(ctmScale(r.ctmMid) - wantMid) / wantMid
+  if (offBy < 0.01) pass(`halfway is halfway: ${ctmScale(r.ctmMid).toFixed(3)} px/unit against ${wantMid.toFixed(3)} predicted`)
+  else fail(`mid-flight is ${(offBy * 100).toFixed(1)}% off the predicted transform`)
+
   if (r.midAnimations === 1 && r.midWillChange === 'transform') pass('one animation, on the wrapper, with will-change')
   else fail(`mid-flight state is wrong: ${r.midAnimations} animations, will-change "${r.midWillChange}"`)
   if (r.midViewBoxes.every((v) => v === r.viewHome.join(' '))) pass('the viewBox is untouched until the flight lands')
@@ -401,6 +454,24 @@ for (const [name, w, h] of SHAPES) {
 
   if (name === 'landscape') {
     writeFileSync('build/camera-probe-results.json', JSON.stringify(r, null, 1))
+  }
+}
+
+// --------------------------------------------- torn down in mid-flight
+
+{
+  const [, w, h] = SHAPES[0]
+  const r = run('unmount', w, h)
+  console.log(`\ntorn out of the page mid-flight, ${w}x${h}`)
+  if (r.airborne !== 1) fail(`the flight never got airborne: ${r.airborne} animations`)
+  else if (r.settled) pass('the flight settles instead of hanging for the life of the page')
+  else fail('the promise never settled — Task 7 would await this forever')
+  if (!r.transform && !r.willChange) pass('the detached wrapper is left clean')
+  else fail(`left behind on a detached element: transform "${r.transform}", will-change "${r.willChange}"`)
+  if (new Set(r.viewBoxes).size === 1 && r.viewBoxes[0] !== '0 0 1000 1100') {
+    pass(`it landed anyway: every layer committed to ${r.viewBoxes[0]}`)
+  } else {
+    fail(`the viewBox was never committed: ${JSON.stringify(r.viewBoxes)}`)
   }
 }
 

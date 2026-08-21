@@ -37,12 +37,32 @@
   height: 100%;
 }
 
-/* Layer 1 — the visible art. */
+/* Layer 1 — the visible art.
+
+   stroke-width is in USER units, so without vector-effect it scales with the
+   viewBox: the camera's 10.4x flight to Delhi renders this 1.5-unit border at
+   about 11 CSS pixels, and a map where every state is the same fill becomes a
+   beige field with cream worms on it — at exactly the moment the child is
+   meant to be looking at one state.
+
+   non-scaling-stroke keeps it 1.5 CSS pixels at any zoom. The stroke does pop
+   from 11 px to 1.5 px at the commit, but that is a single frame, and it is
+   the same frame in which the whole map re-rasterises from the composited
+   layer's soft copy to crisp: borders pulling thin reads as coming into
+   focus, not as a glitch. The fat border, by contrast, would persist for the
+   whole time the child spends looking at the place.
+
+   The cost is a scratch Path rebuild, which WebKit does only when the CTM
+   changes — and the flight is composited, so the SVG's own CTM does not move
+   during it. The rebuild lands once, in the frame already budgeted as the
+   expensive one. If Safari disagrees on the iPad pass (Task 11), deleting the
+   two vector-effect declarations in this file is the whole revert. */
 .map .base path {
   fill: var(--land);
   stroke: var(--land-edge);
   stroke-width: 1.5;
   stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
   /* fill, and nothing else. opacity on an SVG child is not composited in
      WebKit's legacy engine either — it is a software repaint exactly like
      fill, so the usual "animate opacity, it's free" advice does not apply. */
@@ -95,6 +115,9 @@
   stroke: var(--lit-state);
   stroke-width: 3;
   stroke-linejoin: round;
+  /* Same reason as the base layer: at the flight's 10.4x this would be a
+     22-pixel band of saffron around a state, which is not a glow. */
+  vector-effect: non-scaling-stroke;
 }
 
 /* The DataMeet boundaries are CC BY 4.0, which obliges us to credit them

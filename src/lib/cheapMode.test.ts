@@ -143,14 +143,53 @@ describe('cheap mode', () => {
     expect(frames.pending(), 'the probe gave up instead of waiting').toBe(1)
   })
 
-  it('is cheap when the child has asked for less motion, with no measuring', async () => {
+  it('is cheap when the child has asked for less motion, whatever the hardware says', async () => {
     const frames = fakeFrames()
     const asked = stubReducedMotion(true)
     const { isCheap, startFrameProbe } = await load()
     startFrameProbe()
+    frames.paint(200, 16.7)
     expect(isCheap()).toBe(true)
     expect(asked).toContain('(prefers-reduced-motion: reduce)')
-    expect(frames.pending(), 'nothing to measure: the answer is already yes').toBe(0)
+  })
+
+  it('keeps measuring while reduced motion is on, so withdrawing it gives a real answer', async () => {
+    // Reduced motion is a setting and can be turned off mid-session. If the
+    // probe had bowed out at boot, nothing would ever restart it and the app
+    // would go back to the expensive animations without ever having checked
+    // whether this iPad can hold them.
+    const frames = fakeFrames()
+    stubReducedMotion(true)
+    const { isCheap, startFrameProbe } = await load()
+    startFrameProbe()
+    expect(frames.pending(), 'the probe never started').toBe(1)
+    frames.paint(200, 50)
+    stubReducedMotion(false)
+    expect(isCheap(), 'the hardware verdict did not survive the setting').toBe(true)
+  })
+
+  it('does not convict a fast iPad on the strength of a backgrounded tab', async () => {
+    // rAF is throttled to about 1 Hz in a background tab, and stops entirely
+    // in a hidden one. A median of a thousand milliseconds is not a slow
+    // device; it is a child who opened another app for a moment.
+    const frames = fakeFrames()
+    const { isCheap, startFrameProbe } = await load()
+    startFrameProbe()
+    frames.paint(40, 1000)
+    expect(isCheap(), 'latched cheap on a throttled clock').toBe(false)
+    // And it heals: the frames that come back are the ones that count.
+    frames.paint(200, 16.7)
+    expect(isCheap()).toBe(false)
+  })
+
+  it('still catches hardware that is genuinely, miserably slow', async () => {
+    // 5 fps. The throttle guard must sit well above anything a real device
+    // does, or it would throw away the very evidence it exists to collect.
+    const frames = fakeFrames()
+    const { isCheap, startFrameProbe } = await load()
+    startFrameProbe()
+    frames.paint(200, 200)
+    expect(isCheap()).toBe(true)
   })
 
   it('honours reduced motion switched on after a fast verdict', async () => {
