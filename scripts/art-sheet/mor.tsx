@@ -16,12 +16,12 @@
  *    shape-for-shape test in Mor.test.tsx.
  *
  *  - A DEVICE (`?panel=device`) — the whole screen at one viewport size:
- *    the real map, the real fixed control bar, Mor, and a STAND-IN for the
- *    play button Task 10 has not built yet, drawn at the size the plan
- *    promises (2 x --tap) in the place the plan promises (centred, at the
- *    bottom). It measures the overlaps itself and writes them into the DOM
- *    for the shooting script to read, because "he does not cover a control"
- *    is a number, not an impression.
+ *    the real map, the real fixed control bar, the real play button and the
+ *    real screen stylesheet, with Mor forced into one state. It measures the
+ *    overlaps itself and writes them into the DOM for the shooting script to
+ *    read, because "he does not cover a control" is a number, not an
+ *    impression. The whole tour, running, is photographed by
+ *    `npm run tour:strip` instead.
  *
  * One document per device: `.controls` is `position: fixed`, so it attaches
  * to the viewport, and there is exactly one viewport per document. The outer
@@ -44,6 +44,11 @@ import { Controls } from '../../src/ui/Controls'
 import '../../src/styles/base.css'
 import '../../src/map/map.css'
 import '../../src/tour/tourStage.css'
+// The screen's own layout, which is what decides where Mor's floor is, how
+// tall the control bar is and where the play button lands. Without it a
+// device panel would photograph a Mor standing at his default floor under a
+// bar that has since learned to wrap to two rows.
+import '../../src/tour/grandTour.css'
 import './mor.css'
 
 /**
@@ -240,45 +245,33 @@ function Sheet() {
 
 // --------------------------------------------------------------- a device
 
-/** Task 10's play button, at the size and place the plan promises, so this
- *  sheet can answer "does Mor cover it" before it exists. NOT the real
- *  button — the real one arrives with the tour sequencer. */
-function PlayStandIn() {
+/**
+ * The real play button, in the real place: the markup and the class
+ * `GrandTour` renders, styled by the stylesheet it ships with. It is a copy
+ * of three lines of JSX rather than the component, because this panel has to
+ * force Mor into a state the tour would only reach mid-beat — but the
+ * geometry, which is the only thing measured below, is the shipping
+ * geometry and not a stand-in for it.
+ */
+function PlayButton() {
   return (
-    <button type="button" className="tap play-standin">
-      Show me India
+    <button type="button" className="tap play-big">
+      <span className="play-big__icon" aria-hidden="true">▶</span>
+      <span className="play-big__label">Show me India</span>
     </button>
   )
 }
 
-const PLAY_CSS = `
-.play-standin {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(var(--tap) + 40px);
-  width: calc(var(--tap) * 2);
-  height: calc(var(--tap) * 2);
-  border-radius: 50%;
-  background: var(--gold);
-  color: var(--ink);
-  font-size: var(--text);
-  font-weight: 700;
-  box-shadow: 0 4px 14px rgba(18, 36, 28, .3);
-  z-index: 3;
-}`
-
 function Device({ state, tiger }: { state: 'idle' | 'talking' | 'showing'; tiger: boolean }) {
   return (
     <MemoryRouter>
-      <style>{PLAY_CSS}</style>
       <main className="india">
-        <h1>Namaste India</h1>
+        <h1 className="visually-hidden">Namaste India</h1>
         <div className="tour-stage">
           <MapStage onPick={NOOP} />
           {tiger && <div className="tour-overlay">{OVERLAYS.revealSymbol('tiger')}</div>}
           <Mor playing={state !== 'idle'} showing={state === 'showing' ? 'tiger' : null} />
-          <PlayStandIn />
+          <PlayButton />
         </div>
       </main>
       <Controls />
@@ -333,7 +326,7 @@ function measure() {
   const barEl = document.querySelector('.controls')
   const mor = rect('.mor')
   const bar = rect('.controls')
-  const play = rect('.play-standin')
+  const play = rect('.play-big')
   const ink = inkRect()
   const round = (n: number) => Math.round(n * 10) / 10
   const over = (a: DOMRect | null, b: DOMRect | null) => {
@@ -355,17 +348,18 @@ function measure() {
     gapToControls: ink && bar ? round(bar.top - ink.bottom) : null,
     overlapsControls: over(mor, bar),
     inkOverlapsControls: over(ink, bar),
-    inkOverlapsPlayStandIn: over(ink, play),
-    overlapsPlayStandIn: over(mor, play),
+    inkOverlapsPlayButton: over(ink, play),
+    overlapsPlayButton: over(mor, play),
     // Whether a tap aimed at the middle of him reaches the map underneath.
     // He stands over the Bay of Bengal, a fingertip from Tamil Nadu, and
     // `pointer-events` is a computed style jsdom will never have an opinion
     // about — so this is the only place the claim can be checked.
     tapPassesThrough: throughMor(),
     // The bar has five 104px buttons and 56px of gutter in it: below about
-    // 590px of viewport it simply does not fit, whatever Mor does — and it
-    // is `left: 0; right: 0`, so its own rect is always the viewport width
-    // and only its CONTENT overflows. Hence scrollWidth, not width.
+    // 590px of viewport they do not fit on one line, whatever Mor does, so
+    // Task 10 made it wrap. It is `left: 0; right: 0`, so its own rect is
+    // always the viewport width and only its CONTENT could overflow — hence
+    // scrollWidth, not width. This should now read 0 everywhere.
     barContentOverflow: barEl ? round(barEl.scrollWidth - barEl.clientWidth) : null,
   }
   const pre = document.createElement('pre')

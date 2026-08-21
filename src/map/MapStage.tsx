@@ -49,10 +49,23 @@ const names: Record<string, string> = Object.fromEntries(
   Object.entries(geo.places).map(([slug, p]) => [slug, p.name]),
 )
 
-// Built once for the life of the module: 269 KB of path data must never be
-// rebuilt on a render, and StrictMode mounts every component twice.
-let baseCache: string | null = null
-let hitCache: string | null = null
+/**
+ * Built once for the life of the module: 269 KB of path data must never be
+ * rebuilt on a render, and StrictMode mounts every component twice.
+ *
+ * THE PROP OBJECTS, not the strings, and that is not tidiness. React 19
+ * compares `dangerouslySetInnerHTML` by IDENTITY — `updateProperties` only
+ * looks at `nextProp !== lastProp` and then writes — so a fresh
+ * `{ __html: base }` literal on every render re-parses all 36 visible paths
+ * and all 50 hit shapes, and hands the DOM a completely new set of elements.
+ * The elements `useMapNodes` cached are then detached, and every highlight
+ * after the first re-render silently lands on a node nobody can see.
+ *
+ * Nothing re-rendered this component before Task 10; the tour re-renders it
+ * on every beat.
+ */
+let baseCache: { __html: string } | null = null
+let hitCache: { __html: string } | null = null
 let outlines: Outline[] | null = null
 
 /**
@@ -73,8 +86,10 @@ export function MapStage({ onPick }: Props) {
   const root = useRef<HTMLDivElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const hitSvg = useRef<SVGSVGElement>(null)
-  const base = useMemo(() => (baseCache ??= baseMarkup(geo.places)), [])
-  const hit = useMemo(() => (hitCache ??= hitMarkup(hits, names)), [])
+  // Module-scoped, not merely memoised: React may throw a useMemo cache away,
+  // and a new object here means a new DOM.
+  const base = useMemo(() => (baseCache ??= { __html: baseMarkup(geo.places) }), [])
+  const hit = useMemo(() => (hitCache ??= { __html: hitMarkup(hits, names) }), [])
 
   /**
    * Whether this iPad gets the glow at all, decided once at mount.
@@ -131,13 +146,13 @@ export function MapStage({ onPick }: Props) {
     <div className="map" ref={root}>
       <div className={PICK_ROOT} ref={stage} onPointerDown={pick}>
         <svg className="base" viewBox={VIEW_BOX} aria-hidden="true">
-          <g pointerEvents="none" dangerouslySetInnerHTML={{ __html: base }} />
+          <g pointerEvents="none" dangerouslySetInnerHTML={base} />
         </svg>
         <svg
           className="hit"
           viewBox={VIEW_BOX}
           ref={hitSvg}
-          dangerouslySetInnerHTML={{ __html: hit }}
+          dangerouslySetInnerHTML={hit}
         />
         {glowing && (
           <svg className="glow" viewBox={VIEW_BOX} aria-hidden="true">

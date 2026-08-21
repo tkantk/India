@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import { StartGate } from './screens/StartGate'
+import { IndiaScreen } from './screens/IndiaScreen'
 import { getNarrator } from './audio/Narrator'
-import { TourStage } from './tour/TourStage'
 
 // The engine is built on first use, which is inside the tap handler: iOS only
 // gives a usable AudioContext to a real gesture. Both calls are guarded
@@ -21,20 +21,6 @@ const playTestSound = async () => {
   try {
     await getNarrator().sfx('chime-correct')
   } catch { /* silence is the answer the gate is already prepared for */ }
-}
-
-// This task (Task 7) is the first to render MapStage anywhere in the app.
-// TourStage owns it, plus the seam that turns a narration cue into a lit
-// state, a camera flight or a symbol on stage. Task 10's IndiaScreen file
-// takes this over with the play button, Mor and the controls; until then,
-// this stub is the whole screen.
-function IndiaScreen() {
-  return (
-    <main className="india">
-      <h1>Namaste India</h1>
-      <TourStage />
-    </main>
-  )
 }
 
 function App() {

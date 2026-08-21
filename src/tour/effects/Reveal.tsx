@@ -46,7 +46,10 @@ export const HOLD = {
  *  bounces reads as a notification, not a picture book. */
 export const ENTER_S = 0.5
 export const EASE_OUT = [0.22, 0.85, 0.3, 1] as const
-const FADE_MS = 450
+/** How long an effect takes to fade back off stage once its hold is up.
+ *  Exported because Mor's `showing` prop has to expire when the art it is
+ *  presenting has actually gone, and the two must not drift apart. */
+export const FADE_MS = 450
 
 /** True when the child (or the test) has asked for no motion at all. Motion
  *  handles transforms and opacity itself; this is for the animations it

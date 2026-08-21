@@ -125,11 +125,14 @@
    #3d4a41 on --paper is 8.8:1.
 
    Whoever lays the map out must leave the bottom-left corner clear of the
-   fixed control bar — a credit hidden behind a toolbar is not a credit. */
+   fixed control bar — a credit hidden behind a toolbar is not a credit.
+   `--credit-floor` is how: the tour sets it to the height of the bar that
+   lies over this box (src/tour/grandTour.css). The fallback keeps the map
+   honest anywhere there is no bar at all — the contact sheets, a test. */
 .map .credit {
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: var(--credit-floor, 0px);
   margin: 0;
   padding: 4px 8px;
   font-size: 13px;

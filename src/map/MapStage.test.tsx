@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { MapStage, nearestPlace } from './MapStage'
 import { PICK_ROOT } from './hitLayer'
 import { camera } from './camera'
+import { useMapNodes } from './useMapNodes'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
 
@@ -233,6 +234,40 @@ describe('MapStage', () => {
     mount()
     // Not behind a tap, a menu or a colophon page: on the map, always.
     expect(screen.getByText(geo.attribution)).toBeVisible()
+  })
+
+  it('keeps the very same path elements across a re-render', () => {
+    // The whole architecture rests on this. `useMapNodes` caches the 36
+    // visible paths once, on mount, and highlights a state by toggling a
+    // class on the cached element — never through React. If a re-render
+    // hands the DOM a fresh set of paths, every one of those references is
+    // detached and every highlight after it lands on a node nobody can see:
+    // no error, no warning, a map that simply stops lighting up.
+    //
+    // React 19 compares `dangerouslySetInnerHTML` by object identity, so a
+    // `{{ __html: ... }}` literal in the JSX is exactly that failure. Nothing
+    // re-rendered this component before the tour existed; the tour
+    // re-renders it on every one of the fourteen beats.
+    const onPick = vi.fn()
+    const { container, rerender } = render(<MapStage onPick={onPick} />)
+    const before = [...container.querySelectorAll('.base path')]
+    const hitsBefore = [...container.querySelectorAll('.hit path')]
+    rerender(<MapStage onPick={onPick} />)
+    expect([...container.querySelectorAll('.base path')]).toEqual(before)
+    expect([...container.querySelectorAll('.hit path')]).toEqual(hitsBefore)
+    expect(before[0].isConnected).toBe(true)
+  })
+
+  it('goes on lighting states after a re-render', () => {
+    // The behaviour the identity above exists for, stated in the terms a
+    // child would notice.
+    const onPick = vi.fn()
+    const { container, rerender } = render(<MapStage onPick={onPick} />)
+    rerender(<MapStage onPick={onPick} />)
+    const api = useMapNodes()
+    api.highlight('kerala', true)
+    expect(container.querySelector('[data-slug="kerala"]')!.classList.contains('lit')).toBe(true)
+    api.clear()
   })
 })
 

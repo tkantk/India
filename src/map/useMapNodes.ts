@@ -23,8 +23,11 @@ export type MapApi = {
 }
 
 /** 28 states at 70 ms is a wave just under two seconds — about the length of
- *  the line of narration that triggers it. */
-const STAGGER_MS = 70
+ *  the line of narration that triggers it.
+ *
+ *  Exported because whoever lights the map also has to decide when to let it
+ *  go, and "how long the wave takes to cross" is half of that sum. */
+export const STAGGER_MS = 70
 
 const LIT = 'lit'
 

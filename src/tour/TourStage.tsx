@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { getNarrator } from '../audio/Narrator'
 import { camera } from '../map/camera'
@@ -6,14 +6,36 @@ import { useMapNodes } from '../map/useMapNodes'
 import { MapStage } from '../map/MapStage'
 import { dispatch } from './cues'
 import type { CueApi } from './cues'
+import type { Cue } from '../types'
 import './tourStage.css'
 
 type Props = {
   /** Fires when a child taps a state on the map. Defaults to a no-op: this
-   *  task only wires the map up so it is visible and cues reach it. Task 10's
-   *  tour sequencer decides what "picking a state" means (it abandons the
-   *  tour and navigates there). */
+   *  component only wires the map up so it is visible and cues reach it.
+   *  Task 10's tour sequencer decides what "picking a state" means (it
+   *  abandons the tour and goes there). */
   onPickState?: (slug: string) => void
+  /**
+   * Every cue, after the registry has dispatched it.
+   *
+   * The engine has exactly ONE `onCue` slot and this component owns it, so
+   * anything else that needs to hear a cue has to ask here rather than
+   * quietly taking the slot away. `GrandTour` uses it for the one thing the
+   * overlay seam cannot tell it: that a cue just put a picture on stage, so
+   * Mor can turn and present it.
+   *
+   * Called after `dispatch`, and guarded: nothing on the cue path may throw.
+   */
+  onCue?: (cue: Cue) => void
+  /**
+   * Anything that stands ON the stage — Mor, the read-along, the play button.
+   *
+   * Rendered as the last children of `.tour-stage`, after `.tour-overlay`, so
+   * they are in front of the art rather than behind it, and inside the same
+   * positioned box as the map, so "the bottom corner" means the bottom corner
+   * of the map a child is looking at. `mor.css` depends on exactly that.
+   */
+  children?: ReactNode
 }
 
 /**
@@ -33,9 +55,14 @@ type Props = {
  * for the same reason: a cue arriving after this component is gone must not
  * touch a stale `setOverlay` or a map nobody is showing.
  */
-export function TourStage({ onPickState }: Props) {
+export function TourStage({ onPickState, onCue, children }: Props) {
   const map = useMapNodes()
   const [overlay, setOverlay] = useState<ReactNode | null>(null)
+
+  // Through a ref, so a parent that hands over a fresh closure on every
+  // render does not tear the engine's onCue down and rebuild it mid-beat.
+  const heard = useRef(onCue)
+  useEffect(() => { heard.current = onCue }, [onCue])
 
   useEffect(() => {
     const n = getNarrator()
@@ -61,7 +88,16 @@ export function TourStage({ onPickState }: Props) {
       },
       setOverlay,
     }
-    n.onCue = (cue) => dispatch(cue, api)
+    n.onCue = (cue) => {
+      dispatch(cue, api)
+      // `dispatch` never throws; a listener is not held to that contract by
+      // anything but this, so it is held to it here.
+      try {
+        heard.current?.(cue)
+      } catch (err) {
+        console.debug('[tour] a cue listener threw', err)
+      }
+    }
     return () => {
       n.onCue = () => {}
     }
@@ -71,6 +107,7 @@ export function TourStage({ onPickState }: Props) {
     <div className="tour-stage">
       <MapStage onPick={onPickState ?? NOOP} />
       {overlay && <div className="tour-overlay">{overlay}</div>}
+      {children}
     </div>
   )
 }

@@ -20,7 +20,8 @@
     "fetch:sounds": "node scripts/fetch-sounds.mjs",
     "build:art": "node scripts/build-geo-art.mjs",
     "contact-sheet:art": "node scripts/contact-sheet-art.mjs",
-    "contact-sheet:mor": "node scripts/contact-sheet-mor.mjs"
+    "contact-sheet:mor": "node scripts/contact-sheet-mor.mjs",
+    "tour:strip": "node scripts/tour-strip.mjs"
   },
   "dependencies": {
     "motion": "^13.1.1",

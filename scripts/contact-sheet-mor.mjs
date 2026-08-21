@@ -134,10 +134,9 @@ writeFileSync('build/mor-devices.html', `<!doctype html>
 <h1>Mor, in place — the real control bar, and a stand-in for the play button</h1>
 <p class="note">
   Each panel is the whole screen at one viewport size: the real map, the real
-  fixed control bar, and a <b>stand-in</b> for the play button Task&nbsp;10 has
-  not built yet, drawn at the size the plan promises (2&nbsp;&times;&nbsp;--tap,
-  208px) in the place the plan promises (centred, at the bottom). The numbers
-  are in build/mor-clearance.json.
+  fixed control bar and the real play button, all under the screen's own
+  stylesheet. Mor must clear all three. The numbers are in
+  build/mor-clearance.json.
 </p>
 <div class="row">
 ${DEVICES.map(([name, w, h, state, tiger]) => `  <figure>
@@ -184,7 +183,7 @@ for (const { device, measured: m } of clearance) {
     `  ink ${m.ink.w}x${m.ink.h} at (${m.ink.left}, ${m.ink.top})` +
     `  gap to bar ${m.gapToControls}px` +
     `  over bar: ${m.inkOverlapsControls ? `${m.inkOverlapsControls.w}x${m.inkOverlapsControls.h}` : 'NO'}` +
-    `  over play stand-in: ${m.inkOverlapsPlayStandIn ? `${m.inkOverlapsPlayStandIn.w}x${m.inkOverlapsPlayStandIn.h}` : 'NO'}` +
+    `  over play button: ${m.inkOverlapsPlayButton ? `${m.inkOverlapsPlayButton.w}x${m.inkOverlapsPlayButton.h}` : 'NO'}` +
     `  tap through: ${m.tapPassesThrough.passed ? `yes (${m.tapPassesThrough.hit})` : `NO — ${m.tapPassesThrough.hit}`}`,
   )
 }
