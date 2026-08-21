@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import geo from '../data/geo.json'
 import hitData from '../data/hit.json'
+import { isCheap } from '../lib/cheapMode'
+import { bindCamera } from './camera'
 import { bindMapNodes } from './useMapNodes'
 import {
   PICK_ROOT, SNAP_PX,
@@ -18,9 +20,11 @@ import './map.css'
  *                `LegacyRenderSVGModelObject` derives from `RenderElement`,
  *                not `RenderLayerModelObject`, so an SVG child can never own
  *                a compositor layer: a transform on a <g> is a main-thread
- *                repaint of all 36 paths, every frame. Task 6 flies the
- *                camera by transforming this div. It also owns the one
- *                delegated pointerdown — see PICK_ROOT in hitLayer.ts.
+ *                repaint of all 36 paths, every frame. The camera flies by
+ *                transforming this div, and this component hands the element
+ *                itself to `bindCamera` rather than letting the camera look
+ *                it up by class. It also owns the one delegated pointerdown
+ *                — see PICK_ROOT in hitLayer.ts.
  *   2. `.base`   the visible art, with `pointer-events: none` on the group.
  *   3. `.hit`    coarse invisible geometry, `fill="none" stroke="none"
  *                pointer-events="fill"`.
@@ -67,13 +71,29 @@ type Props = {
 
 export function MapStage({ onPick }: Props) {
   const root = useRef<HTMLDivElement>(null)
+  const stage = useRef<HTMLDivElement>(null)
   const hitSvg = useRef<SVGSVGElement>(null)
   const base = useMemo(() => (baseCache ??= baseMarkup(geo.places)), [])
   const hit = useMemo(() => (hitCache ??= hitMarkup(hits, names)), [])
 
+  /**
+   * Whether this iPad gets the glow at all, decided once at mount.
+   *
+   * The layer is cheap while it is dark, but the filter that lights it forces
+   * a full-screen composited layer — about 12.6 MB on a 2048x1536 iPad. On
+   * hardware that cannot afford that, the layer should not be there to be lit.
+   * Read once rather than subscribed to: a map that grew a fourth layer
+   * halfway through a sentence would be worse than either answer.
+   */
+  const [glowing] = useState(() => !isCheap())
+
   useEffect(() => {
     bindMapNodes(root.current)
-    return () => bindMapNodes(null)
+    bindCamera(stage.current)
+    return () => {
+      bindMapNodes(null)
+      bindCamera(null)
+    }
   }, [])
 
   /**
@@ -109,7 +129,7 @@ export function MapStage({ onPick }: Props) {
 
   return (
     <div className="map" ref={root}>
-      <div className={PICK_ROOT} onPointerDown={pick}>
+      <div className={PICK_ROOT} ref={stage} onPointerDown={pick}>
         <svg className="base" viewBox={VIEW_BOX} aria-hidden="true">
           <g pointerEvents="none" dangerouslySetInnerHTML={{ __html: base }} />
         </svg>
@@ -119,9 +139,11 @@ export function MapStage({ onPick }: Props) {
           ref={hitSvg}
           dangerouslySetInnerHTML={{ __html: hit }}
         />
-        <svg className="glow" viewBox={VIEW_BOX} aria-hidden="true">
-          <path />
-        </svg>
+        {glowing && (
+          <svg className="glow" viewBox={VIEW_BOX} aria-hidden="true">
+            <path />
+          </svg>
+        )}
       </div>
       {/* CC BY 4.0 obliges us to credit the source, in the open. */}
       <p className="credit">{geo.attribution}</p>

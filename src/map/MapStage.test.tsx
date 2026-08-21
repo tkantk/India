@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MapStage, nearestPlace } from './MapStage'
 import { PICK_ROOT } from './hitLayer'
+import { camera } from './camera'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
 
@@ -184,6 +185,48 @@ describe('MapStage', () => {
       expect(ops.at(-1), 'drop-shadow must be the LAST filter operation')
         .toBe('drop-shadow')
     }
+  })
+
+  it('hands the camera its own stage element, not a class name to look up', async () => {
+    // The camera has to transform the stage and rewrite every layer's
+    // viewBox. Finding them with querySelector('.stage') would keep working
+    // right up until the class was renamed, and then fail in silence.
+    const { container } = mount()
+    expect(camera.view()).toEqual(geo.viewBox)
+    await camera.flyTo(geo.places.delhi.bbox as [number, number, number, number], { duration: 0 })
+
+    const flown = container.querySelector('svg.base')!.getAttribute('viewBox')
+    expect(flown).not.toBe(geo.viewBox.join(' '))
+    // All three, together. The hit layer is what a tap is tested against: if
+    // it kept the old viewBox the map would go dead the moment a child zoomed.
+    for (const layer of ['svg.base', 'svg.hit', 'svg.glow']) {
+      expect(container.querySelector(layer)!.getAttribute('viewBox'), layer).toBe(flown)
+    }
+    await camera.home({ duration: 0 })
+  })
+
+  it('lets the camera go when the map unmounts', () => {
+    const { unmount } = mount()
+    expect(camera.view()).not.toBeNull()
+    unmount()
+    expect(camera.view()).toBeNull()
+  })
+
+  it('leaves the glow layer out entirely when the child has asked for less motion', () => {
+    // The glow is a full-screen composited layer the moment its filter turns
+    // on — about 12.6 MB on a 2048x1536 iPad. On the hardware that cannot
+    // afford it, the layer should not exist to be turned on.
+    vi.stubGlobal('matchMedia', (media: string) => ({
+      media, matches: media.includes('prefers-reduced-motion'), onchange: null,
+      addEventListener() {}, removeEventListener() {},
+      addListener() {}, removeListener() {}, dispatchEvent: () => false,
+    }))
+    const { container } = mount()
+    expect(container.querySelector('svg.glow')).toBeNull()
+    // The map still works: the art and the targets are untouched.
+    expect(container.querySelectorAll('.base path')).toHaveLength(36)
+    expect(container.querySelectorAll('.hit path')).toHaveLength(36)
+    vi.unstubAllGlobals()
   })
 
   it('shows the CC BY 4.0 credit the map data legally requires', () => {

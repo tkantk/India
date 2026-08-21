@@ -16,8 +16,9 @@
  *
  * The markup and the snapping come from `src/map/hitLayer.ts` through Node's
  * type stripping — the same code the app ships, not a copy of it. Only the
- * page shell is written out here, and `MapStage.test.tsx` asserts the
- * component's shell matches it.
+ * page shell is a copy, it lives in `lib/mapPage.mjs` so that this probe and
+ * `probe-camera.mjs` measure one map rather than two, and
+ * `MapStage.test.tsx` asserts the component's shell matches it.
  *
  * Reports, per place and overall:
  *   - dead zones: taps that resolve to nothing, before and after snapping
@@ -28,8 +29,9 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import {
-  PICK_ROOT, SNAP_PX, baseMarkup, hitMarkup, buildOutlines, nearestOutline,
+  PICK_ROOT, SNAP_PX, buildOutlines, nearestOutline,
 } from '../src/map/hitLayer.ts'
+import { mapPage } from './lib/mapPage.mjs'
 
 const CHROME = process.env.CHROME ?? [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -149,21 +151,9 @@ const poles = Object.fromEntries(Object.entries(hit.places).map(([s, p]) => [s, 
 
 // ------------------------------------------------------------- the page
 
-const css = readFileSync('src/styles/base.css', 'utf8') + readFileSync('src/map/map.css', 'utf8')
-const names = Object.fromEntries(Object.entries(geo.places).map(([s, p]) => [s, p.name]))
-const viewBox = geo.viewBox.join(' ')
-
-// The one thing here that is not the app's own code. MapStage.test.tsx
-// asserts the component renders this same shape.
-const page = `<!doctype html><html><head><meta charset="utf-8"><style>${css}
-  body { position: absolute; padding: 0; } #frame { position: absolute; inset: 0; }
-</style></head><body><div id="frame">
-  <div class="map"><div class="${PICK_ROOT}">
-    <svg class="base" viewBox="${viewBox}" aria-hidden="true"><g pointer-events="none">${baseMarkup(geo.places)}</g></svg>
-    <svg class="hit" viewBox="${viewBox}">${hitMarkup(hit.places, names)}</svg>
-    <svg class="glow" viewBox="${viewBox}" aria-hidden="true"><path/></svg>
-  </div><p class="credit">${geo.attribution}</p></div>
-</div><pre id="out"></pre><script>
+// The shell is shared with probe-camera.mjs so the two measure one map.
+// MapStage.test.tsx asserts the component renders this same shape.
+const page = mapPage({ geo, hits: hit.places, script: `
 const samples = ${JSON.stringify(samples)}
 const poles = ${JSON.stringify(poles)}
 const svg = document.querySelector('.hit')
@@ -194,7 +184,7 @@ document.getElementById('out').textContent = JSON.stringify({
   results, poleHits, strays, reached, visibleHitTested,
   scale: Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)),
 })
-</script></body></html>`
+` })
 
 mkdirSync('build', { recursive: true })
 writeFileSync(`build/map-probe${BEFORE ? '-before' : ''}.html`, page)
