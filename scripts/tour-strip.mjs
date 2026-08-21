@@ -355,31 +355,63 @@ const LAYOUT = `(() => {
 // -------------------------------------------------------------- the harness
 
 let preview
+let browser
 let chrome
 const profile = `${OUT}/.chrome-tour`
 
+/**
+ * Put everything down.
+ *
+ * The BROWSER matters as much as the server. A spawned Chrome keeps a handle
+ * on this process's event loop, so a run that only closed the socket and the
+ * preview server printed its results and then hung for ever waiting on a
+ * browser nobody had told to stop — and every run left another headless
+ * Chrome and its half-dozen helper processes behind. Twenty-seven of them,
+ * after an afternoon of watching the tour.
+ *
+ * SIGTERM first, because Chrome flushes its profile on it; the profile is a
+ * throwaway under build/ either way.
+ */
 function stop() {
   try { chrome?.socket.close() } catch { /* already gone */ }
+  try { browser?.kill('SIGTERM') } catch { /* already gone */ }
   try { preview?.kill('SIGTERM') } catch { /* already gone */ }
 }
 process.on('exit', stop)
-process.on('SIGINT', () => { stop(); process.exit(130) })
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => { stop(); process.exit(130) })
+}
 
 async function open() {
   console.log('building')
   execFileSync('npm', ['run', 'build'], { stdio: 'inherit' })
 
   console.log(`serving dist on :${PORT} (vite preview — the same MIME types Pages serves)`)
-  preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
-    stdio: ['ignore', 'ignore', 'inherit'],
-  })
+  // The vite binary directly, not `npx vite`: npx forks a second node and
+  // keeps only the wrapper's pid, so killing what we spawned leaves the
+  // actual server running on the port — and the NEXT run's `--strictPort`
+  // then dies while its poll happily succeeds against the stale one. It is
+  // also the same reason the contact sheets call the declared esbuild rather
+  // than whatever npx resolves on the day.
+  preview = spawn(process.execPath, [
+    'node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort',
+  ], { stdio: ['ignore', 'ignore', 'inherit'] })
+  // If the port is already held — a previous run's server that outlived it —
+  // `--strictPort` makes this one exit, and the poll below would then happily
+  // succeed against the OLD server and measure a stale build. Noticing the
+  // child die is the difference between a wrong answer and no answer.
+  let previewDied = null
+  preview.on('exit', (code) => { previewDied = code ?? 'a signal' })
   await until(async () => {
+    if (previewDied !== null) {
+      throw new Error(`vite preview exited (${previewDied}). Is port ${PORT} already in use?`)
+    }
     try { return (await fetch(`http://127.0.0.1:${PORT}/`)).ok } catch { return false }
   }, { what: 'the preview server', limit: 20000 })
 
   rmSync(profile, { recursive: true, force: true })
   console.log('launching Chrome')
-  spawn(CHROME, [
+  browser = spawn(CHROME, [
     '--headless=new',
     `--remote-debugging-port=${DEBUG_PORT}`,
     `--user-data-dir=${process.cwd()}/${profile}`,
@@ -413,13 +445,35 @@ async function open() {
   await chrome.send('Page.addScriptToEvaluateOnNewDocument', { source: CLOCK })
 }
 
+/**
+ * Find a button and press it, in ONE evaluation.
+ *
+ * Never "wait for it, then click it" as two round trips: React commits
+ * asynchronously and the tour re-renders on a subscription, so between the
+ * poll that saw the button and the call that pressed it the element can be a
+ * different object — and `querySelector(...).click()` on the gap throws
+ * "Cannot read properties of null", which is exactly how this failed. Doing
+ * both inside the page, and retrying until it reports success, has no gap.
+ *
+ * `userGesture` is what makes it a real press as far as the autoplay policy
+ * is concerned.
+ */
+function press(what, match) {
+  const expression = `(() => {
+    const el = [...document.querySelectorAll('button')].find((b) => ${match})
+    if (!el) return false
+    el.click()
+    return true
+  })()`
+  return until(() => chrome.eval(expression, { gesture: true }), { what: `a press on ${what}`, limit: 20000 })
+}
+
 /** Through the audibility gate and onto the map. */
 async function toTheMap() {
   await chrome.send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` })
   await until(() => chrome.eval(`!!document.querySelector('.gate button')`), { what: 'the gate' })
-  await chrome.eval(`[...document.querySelectorAll('button')].find(b => /begin/i.test(b.textContent)).click()`, { gesture: true })
-  await until(() => chrome.eval(`!!([...document.querySelectorAll('button')].find(b => /heard it/i.test(b.textContent)))`), { what: 'the sound check' })
-  await chrome.eval(`[...document.querySelectorAll('button')].find(b => /heard it/i.test(b.textContent)).click()`, { gesture: true })
+  await press('begin', `/begin/i.test(b.textContent)`)
+  await press('yes, I heard it', `/heard it/i.test(b.textContent)`)
   await until(() => chrome.eval(`!!document.querySelector('.play-big')`), { what: 'the play button' })
 }
 
@@ -484,7 +538,7 @@ async function watchTheTour() {
     + `tour.01 ${sound.ok ? `${sound.bytes} bytes` : 'DID NOT LOAD'}, decodes to ${sound.decoded}`)
 
   console.log('\npressing play. Two minutes forty-one seconds.\n')
-  await chrome.eval(`document.querySelector('.play-big').click()`, { gesture: true })
+  await press('show me India', `b.classList.contains('play-big')`)
 
   const seen = []
   const shots = []
@@ -617,7 +671,7 @@ async function measureLayouts() {
     const idleShot = `${FRAMES}/layout-${w}x${h}-idle.png`
     await chrome.shot(idleShot)
 
-    await chrome.eval(`document.querySelector('.play-big').click()`, { gesture: true })
+    await press('show me India', `b.classList.contains('play-big')`)
     // Far enough into beat 2 that the read-along is at its longest and the
     // first symbol has been and gone.
     await until(async () => (await chrome.eval(SNAPSHOT)).beat === 'tour.02', { what: 'beat 2', limit: 30000 })
@@ -704,12 +758,16 @@ if (ONLY === 'layout') {
   console.log(wrong.length === 0
     ? 'no collisions at any of the four viewports.'
     : `collisions at: ${wrong.map((b) => b.device).join(', ')} — see build/tour-layout.json.`)
-  if (wrong.length) process.exitCode = 1
   sheet('tour-layout', 'Namaste India — the three collisions, measured',
     'Layout only (--only=layout): the same app at four viewports, idle and mid-beat.',
     only.shots.map((s) => ({ file: s.file, caption: `<b>${esc(s.caption)}</b>` })), 4, 380)
   stop()
-  process.exit(0)
+  // `process.exit(code)`, not `process.exitCode = 1` followed by an exit(0)
+  // that silently overrides it. This branch is a CHECK, and a check that
+  // reports a collision on stdout and then exits 0 is not one — which is
+  // exactly what it did the first time somebody reintroduced the phone
+  // overflow to see whether the gate would catch it.
+  process.exit(wrong.length ? 1 : 0)
 }
 
 const watched = await watchTheTour()
