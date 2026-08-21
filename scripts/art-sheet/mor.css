@@ -1,0 +1,91 @@
+/* The Mor sheet's own furniture. base.css nails the app's body to the
+   viewport (it is a fixed full-screen toy); a review page has to scroll and
+   be photographed whole, so this undoes exactly that much of it.
+
+   EVERY RULE IN THIS FILE IS SCOPED UNDER `.sheet`, which mor.tsx puts on
+   <html> for the sheet and never for a device panel. Both are served by the
+   same document, and unscoped furniture reaches the panels too — which is
+   not a cosmetic problem: `height: auto` on #root collapses `.india`, which
+   collapses `.tour-stage`, which puts Mor's `bottom: 144px` 144px above the
+   top of the screen. The clearance numbers said so before this was scoped. */
+.sheet, .sheet body, .sheet #root { position: static; height: auto; overflow: visible; }
+
+.sheet body {
+  margin: 0;
+  padding: 22px 24px 28px;
+  background: #efe9dc;
+  font-size: 15px;
+}
+
+.sheet h1 { margin: 0 0 4px; font-size: 24px; }
+.sheet h2 { margin: 24px 0 10px; font-size: 18px; }
+.sheet .note { margin: 0 0 14px; max-width: 96ch; font-size: 14px; color: #3d4a41; }
+.sheet code { font-size: 13px; }
+
+.sheet .row { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.sheet .cell { margin: 0; }
+
+/* Drawn at about the size of the map on an iPad and then scaled down, so Mor
+   is rendered at the size he really ships at, in the box he really stands in.
+   `.mor` sizes itself off vmin and off --tap, neither of which this box can
+   fake, so the scale is the honest way to see him in place. */
+.sheet .stage-box {
+  position: relative;
+  width: 400px;
+  height: 440px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 1px 4px rgba(18, 36, 28, 0.25);
+}
+
+.sheet .stage-box .tour-stage {
+  width: 720px;
+  height: 792px;
+  transform: scale(0.5556);
+  transform-origin: top left;
+}
+
+/* Where the fixed control bar would lie over this box, drawn so the corner
+   Mor stands in can be judged against the thing he must never cover. */
+.sheet .bar-ghost {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 67px;   /* 120 real px x 0.5556 */
+  background: repeating-linear-gradient(45deg, rgba(11,61,46,.22) 0 6px, rgba(11,61,46,.10) 6px 12px);
+  border-top: 1px solid rgba(11, 61, 46, .5);
+}
+
+/* The big look. Two kinds live in here: a plain drawing, centred, and a
+   magnifying glass held over the corner of a real stage. */
+.sheet .plate {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  width: 400px;
+  height: 400px;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 1px 4px rgba(18, 36, 28, 0.25);
+}
+
+.sheet .plate > svg { width: 340px; height: 340px; display: block; }
+
+/* Two heads side by side, for the one thing that is invisible at his real
+   size: open, and shut. */
+.sheet .plate--pair { grid-auto-flow: column; gap: 6px; }
+.sheet .plate--pair > svg { width: 190px; height: 190px; }
+
+/* 2x, framed on the bottom-right corner where Mor stands. The arithmetic:
+   his box is 136px wide at `right: 8px` and `bottom: 144px` in a 720x792
+   stage, and `showing` grows him 1.14x about his feet — so the middle of the
+   drawn bird sits at about (644, 570), which is (1288, 1140) at 2x, which is
+   200px in from this window's top-left. */
+.sheet .zoom { position: absolute; left: -1088px; top: -940px; }
+.sheet .zoom .tour-stage { width: 720px; height: 792px; transform: scale(2); transform-origin: top left; }
+
+.sheet figcaption { padding-top: 6px; font-size: 14px; color: #3d4a41; max-width: 400px; }
+.sheet figcaption b { color: #12241c; }
