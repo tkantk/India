@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act, render, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
 import { GrandTour } from './GrandTour'
 import { HOLD } from './effects/Reveal'
 import { STAGGER_MS } from '../map/useMapNodes'
@@ -84,8 +83,7 @@ beforeEach(() => {
 })
 afterEach(() => { narrator.cut() })
 
-const mount = (props: Record<string, unknown> = {}) =>
-  render(<MemoryRouter><GrandTour {...props} /></MemoryRouter>)
+const mount = (props: Record<string, unknown> = {}) => render(<GrandTour {...props} />)
 
 const cue = (verb: string, arg?: string): Cue => ({ t: 0, word: 0, do: verb, arg })
 

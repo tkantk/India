@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
 import { IndiaScreen } from './IndiaScreen'
 import geo from '../data/geo.json'
 import type { Clip, Cue } from '../types'
@@ -28,7 +26,7 @@ const narrator = {
 }
 vi.mock('../audio/Narrator', () => ({ getNarrator: () => narrator }))
 
-const mount = () => render(<MemoryRouter><IndiaScreen /></MemoryRouter>)
+const mount = () => render(<IndiaScreen />)
 
 describe('IndiaScreen', () => {
   it('is the map, the peacock, one enormous button and the control bar', () => {
@@ -52,68 +50,21 @@ describe('IndiaScreen', () => {
   })
 })
 
-/**
- * The three collisions the earlier tasks measured in a real browser and left
- * for this one. jsdom does no layout, so these cannot be checked by rendering
- * — they are checked as what they are, declarations in a stylesheet, and then
- * measured for real by `npm run tour:strip`, which photographs the app at a
- * phone and two iPad viewports and writes the overlaps to
- * build/tour-layout.json.
+/*
+ * WHY THERE ARE NO LAYOUT TESTS IN THIS FILE.
+ *
+ * There were six, and every one of them was a regex over a stylesheet: "does
+ * Controls.css contain `flex-wrap: wrap` inside a max-width query". They
+ * would have broken on a rename and could not have failed on an actual
+ * collision, because jsdom does no layout at all — no box has a size here, so
+ * "the bar overflows a 390px phone by 73px" is not a statement this
+ * environment can evaluate.
+ *
+ * The real check is `npm run tour:strip`, which builds the app, serves it,
+ * and measures it in Chrome at 390x844, 375x812, 768x1024 and 1024x768: bar
+ * overflow, every control's box against the 104px floor, the licence credit
+ * against the bar and against the play button, the read-along against Mor and
+ * the credit, whether the page scrolls, and — with `elementFromPoint` — what a
+ * finger actually reaches through Mor and through the words. It exits
+ * non-zero if any of it is wrong, and it writes build/tour-layout.json.
  */
-const css = (path: string) => readFileSync(path, 'utf8')
-const controls = css('src/ui/Controls.css')
-const tour = css('src/tour/grandTour.css')
-const map = css('src/map/map.css')
-
-describe('the control bar fits a phone', () => {
-  it('publishes its own height, so anything under it can leave room', () => {
-    expect(controls).toMatch(/--bar:\s*calc\(/)
-    expect(controls).toMatch(/--bar-rows:\s*1/)
-  })
-
-  it('wraps to a second row rather than shrinking a 104px target', () => {
-    // Five 104px targets plus the 56px gutter need 592px. A 390px phone
-    // overflowed by 73px with Play and Home cut off the ends. The target size
-    // is the researched figure for a child under nine and does not move.
-    expect(controls).toMatch(/@media \(max-width: 600px\)[\s\S]*?--bar-rows:\s*2/)
-    expect(controls).toMatch(/@media \(max-width: 600px\)[\s\S]*?flex-wrap:\s*wrap/)
-    expect(controls).not.toMatch(/--tap:\s*/)
-  })
-
-  it('puts play, again and home on the row nearest the thumb', () => {
-    const wrap = /@media \(max-width: 600px\)\s*\{[\s\S]*?\n\}/g
-    const blocks = controls.match(wrap)?.join('\n') ?? ''
-    expect(blocks).toMatch(/nth-child\(5\)\s*\{\s*order:\s*3/)  // home moves up
-    expect(blocks).toMatch(/nth-child\(3\)\s*\{\s*order:\s*4/)  // slower moves down
-  })
-})
-
-describe('nothing hides behind the control bar', () => {
-  it('stands Mor clear of it, through the knob mor.css shipped for this', () => {
-    expect(tour).toMatch(/--mor-floor:\s*calc\(var\(--bar-over\)/)
-    // And clear of the play button too, on the phone where the two collide.
-    expect(tour).toMatch(/@media \(max-width: 600px\)[\s\S]*?--mor-floor:[^;]*var\(--play\)/)
-  })
-
-  it('lifts the licence credit off the floor, because a hidden credit is not a credit', () => {
-    expect(map).toMatch(/\.map \.credit \{[\s\S]*?bottom:\s*var\(--credit-floor, 0px\)/)
-    expect(tour).toMatch(/--credit-floor:\s*calc\(var\(--bar-over\)/)
-  })
-
-  it('measures the bar against the box it actually overlaps', () => {
-    // `.controls` is fixed to the viewport; body already carries the bottom
-    // safe-area inset as padding, so the stage stops short of the viewport by
-    // exactly that much. Reserving the full bar height inside the stage would
-    // reserve a home indicator's worth of nothing.
-    expect(tour).toMatch(/--bar-over:\s*calc\(var\(--bar\) - env\(safe-area-inset-bottom, 0px\)\)/)
-  })
-})
-
-describe('the play button', () => {
-  it('is at least twice a tap target, and says a word', () => {
-    expect(tour).toMatch(/--play:\s*calc\(var\(--tap\) \* 2\)/)
-    expect(tour).toMatch(/\.tap\.play-big \{[\s\S]*?min-height:\s*var\(--play\)/)
-    mount()
-    expect(screen.getByRole('button', { name: /show me india/i }).className).toContain('tap')
-  })
-})

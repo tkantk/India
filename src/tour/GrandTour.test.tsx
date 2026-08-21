@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
 import { GrandTour, comesHome, stageHold } from './GrandTour'
 import { HOLD, FADE_MS } from './effects/Reveal'
 import tour from '../../content/tour.json'
@@ -166,10 +165,7 @@ const ids = tour.beats.map((b: { id: string }) => b.id)
 const CLIPS = timings as unknown as Record<string, Clip>
 const idOf = (audio: string) => audio.replace(/.*\/(.*)\.m4a/, '$1')
 
-/** Controls calls useNavigate(), so the tour is always inside a Router — in
- *  production main.tsx wraps <App /> in a HashRouter. */
-const mount = (props: Record<string, unknown> = {}) =>
-  render(<MemoryRouter><GrandTour {...props} /></MemoryRouter>)
+const mount = (props: Record<string, unknown> = {}) => render(<GrandTour {...props} />)
 
 const whole = { timeout: 4000 }
 
@@ -286,6 +282,56 @@ describe('GrandTour', () => {
     expect(played.map(idOf)).toEqual(ids)
   })
 
+  it('makes the bar\'s play button start the tour when nothing is playing', async () => {
+    // It used to call `Narrator.resume()`, which returns early with no
+    // buffer — a 104px target labelled "Play" that did nothing, next to a
+    // working one labelled "Show me again".
+    autoEnd = false
+    mount()
+    expect(played).toHaveLength(0)
+    await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
+    await waitFor(() => expect(played.map(idOf)).toEqual([ids[0]]))
+  })
+
+  it('pauses and resumes the beat in the air, rather than starting over', async () => {
+    autoEnd = false
+    mount({ autoStart: true })
+    await waitFor(() => expect(played).toHaveLength(1))
+    await userEvent.click(screen.getByRole('button', { name: /pause/i }))
+    expect(narrator.pause).toHaveBeenCalledOnce()
+    await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
+    expect(narrator.resume).toHaveBeenCalledOnce()
+    expect(played).toHaveLength(1)
+  })
+
+  it('plays it all again from the bar once the tour has finished', async () => {
+    mount({ autoStart: true })
+    await waitFor(
+      () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+      whole,
+    )
+    const soFar = played.length
+    autoEnd = false
+    await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
+    await waitFor(() => expect(played.length).toBe(soFar + 1))
+    expect(idOf(played[played.length - 1])).toBe(ids[0])
+  }, 12000)
+
+  it('goes home: stops the tour and puts the big button back', async () => {
+    autoEnd = false
+    mount({ autoStart: true })
+    await waitFor(() => expect(played).toHaveLength(1))
+    expect(screen.queryByRole('button', { name: /show me/i })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /home/i }))
+    expect(narrator.stop).toHaveBeenCalled()
+    // The beginning, not "again" — home is where the child came in.
+    expect(screen.getByRole('button', { name: /show me india/i })).toBeInTheDocument()
+    // And it stays stopped: finishing the abandoned clip must not advance it.
+    await act(async () => { narrator.finish() })
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)) })
+    expect(played).toHaveLength(1)
+  })
+
   it('starts on the big button, which carries a word and a child-sized target', async () => {
     autoEnd = false
     mount()
@@ -343,6 +389,48 @@ describe("Mor's showing has a lifetime", () => {
     mount()
     act(() => { narrator.onCue({ t: 0, word: 0, do: 'highlightAllStates' }) })
     expect(state()).toBe('idle')
+  })
+})
+
+/**
+ * "Hold on, we are flying there now. Look down." The flight lands at word 20
+ * and India Gate does not rise until word 36 — six seconds during which a
+ * child was told to look at a beige field, because at that zoom Delhi's own
+ * fill is the same colour as every other state.
+ */
+describe('the look-down marker', () => {
+  const marker = () => document.querySelector('.cue-map circle')
+
+  it('puts something to look at where the camera has just landed', () => {
+    mount()
+    expect(marker()).toBeNull()
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }) })
+    const ring = marker()
+    expect(ring).toBeTruthy()
+    // In the map's own coordinates, on the middle of the place flown to.
+    const delhi = (geo.places as Record<string, { bbox: number[] }>).delhi.bbox
+    expect(Number(ring!.getAttribute('cx'))).toBeCloseTo(delhi[0] + delhi[2] / 2, 3)
+    expect(Number(ring!.getAttribute('cy'))).toBeCloseTo(delhi[1] + delhi[3] / 2, 3)
+  })
+
+  it('does not light the state instead, which at that zoom is a screen full of saffron', () => {
+    const { container } = mount()
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }) })
+    expect(container.querySelector('[data-slug="delhi"]')?.classList.contains('lit')).toBe(false)
+  })
+
+  it('draws nothing for a place nobody has heard of', () => {
+    mount()
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'narnia' }) })
+    expect(marker()).toBeNull()
+  })
+
+  it('takes it away when the child goes home', async () => {
+    mount({ autoStart: true })
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }) })
+    expect(marker()).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: /home/i }))
+    expect(marker()).toBeNull()
   })
 })
 

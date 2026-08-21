@@ -1,7 +1,29 @@
 import { useState, useSyncExternalStore } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { getNarrator } from '../audio/Narrator'
 import './Controls.css'
+
+type Props = {
+  /**
+   * What the play/pause button does. Required, and that is the point.
+   *
+   * The bar can see whether the engine is speaking, and it used to act on
+   * that alone — `playing ? pause() : resume()`. But `resume()` returns
+   * early when there is no buffer to resume, so at rest the button did
+   * NOTHING: a 104px target labelled "Play", right next to a working one
+   * labelled "Show me again", for a six-year-old who will certainly press
+   * whichever is nearer. Only the screen knows what play means when nothing
+   * is speaking — start the tour, resume this beat, or play it all again —
+   * so the screen says.
+   */
+  onPlayPause: () => void
+  /**
+   * The way out. On a one-screen app that is "stop, and put the big button
+   * back", which is what this screen does with it; it used to be
+   * `navigate('/')` from `/`, which rewrote the hash and left the beat
+   * playing. Plan 3's state screens will make it a real navigation.
+   */
+  onHome: () => void
+}
 
 /**
  * The five things a child can always reach: play/pause, say it again,
@@ -14,19 +36,18 @@ import './Controls.css'
  * engine's own `subscribe`, not polled after an `await`: the
  * `visibilitychange` handler inside the engine can flip `stuck` with no tap
  * at all, and a poll-after-await design would miss that entirely.
+ *
+ * Slower and sound are the bar's own business — they are settings on the
+ * engine and mean the same thing on every screen. Play and home are not, so
+ * they come in as props.
  */
-export function Controls() {
+export function Controls({ onPlayPause, onHome }: Props) {
   const n = getNarrator()
   const playing = useSyncExternalStore(n.subscribe, () => n.playing)
   const stuck = useSyncExternalStore(n.subscribe, () => n.stuck)
 
   const [slow, setSlow] = useState(false)
   const [muted, setMuted] = useState(false)
-
-  // Always inside a Router in production (main.tsx wraps <App /> in
-  // <HashRouter>) and in the test double (MemoryRouter).
-  const navigate = useNavigate()
-  const goHome = () => navigate('/')
 
   // On iOS an AudioContext can stick in "interrupted" through a phone call
   // or Siri and never come back (WebKit bug 263627). There is no other way
@@ -62,7 +83,7 @@ export function Controls() {
       <button
         type="button"
         className="tap control"
-        onClick={() => (playing ? n.pause() : n.resume())}
+        onClick={onPlayPause}
       >
         <span className="control__body">
           <span className="control__icon" aria-hidden="true">{playing ? '⏸' : '▶'}</span>
@@ -91,7 +112,7 @@ export function Controls() {
         </span>
       </button>
 
-      <button type="button" className="tap control" onClick={goHome}>
+      <button type="button" className="tap control" onClick={onHome}>
         <span className="control__body">
           <span className="control__icon" aria-hidden="true">🏠</span>
           <span className="control__label">Home</span>

@@ -40,6 +40,10 @@ export const HOLD = {
   script: 8000,
   counter: 5000,
   flag: 12000,
+  /** The "look down" ring at the end of a flight. Tuned to beat 5: the cue
+   *  fires at 5.72s and India Gate rises at 11.86s, so the ring finishes
+   *  fading exactly as the Gate arrives on the same spot. */
+  here: 5600,
 } as const
 
 /** 500 ms in, gently. The brief's 400-600 ms, and no overshoot: a symbol that

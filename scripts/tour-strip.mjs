@@ -448,7 +448,7 @@ function shutterWord(beat) {
  * flight to Delhi ARRIVES, and that the camera comes back.
  */
 const EXTRA = [
-  { id: 'tour.05', word: 24, name: 'delhi-arrived', why: 'the flight has landed on Delhi' },
+  { id: 'tour.05', word: 24, name: 'delhi-arrived', why: 'the flight has landed, and "look down" has something to look at' },
   { id: 'tour.06', word: 3, name: 'came-home', why: 'and the camera is home again' },
   // Where a beat draws twice, the per-beat frame only ever catches the last
   // one — the overlay is a single slot. These are the pictures that would
@@ -581,6 +581,23 @@ function checkCues(log) {
 
 // -------------------------------------------------------------- the layouts
 
+/**
+ * What counts as wrong. One definition, so a full run and a `--only=layout`
+ * run cannot disagree about whether the screen is all right.
+ */
+const collides = (l) =>
+  l.idle.barOverflow > 0 || !l.idle.buttons.every((b) => b.onScreen && b.bigEnough)
+  || !l.idle.creditVisible || l.idle.morInkOverPlay || l.idle.morInkOverBar
+  || l.idle.creditOverPlay || l.idle.creditOverMor
+  || l.talking.sayOverBar || l.talking.sayOverMor || l.talking.sayOverPlay
+  || l.talking.creditOverSay || l.talking.pageScrolls
+  // Only the button may swallow a tap. Everything else on the stage is
+  // scenery and the map has to be reachable through it.
+  || /tour-front|say|mor/.test(String(l.talking.tapReaches.middleOfTheMap))
+  || /tour-front|say|mor/.test(String(l.talking.tapReaches.throughMor))
+  || /tour-front|say|mor/.test(String(l.talking.tapReaches.throughTheWords))
+  || !/play-big/.test(String(l.idle.tapReaches.onThePlayButton))
+
 const DEVICES = [
   ['phone', 390, 844],
   ['small phone', 375, 812],
@@ -683,6 +700,11 @@ await open()
 if (ONLY === 'layout') {
   const only = await measureLayouts()
   writeFileSync(`${OUT}/tour-layout.json`, `${JSON.stringify(only.out, null, 2)}\n`)
+  const wrong = only.out.filter(collides)
+  console.log(wrong.length === 0
+    ? 'no collisions at any of the four viewports.'
+    : `collisions at: ${wrong.map((b) => b.device).join(', ')} — see build/tour-layout.json.`)
+  if (wrong.length) process.exitCode = 1
   sheet('tour-layout', 'Namaste India — the three collisions, measured',
     'Layout only (--only=layout): the same app at four viewports, idle and mid-beat.',
     only.shots.map((s) => ({ file: s.file, caption: `<b>${esc(s.caption)}</b>` })), 4, 380)
@@ -745,22 +767,16 @@ sheet(
   380,
 )
 
-const bad = layouts.out.filter((l) =>
-  l.idle.barOverflow > 0 || !l.idle.buttons.every((b) => b.onScreen && b.bigEnough)
-  || !l.idle.creditVisible || l.idle.morInkOverPlay || l.idle.morInkOverBar
-  || l.idle.creditOverPlay || l.idle.creditOverMor
-  || l.talking.sayOverBar || l.talking.sayOverMor || l.talking.sayOverPlay
-  || l.talking.creditOverSay || l.talking.pageScrolls
-  // Only the button may swallow a tap. Everything else on the stage is
-  // scenery and the map has to be reachable through it.
-  || /tour-front|say|mor/.test(String(l.talking.tapReaches.middleOfTheMap))
-  || /tour-front|say|mor/.test(String(l.talking.tapReaches.throughMor))
-  || /tour-front|say|mor/.test(String(l.talking.tapReaches.throughTheWords))
-  || !/play-big/.test(String(l.idle.tapReaches.onThePlayButton)))
+const bad = layouts.out.filter(collides)
 
 console.log(`\n${drift === 0 ? 'every visible cue landed within two words of its own word.' : `${drift} cue(s) drifted or never landed — look at build/tour-watch.json.`}`)
 console.log(bad.length === 0
   ? 'no collisions at any of the four viewports.'
   : `collisions at: ${bad.map((b) => b.device).join(', ')} — see build/tour-layout.json.`)
+
+// A check, not a report. There are no layout tests in the vitest suite —
+// jsdom has no boxes to measure — so this is the only thing that can fail
+// when the bar stops fitting a phone or the credit goes back behind it.
+if (drift || bad.length) process.exitCode = 1
 
 stop()

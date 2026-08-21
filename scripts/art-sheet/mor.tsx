@@ -274,7 +274,7 @@ function Device({ state, tiger }: { state: 'idle' | 'talking' | 'showing'; tiger
           <PlayButton />
         </div>
       </main>
-      <Controls />
+      <Controls onPlayPause={NOOP} onHome={NOOP} />
     </MemoryRouter>
   )
 }

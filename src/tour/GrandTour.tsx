@@ -7,6 +7,7 @@ import { Controls } from '../ui/Controls'
 import { ReadAlong } from '../ui/ReadAlong'
 import { TourStage } from './TourStage'
 import { Mor } from './Mor'
+import { Here } from './effects/Here'
 import { FADE_MS, HOLD } from './effects/Reveal'
 import { WATERS } from './effects/art/Sea'
 import content from '../../content/tour.json'
@@ -100,6 +101,9 @@ const HIGHLIGHT_MS = ALL_SLUGS.length * STAGGER_MS + HOLD.counter
 /** The two verbs that light the map rather than draw on it. */
 const HIGHLIGHTS = new Set(['highlightAllStates', 'highlightUnionTerritories'])
 
+/** The middle of a place, in the map's own coordinates. */
+const centreOf = (bbox: Bbox): [number, number] => [bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2]
+
 /** The three seas are one accumulating picture and hold longer than a card;
  *  taken from the art itself so the two cannot drift. */
 const SEAS = new Set(WATERS.map((w) => w.id))
@@ -171,6 +175,8 @@ export function comesHome(clip: Clip, view: Bbox | null): boolean {
  */
 function useStageLife(map: MapApi) {
   const [showing, setShowing] = useState<string | null>(null)
+  /** Where the camera has just landed, if it landed anywhere. */
+  const [here, setHere] = useState<{ at: [number, number]; nonce: number } | null>(null)
   const fan = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wave = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -184,10 +190,19 @@ function useStageLife(map: MapApi) {
   const clear = useCallback(() => {
     stop()
     setShowing(null)
+    setHere(null)
   }, [stop])
 
   /** A cue just fired. Give whatever it put on stage somewhere to end. */
   const saw = useCallback((cue: Cue) => {
+    if (cue.do === 'zoomTo') {
+      // "Look down." The registry flies the camera; this is the thing there
+      // is to look at when it lands. A fresh nonce so a replayed beat draws
+      // it again rather than reusing a marker that has already gone.
+      const place = cue.arg ? PLACES[cue.arg] : undefined
+      if (place) setHere({ at: centreOf(place.bbox), nonce: ++marked })
+      return
+    }
     if (HIGHLIGHTS.has(cue.do)) {
       if (wave.current) clearTimeout(wave.current)
       wave.current = setTimeout(() => {
@@ -208,8 +223,11 @@ function useStageLife(map: MapApi) {
 
   useEffect(() => stop, [stop])
 
-  return { showing, saw, clear }
+  return { showing, here, saw, clear }
 }
+
+/** Fresh key per flight, so `Here` remounts and animates again. */
+let marked = 0
 
 type Props = {
   /** Start on mount, with no tap. The tests use it; the app does not — a
@@ -233,7 +251,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   /** Has the child been all the way through? Only then does the button
    *  offer it "again" — abandoning at beat 3 is not having seen it. */
   const [finished, setFinished] = useState(false)
-  const { showing, saw, clear: clearStage } = useStageLife(map)
+  const { showing, here, saw, clear: clearStage } = useStageLife(map)
 
   const shimmer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stopShimmer = useCallback(() => {
@@ -340,6 +358,37 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   }, [clearStage, map, n, stopShimmer])
 
   /**
+   * The bar's play/pause, which has exactly one meaning: make something
+   * happen. A beat in the air (playing or paused) is the engine's transport;
+   * no beat at all — at rest, or after the end — starts the tour, which is
+   * the same thing the big gold button does. Two targets, one meaning, and
+   * neither of them dead.
+   */
+  const playPause = useCallback(() => {
+    if (n.playing) { n.pause(); return }
+    if (at !== null) { n.resume(); return }
+    start()
+  }, [at, n, start])
+
+  /**
+   * Home. On a one-screen app there is nowhere to navigate TO, so home is
+   * the state the screen was in when the child first saw it: nothing
+   * playing, nothing lit, nothing on stage, the big button back and
+   * offering the tour from the top.
+   */
+  const goHome = useCallback(() => {
+    n.stop()
+    setAt(null)
+    // Not "again": home is the beginning, and this is what the beginning
+    // looks like.
+    setFinished(false)
+    clearStage()
+    stopShimmer()
+    map.clear()
+    void camera.home()
+  }, [clearStage, map, n, stopShimmer])
+
+  /**
    * A state was tapped. Whatever was happening stops, and the child goes
    * where they pointed — beat 14 invites exactly this, and every beat before
    * it allows it.
@@ -358,7 +407,13 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
 
   return (
     <>
-      <TourStage onPickState={pick} onCue={saw}>
+      <TourStage onPickState={pick} onCue={saw} scene={beat?.id ?? ''}>
+        {/* "Look down." Drawn in the map's own coordinates, over the place
+            the camera has just flown to. Not part of the overlay slot: that
+            belongs to the cue registry, and this answers a camera verb the
+            registry has no picture for. */}
+        {here && <Here key={here.nonce} at={here.at} />}
+
         {/* The sentence being spoken, with the word lit. `data-beat` is how a
             person watching with devtools open — and the frame-strip probe —
             can tell which of the fourteen is in the air. */}
@@ -385,7 +440,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
         </div>
       </TourStage>
 
-      <Controls />
+      <Controls onPlayPause={playPause} onHome={goHome} />
     </>
   )
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { act, fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { TourStage } from './TourStage'
 import type { Cue } from '../types'
 import geo from '../data/geo.json'
@@ -81,6 +81,33 @@ describe('TourStage', () => {
     const { container } = render(<TourStage />)
     const kerala = container.querySelector('[data-slug="kerala"]')!
     expect(() => fireEvent.pointerDown(kerala, { bubbles: true })).not.toThrow()
+  })
+
+  it('sweeps the stage when the scene changes, so art cannot bleed into the next beat', async () => {
+    // Every effect dismisses itself, and the holds deliberately outrun the
+    // gap between cues so nothing flickers — but HOLD.script is 8s and beat
+    // 13's last greeting fires 3.3s before the beat ends, so beat 14's "now
+    // it is your turn, tap any state" was delivered with the greetings card
+    // sitting over the map.
+    const { container, rerender } = render(<TourStage scene="tour.13" />)
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'revealSymbol', arg: 'tiger' }) })
+    expect(container.querySelector('.tour-overlay')).toBeTruthy()
+
+    rerender(<TourStage scene="tour.14" />)
+    // A fade, not a cut: it is still there, on its way out.
+    expect(container.querySelector('.tour-overlay')?.getAttribute('data-sweeping')).toBe('true')
+    await waitFor(() => expect(container.querySelector('.tour-overlay')).toBeNull())
+  })
+
+  it('lets a new picture cancel a sweep, so a beat never eats its own first cue', async () => {
+    const { container, rerender } = render(<TourStage scene="tour.13" />)
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'revealSymbol', arg: 'tiger' }) })
+    rerender(<TourStage scene="tour.14" />)
+    // Beat 6's flag lands 663 ms in, which is inside the sweep.
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'unfurlFlag' }) })
+    expect(container.querySelector('.tour-overlay')?.getAttribute('data-sweeping')).toBeNull()
+    await new Promise((r) => setTimeout(r, 500))
+    expect(container.querySelector('[data-verb="unfurlFlag"]')).toBeTruthy()
   })
 
   it('hands the engine back to a no-op on unmount, so a stray cue is inert', () => {

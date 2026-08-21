@@ -21,4 +21,12 @@
   display: grid;
   place-items: center;
   pointer-events: none;
+
+  /* The beat-boundary sweep (see `scene` in TourStage.tsx). Opacity on an
+     HTML div is compositable — this is a RenderLayerModelObject, unlike
+     anything inside the SVG below it — so the whole outgoing picture fades
+     on one layer instead of repainting every path in it. */
+  transition: opacity 350ms ease-out;
 }
+
+.tour-overlay[data-sweeping] { opacity: 0; }
