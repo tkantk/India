@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -84,4 +84,99 @@ describe('tts pipeline with the draft voice', () => {
     expect(timings()['testland.intro'].audio).toBe('audio/en/testland.intro.m4a')
     expect(timings()['testland.intro'].audio.startsWith('/')).toBe(false)
   })
+})
+
+// Regression coverage for the --only + --force interaction: `force` must
+// clear the render cache without also clearing the merge base that --only
+// relies on, or a partial re-render silently deletes every other place's
+// entry from timings.json. Uses its own scratch dir and its own two-place
+// fixture pair so it doesn't interfere with the single-fixture suite above.
+describe('cache reuse, --only, and --force semantics', () => {
+  const dir2 = mkdtempSync(join(tmpdir(), 'tts-test2-'))
+  const AUDIO2 = join(dir2, 'audio')
+  const TIMINGS2 = join(dir2, 'timings.json')
+  const CACHE2 = join(dir2, 'cache.json')
+
+  const FIRST = 'aaastateone'
+  const SECOND = 'zzzstatetwo'
+  const fixturePath = (id) => `content/places/${id}.json`
+
+  const place = (id, cap) => ({
+    id, name: id, type: 'state', capital: cap, ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} welcomes every visitor warmly today.`,
+                [{ word: 1, do: 'playSfx', arg: 'chime' }]),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  const run = (...args) => execFileSync('node', [
+    'scripts/tts.mjs', '--provider=say',
+    `--audio-dir=${AUDIO2}`, `--timings=${TIMINGS2}`, `--cache=${CACHE2}`,
+    ...args,
+  ], { encoding: 'utf8' })
+
+  const timings2 = () => JSON.parse(readFileSync(TIMINGS2, 'utf8'))
+  const introMtime = (id) => statSync(join(AUDIO2, `${id}.intro.m4a`)).mtimeMs
+
+  beforeAll(() => {
+    mkdirSync('content/places', { recursive: true })
+    writeFileSync(fixturePath(FIRST), JSON.stringify(place(FIRST, 'Aaapur')))
+    writeFileSync(fixturePath(SECOND), JSON.stringify(place(SECOND, 'Zzzpur')))
+  })
+
+  afterAll(() => {
+    rmSync(fixturePath(FIRST), { force: true })
+    rmSync(fixturePath(SECOND), { force: true })
+    rmSync(dir2, { recursive: true, force: true })
+  })
+
+  // Every it() below shells out to the real say -> afconvert pipeline, which
+  // is far slower than vitest's 5s default test timeout (30 fresh lines take
+  // ~20s on this machine). Hook timeouts default higher, which is why the
+  // single-fixture beforeAll above didn't need this, but these run inside
+  // it() bodies, so they need explicit budgets.
+
+  it('renders both fixture places on a full run', () => {
+    const out = run()
+    console.log(out)
+    const ids = Object.keys(timings2())
+    expect(ids.some(k => k.startsWith(FIRST))).toBe(true)
+    expect(ids.some(k => k.startsWith(SECOND))).toBe(true)
+  }, 60_000)
+
+  it('reuses cached audio and preserves the other place when --only is used', () => {
+    const before = introMtime(FIRST)
+    const out = run(`--only=${FIRST}`)
+    console.log(out)
+    expect(out).toMatch(/0 rendered, 10 reused from cache/)
+    expect(Object.keys(timings2()).some(k => k.startsWith(SECOND))).toBe(true)
+    expect(introMtime(FIRST)).toBe(before)
+  }, 30_000)
+
+  it('REGRESSION: --only combined with --force must not delete the other place\'s entries', () => {
+    run(`--only=${FIRST}`, '--force')
+    const ids = Object.keys(timings2())
+    expect(ids.some(k => k.startsWith(SECOND)), `${SECOND}'s entries were deleted by --only + --force`).toBe(true)
+  }, 30_000)
+
+  it('moving a cue updates its time without re-rendering the audio', () => {
+    const before = introMtime(FIRST)
+    const fixture = JSON.parse(readFileSync(fixturePath(FIRST), 'utf8'))
+    fixture.intro.cues = [{ word: 2, do: 'playSfx', arg: 'chime' }]
+    writeFileSync(fixturePath(FIRST), JSON.stringify(fixture))
+
+    run(`--only=${FIRST}`)
+
+    const t = timings2()[`${FIRST}.intro`]
+    expect(t.cues[0].t).toBe(t.starts[2])
+    expect(introMtime(FIRST)).toBe(before)
+  }, 30_000)
 })
