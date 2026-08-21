@@ -1,0 +1,48 @@
+/* The contact sheet's own furniture. base.css nails the app's body to the
+   viewport (it is a fixed full-screen toy); a review page has to scroll and
+   be photographed whole, so this undoes exactly that much of it. */
+html, body, #root { position: static; height: auto; overflow: visible; }
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: #efe9dc;
+  font-size: 15px;
+}
+
+h1 { margin: 0 0 4px; font-size: 26px; }
+.note { margin: 0 0 20px; max-width: 70ch; font-size: 15px; color: #3d4a41; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 332px);
+  gap: 22px;
+}
+
+.cell { margin: 0; }
+
+/* Each stage is drawn at about the size of the map on an iPad and then scaled
+   down, so the art is rendered at the size it really ships at. */
+.stage-box {
+  width: 332px;
+  height: 366px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 1px 4px rgba(18, 36, 28, 0.25);
+}
+
+.stage-box .tour-stage {
+  width: 720px;
+  height: 792px;
+  transform: scale(0.4611);
+  transform-origin: top left;
+}
+
+figcaption {
+  padding-top: 6px;
+  font-size: 14px;
+  color: #3d4a41;
+}
+
+figcaption b { color: #12241c; }

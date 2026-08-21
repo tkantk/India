@@ -15,6 +15,35 @@
      calmly next to a page of text; recolouring the ink itself would risk
      dropping below AAA. --ink on this is ~13.4:1, comfortably past 7:1. */
   --highlight: #ffe8a3;
+
+  /* The illustration palette — the tour art in src/tour/effects/art.
+     Warm, flat and few, so eleven symbols drawn on eleven different days
+     still look like one set. src/tour/effects/art/palette.ts mirrors every
+     value here (an SVG presentation attribute cannot resolve var() on the
+     iPad's legacy WebKit engine, so the art has to carry literals); a test
+     fails if the two ever drift apart. */
+  --sea: #2b7ba9;         /* deep water: the Ganga, the three seas */
+  --sea-pale: #bfe0ef;    /* shallow water, a pond */
+  --leaf: #3f8f57;        /* foliage */
+  --leaf-deep: #256b3d;
+  --bark: #7a5a3c;        /* trunks, aerial roots, mud */
+  --sand: #e3c98f;        /* the desert */
+  --sand-deep: #c9a45f;
+  --sand-shade: #b08b4a;
+  --stone: #cbb894;       /* monuments, bare rock */
+  --stone-deep: #a08d68;
+  --rose: #ef8fa8;        /* the lotus */
+  --rose-pale: #f9cdd8;
+  --mango: #f7b731;
+  --peacock: #1b6ea8;     /* Mor himself */
+  --peacock-teal: #2a8f8a;
+  --snow: #ffffff;
+
+  /* The flag is the one place the palette does not get a vote: these three
+     are the colours of the Indian national flag, and nothing else. */
+  --flag-saffron: #ff9933;
+  --flag-green: #138808;
+  --flag-navy: #000080;
 }
 
 * { box-sizing: border-box; }

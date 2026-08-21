@@ -10,22 +10,15 @@
   min-height: 0;
 }
 
-/* A clearly-marked stand-in for art Task 8 has not drawn yet — see
-   src/tour/overlays.tsx. Loud on purpose: nobody should mistake this for a
-   finished effect and ship it. */
+/* Where the tour art lands — the same box as the map, so a symbol can be
+   centred on it and a map-registered layer (the outline, the Ganga, the
+   Himalaya, the three seas) can share its viewBox and line up exactly. Never
+   a tap target: a child reaching for Kerala must not hit a tiger. The art's
+   own styles are in src/tour/effects/effects.css. */
 .tour-overlay {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   pointer-events: none;
-}
-
-.cue-placeholder {
-  padding: 8px 16px;
-  border: 2px dashed var(--saffron, #f0851f);
-  border-radius: 8px;
-  background: rgba(253, 248, 239, 0.9);
-  color: var(--ink, #12241c);
-  font-weight: 600;
 }

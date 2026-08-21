@@ -22,6 +22,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "content"],
+  "include": ["src", "content", "scripts/art-sheet"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }

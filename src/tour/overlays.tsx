@@ -1,34 +1,55 @@
 import type { ReactNode } from 'react'
+import { Symbol } from './effects/Symbol'
+import { Counter } from './effects/Counter'
+import { Flag } from './effects/Flag'
+import { River } from './effects/River'
+import { Mountains } from './effects/Mountains'
+import { Script } from './effects/Script'
 
 /**
- * The seam Task 8 fills with real art.
+ * The seam between a cue and a picture.
  *
- * Six of the twelve verbs animate something nobody has drawn yet:
- * `revealSymbol`, `unfurlFlag`, `countTo`, `traceRiver`, `raiseMountains`,
- * `showScript`. `cues.ts` never names an artefact directly — it looks the
- * verb up here and hands whatever comes back to `setOverlay`. Task 8 swaps
- * the placeholder renderers below for the real components (`Symbol`,
- * `Counter`, `Flag`, `River`, `Mountains`, `Script`) and never has to open
- * `cues.ts` to do it.
+ * `cues.ts` never names an artefact: it looks the verb up here and hands
+ * whatever comes back to `setOverlay`. Six verbs, six effects, and every one
+ * of them takes itself off stage again — there is no `onDone` in this
+ * signature and nothing ever clears the slot.
  */
 export type OverlayRenderer = (arg: string | undefined) => ReactNode
 
-/** Deliberately plain: a labelled box, not art. Its job is to be unmistakably
- *  a placeholder — `data-verb`/`data-arg` so a test (or a person) can tell
- *  exactly which cue produced it — not to look like anything. */
-function Placeholder({ verb, arg }: { verb: string; arg?: string }) {
+/**
+ * Why every effect gets a key nobody has used before.
+ *
+ * The overlay slot is one position in TourStage's tree, so React reconciles
+ * whatever lands there against whatever was there before. Same type, same
+ * key, and it is the SAME component instance with new props — which for an
+ * effect that has already run its hold and taken itself off stage means
+ * nothing appears at all. That is not hypothetical: it is what tapping "say
+ * it again" on a beat would do. A fresh key is a fresh mount, so a symbol
+ * revealed twice animates twice.
+ *
+ * `Script` is the one exception, and it is deliberate — see below.
+ */
+let nth = 0
+
+function cue(verb: string, arg: string | undefined, art: ReactNode, key?: string): ReactNode {
   return (
-    <div className="cue-placeholder" data-verb={verb} data-arg={arg ?? ''}>
-      {arg ? `${verb}: ${arg}` : verb}
+    // data-verb/data-arg say which cue put this on screen — for a test, and
+    // for anyone watching the tour with devtools open.
+    <div className="cue" data-verb={verb} data-arg={arg ?? ''} key={key ?? `${verb}:${arg}:${++nth}`}>
+      {art}
     </div>
   )
 }
 
 export const OVERLAYS: Record<string, OverlayRenderer> = {
-  revealSymbol: (arg) => <Placeholder verb="revealSymbol" arg={arg} />,
-  unfurlFlag: (arg) => <Placeholder verb="unfurlFlag" arg={arg} />,
-  countTo: (arg) => <Placeholder verb="countTo" arg={arg} />,
-  traceRiver: (arg) => <Placeholder verb="traceRiver" arg={arg} />,
-  raiseMountains: (arg) => <Placeholder verb="raiseMountains" arg={arg} />,
-  showScript: (arg) => <Placeholder verb="showScript" arg={arg} />,
+  revealSymbol: (arg) => cue('revealSymbol', arg, <Symbol name={arg} />),
+  unfurlFlag: (arg) => cue('unfurlFlag', arg, <Flag />),
+  countTo: (arg) => cue('countTo', arg, <Counter to={Number(arg)} />),
+  traceRiver: (arg) => cue('traceRiver', arg, <River name={arg} />),
+  raiseMountains: (arg) => cue('raiseMountains', arg, <Mountains />),
+  // Stable key, on purpose: the three greetings arrive a second apart and
+  // belong on one card together, so this must be one component instance
+  // across all three cues rather than three mounts. `nonce` is what restarts
+  // its hold each time.
+  showScript: (arg) => cue('showScript', arg, <Script greeting={arg} nonce={String(++nth)} />, 'showScript'),
 }

@@ -1,0 +1,45 @@
+/**
+ * "Watch this line of water. It is the river Ganga. It begins high up in the
+ * snowy mountains, then it runs and runs across the country until it pours
+ * itself out into the sea."
+ *
+ * Which is exactly what it does: the line is the real course of the river,
+ * projected with the map's own projection (see scripts/build-geo-art.mjs), so
+ * it starts in Uttarakhand, crosses the plains and reaches the Bay of Bengal
+ * over the states it actually flows through. It draws for a good second and a
+ * half, because "runs and runs" is the point.
+ */
+import { motion } from 'motion/react'
+import { HOLD, Layer, useStill } from './Reveal'
+import { GANGA } from './art/geo'
+import { PALETTE as C } from './art/palette'
+
+const RIVERS: Record<string, string> = { ganga: GANGA }
+const DRAW_S = 1.8
+
+export function River({ name }: { name: string | undefined }) {
+  const still = useStill()
+  const d = name ? RIVERS[name] : undefined
+  if (!d) return null
+
+  const draw = {
+    initial: still ? false : ({ pathLength: 0 } as const),
+    animate: { pathLength: 1 },
+    transition: { duration: DRAW_S, ease: 'linear' as const },
+  }
+
+  return (
+    <Layer hold={HOLD.river}>
+      {/* the shallows either side, then the water itself */}
+      <motion.path
+        d={d}
+        fill="none"
+        stroke={C.seaPale}
+        strokeWidth="16"
+        strokeLinecap="round"
+        {...draw}
+      />
+      <motion.path d={d} fill="none" stroke={C.sea} strokeWidth="6" strokeLinecap="round" {...draw} />
+    </Layer>
+  )
+}

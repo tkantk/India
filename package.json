@@ -17,7 +17,9 @@
     "tts:final": "node scripts/tts.mjs --provider=elevenlabs",
     "fetch:photos": "node scripts/fetch-photos.mjs",
     "contact-sheet": "node scripts/contact-sheet.mjs",
-    "fetch:sounds": "node scripts/fetch-sounds.mjs"
+    "fetch:sounds": "node scripts/fetch-sounds.mjs",
+    "build:art": "node scripts/build-geo-art.mjs",
+    "contact-sheet:art": "node scripts/contact-sheet-art.mjs"
   },
   "dependencies": {
     "motion": "^13.1.1",

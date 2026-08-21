@@ -1,0 +1,121 @@
+/* The tour art: what appears when the narrator names something.
+
+   Everything here is inside `.tour-overlay`, which is already absolutely
+   positioned over the map and `pointer-events: none` — the art is never a
+   tap target, and a child reaching for Kerala must not hit a tiger. */
+
+/* The wrapper `overlays.tsx` puts round every effect. Fills the stage so a
+   figure can be centred in it and a map layer can register against it. */
+.cue {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* A drawing on a card, in the middle of the map. The grid matters: the
+   counter and the greetings card are narrower than this box, and without it
+   they sit against its left edge instead of in the middle of the map. */
+.cue-figure {
+  display: grid;
+  place-items: center;
+  width: min(46vmin, 380px);
+}
+
+.cue-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* On the <svg> ROOT, never on a child: an SVG child cannot own a compositor
+     layer in WebKit's legacy engine, so a drop-shadow inside would be a
+     software three-pass blur. See map.css for the long version. */
+  filter: drop-shadow(0 5px 14px rgba(18, 36, 28, 0.22));
+}
+
+/* Art drawn in the map's own viewBox. `.tour-overlay` and `.map` are the same
+   box, and both svgs letterbox the same viewBox the same way, so this lands
+   on the geography underneath it. */
+.cue-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.cue-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The name of a sea, written on the water. */
+.cue-map text {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- counter */
+
+/* The number is the whole point, so it is HTML text: real font fallback, real
+   scaling, and nothing else in the subtree for it to be confused with. */
+.cue-counter {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(34vmin, 260px);
+  height: min(34vmin, 260px);
+}
+
+.cue-counter__disc {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 5px 14px rgba(18, 36, 28, 0.22));
+}
+
+.cue-counter__n {
+  position: relative;
+  color: var(--ink);
+  font-size: min(18vmin, 132px);
+  font-weight: 800;
+  line-height: 1;
+  /* The digits must not shuffle sideways as 8 becomes 18 becomes 28. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------- script */
+
+.cue-script {
+  display: grid;
+  gap: 0.5em;
+  padding: 0.7em 1.1em;
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: 0 5px 14px rgba(18, 36, 28, 0.22);
+  text-align: center;
+}
+
+.cue-greeting {
+  padding: 0.15em 0.45em;
+  border-radius: 12px;
+  /* The two that are not being said fall back rather than disappear: the beat
+     is about there being MORE than one way to say hello. */
+  opacity: 0.38;
+}
+
+.cue-greeting.is-now {
+  opacity: 1;
+  background: var(--highlight);
+}
+
+.cue-greeting__native {
+  display: block;
+  font-size: min(9vmin, 62px);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.cue-greeting__roman {
+  display: block;
+  font-size: min(3.4vmin, 24px);
+  color: var(--deep);
+}
