@@ -30,6 +30,18 @@ function sourcedSounds(dir, ids) {
   ))
 }
 
+/** The declared cue vocabulary. Every symbol, greeting, river and scene key
+ *  the content is allowed to name. */
+function vocab(dir, over = {}) {
+  writeFileSync(join(dir, 'content', 'vocab.json'), JSON.stringify({
+    revealSymbol: ['tiger', 'peacock'],
+    showScript: ['namaste'],
+    rivers: ['ganga'],
+    scenes: ['plains', 'temple'],
+    ...over,
+  }))
+}
+
 function run(dir) {
   try {
     const stdout = execFileSync('node', [SCRIPT], { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
@@ -104,6 +116,7 @@ describe('validate-content sound references', () => {
     }))
     wantedSounds(dir, { sfx: ['tiger-growl'] })
     sourcedSounds(dir, [])
+    vocab(dir)
 
     const { code, output } = run(dir)
     expect(output).toContain('not yet sourced')
@@ -255,10 +268,102 @@ describe('validate-content markup check', () => {
     const dir = fixture()
     tour(dir, 'A baby elephant weighs less than its mother, so 3 < 5 is easy.')
     ui(dir)
+    vocab(dir)
 
     const { code, output } = run(dir)
     expect(output).not.toContain('markup')
     expect(code).toBe(0)
     expect(output).toContain('content OK')
+  })
+})
+
+// Half the cue vocabulary used to go unchecked: playSfx args and place slugs
+// were validated, then the checking stopped. revealSymbol, showScript,
+// traceRiver, countTo and landmark.scene were all free text, so a typo was
+// silent — the symbol simply never appeared. content/vocab.json declares the
+// permitted values, and is also the contract Plan 2 draws its illustrations
+// against, so it has to be explicit rather than implied by whatever the seed
+// content happens to say today.
+describe('validate-content cue vocabulary', () => {
+  const beats = (dir, cues, text = 'The tiger and the peacock greet the river today.') =>
+    writeFileSync(join(dir, 'content', 'tour.json'), JSON.stringify({
+      beats: [{ id: 'tour.01', kind: 'tour', text, cues }],
+    }))
+  const ui = (dir) => writeFileSync(join(dir, 'content', 'ui.json'), JSON.stringify({
+    lines: [{ id: 'ui.begin', kind: 'ui', text: 'Tap to begin' }],
+  }))
+
+  it('rejects a revealSymbol arg that is not in the declared vocabulary', () => {
+    const dir = fixture()
+    beats(dir, [{ word: 1, do: 'revealSymbol', arg: 'tigre' }])
+    ui(dir); vocab(dir)
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('"tigre"')
+    expect(output).toContain('vocab.json')
+  })
+
+  it('accepts a revealSymbol arg that is declared', () => {
+    const dir = fixture()
+    beats(dir, [{ word: 1, do: 'revealSymbol', arg: 'tiger' }])
+    ui(dir); vocab(dir)
+
+    const { code, output } = run(dir)
+    expect(code).toBe(0)
+    expect(output).toContain('content OK')
+  })
+
+  it('rejects an undeclared showScript greeting and river', () => {
+    const dir = fixture()
+    beats(dir, [
+      { word: 1, do: 'showScript', arg: 'bonjour' },
+      { word: 2, do: 'traceRiver', arg: 'thames' },
+    ])
+    ui(dir); vocab(dir)
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('"bonjour"')
+    expect(output).toContain('"thames"')
+  })
+
+  it('rejects a landmark scene key that is not in the kit', () => {
+    const dir = fixture()
+    place(dir, 'rajasthan')
+    geo(dir, ['rajasthan'])
+    ui(dir); vocab(dir, { scenes: ['temple'] })
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('scene "plains"')
+  })
+
+  it('rejects a countTo arg that is not a positive whole number', () => {
+    const dir = fixture()
+    beats(dir, [{ word: 1, do: 'countTo', arg: 'twenty-eight' }])
+    ui(dir); vocab(dir)
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('twenty-eight')
+  })
+
+  it('rejects a vocabulary cue with no arg at all', () => {
+    const dir = fixture()
+    beats(dir, [{ word: 1, do: 'revealSymbol' }])
+    ui(dir); vocab(dir)
+
+    expect(run(dir).code).not.toBe(0)
+  })
+
+  it('fails loudly when the vocabulary file is missing entirely', () => {
+    const dir = fixture()
+    beats(dir, [{ word: 1, do: 'revealSymbol', arg: 'tiger' }])
+    ui(dir)
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('content/vocab.json')
   })
 })

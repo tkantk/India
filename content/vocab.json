@@ -1,0 +1,46 @@
+{
+  "note": "The declared cue vocabulary. Every revealSymbol symbol, showScript greeting, traceRiver river and landmark scene key the content is allowed to name. validate-content.mjs fails the build on anything not listed here, so a typo can never be silent. This is also the contract Plan 2's illustration kit is built against: adding a value here is a promise that something will be drawn for it.",
+  "revealSymbol": [
+    "arabian-sea",
+    "banyan",
+    "bay-of-bengal",
+    "dune",
+    "india-gate",
+    "indian-ocean",
+    "lotus",
+    "mango",
+    "outline",
+    "peacock",
+    "tiger"
+  ],
+  "showScript": [
+    "namaskar",
+    "namaste",
+    "vanakkam"
+  ],
+  "rivers": [
+    "ganga"
+  ],
+  "scenes": [
+    "arch",
+    "backwaters",
+    "beach",
+    "caves",
+    "chariot-wheel",
+    "domed-garden",
+    "dunes",
+    "fishing-nets",
+    "forest-fort",
+    "fort",
+    "fort-walls",
+    "hawa-mahal",
+    "lagoon",
+    "lake-forest",
+    "lotus-building",
+    "minaret",
+    "stepwell",
+    "tea-hills",
+    "temple",
+    "waterfall"
+  ]
+}
