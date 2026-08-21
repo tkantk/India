@@ -103,3 +103,50 @@ describe('TourStage', () => {
     expect(container.querySelector(`[data-slug="${firstSlug}"]`)?.classList.contains('lit')).toBe(true)
   })
 })
+
+/**
+ * The art that is drawn in the map's own coordinates — the outline, the
+ * Ganga, the Himalaya, the three seas — has to be drawn in the rect the
+ * camera is ACTUALLY showing, not in the rect the map started at.
+ *
+ * `tour.json` reaches `zoomTo delhi` at beat 5 and never comes home, so every
+ * layer after it (the river at beat 10, the mountains at 11, the seas at 12)
+ * is drawn while the camera is somewhere else. Sequencing the content around
+ * that is an unenforced invariant; this is the enforcement.
+ */
+describe('map-registered art and the camera', () => {
+  const viewOf = (el: Element | null) => el?.getAttribute('viewBox')
+
+  it('draws a layer in the rect the camera is showing, not the one it started at', () => {
+    const { container } = render(<TourStage />)
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }) })
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'traceRiver', arg: 'ganga' }) })
+    expect(viewOf(container.querySelector('.cue-map')))
+      .toBe(viewOf(container.querySelector('svg.base')))
+  })
+
+  it('keeps a traced line the same weight on screen however far in the camera is', () => {
+    // The river's COURSE is geography and grows with the map; the width of
+    // the line drawing it is not. Un-scaled, the 16-unit casing is a sixth of
+    // the screen at Delhi — the same failure map.css spends a paragraph on
+    // for the state borders.
+    const { container } = render(<TourStage />)
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'traceRiver', arg: 'ganga' }) })
+    const width = () => Number(container.querySelector('.cue-map path')!.getAttribute('stroke-width'))
+    const home = width()
+    expect(home).toBeGreaterThan(0)
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }) })
+    const [, , w] = container.querySelector('svg.base')!.getAttribute('viewBox')!.split(' ').map(Number)
+    expect(width()).toBeCloseTo((home * w) / geo.viewBox[2], 4)
+  })
+
+  it('follows the camera that moves while the art is already on stage', () => {
+    const { container } = render(<TourStage />)
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'raiseMountains' }) })
+    const home = viewOf(container.querySelector('.cue-map'))
+    act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }) })
+    const now = viewOf(container.querySelector('.cue-map'))
+    expect(now).not.toBe(home)
+    expect(now).toBe(viewOf(container.querySelector('svg.base')))
+  })
+})

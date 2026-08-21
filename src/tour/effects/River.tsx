@@ -10,7 +10,7 @@
  * half, because "runs and runs" is the point.
  */
 import { motion } from 'motion/react'
-import { HOLD, Layer, useStill } from './Reveal'
+import { HOLD, Layer, useMapZoom, useStill } from './Reveal'
 import { GANGA } from './art/geo'
 import { PALETTE as C } from './art/palette'
 
@@ -19,6 +19,10 @@ const DRAW_S = 1.8
 
 export function River({ name }: { name: string | undefined }) {
   const still = useStill()
+  // The river's COURSE is geography and grows with the map; the width of the
+  // line that draws it is not. Without this, the camera on Delhi renders a
+  // 16-unit casing as a sixth of the screen.
+  const zoom = useMapZoom()
   const d = name ? RIVERS[name] : undefined
   if (!d) return null
 
@@ -35,11 +39,18 @@ export function River({ name }: { name: string | undefined }) {
         d={d}
         fill="none"
         stroke={C.seaPale}
-        strokeWidth="16"
+        strokeWidth={16 * zoom}
         strokeLinecap="round"
         {...draw}
       />
-      <motion.path d={d} fill="none" stroke={C.sea} strokeWidth="6" strokeLinecap="round" {...draw} />
+      <motion.path
+        d={d}
+        fill="none"
+        stroke={C.sea}
+        strokeWidth={6 * zoom}
+        strokeLinecap="round"
+        {...draw}
+      />
     </Layer>
   )
 }

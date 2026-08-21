@@ -1,76 +1,149 @@
 /**
- * "On the left of the map is the Arabian Sea. On the right is the Bay of
- * Bengal. And underneath them both is the Indian Ocean."
+ * "Water touches India on three sides. On the left of the map is the Arabian
+ * Sea. On the right is the Bay of Bengal. And underneath them both is the
+ * Indian Ocean."
  *
- * Left, right and underneath are the information, so these are drawn in the
- * map's own coordinates and land on the actual water — the empty paper the
- * child can see round the coast — rather than on a card in the middle. The
- * name is written on the water the way it is on a real map, and the waves are
- * what a six-year-old reads before the letters.
+ * Two things that sentence decides.
+ *
+ * NO WRITING. This beat teaches POSITION — left, right, underneath — to a
+ * child who cannot yet read fluently, which is the one audience assumption
+ * the whole site rests on. The narrator says the names; the art says where.
+ * So each sea is a body of water on the real paper the child can see round
+ * the coast, with waves moving on it, and not a caption.
+ *
+ * ALL THREE STAY. "Three sides" is the picture, and nobody sees three of
+ * anything if each reveal wipes out the last. The three cues arrive seven
+ * words apart into one overlay slot, so `overlays.tsx` gives them a stable
+ * key — one mounted instance across all three — exactly as it does for the
+ * three greetings. The one being named comes forward; the other two sit back
+ * rather than leaving.
+ *
+ * Every body is checked against the real coastline: sampled across each
+ * ellipse, not one point of it touches any of the 36 states, the islands, or
+ * the edge of the viewBox. `overlays.test.tsx` keeps them on their own side
+ * of the country.
  */
 import { motion } from 'motion/react'
-import { EASE_OUT, HOLD, Layer, useStill } from '../Reveal'
+import { isCheap } from '../../../lib/cheapMode'
+import { EASE_OUT, HOLD, Layer, useMapZoom, useStill } from '../Reveal'
 import { PALETTE as C } from './palette'
 
-type Water = {
-  lines: [string, string]
-  /** Where the name sits, in viewBox units, and how far the water spreads
-   *  round it. Every one of these clears the coastlines either side of it and
-   *  stays inside the 1000x1100 viewBox — check them against the bboxes in
-   *  src/data/geo.json before moving one. */
-  x: number
-  y: number
+export type Water = {
+  id: string
+  /** The middle of the water, in the map's own viewBox units. */
+  cx: number
+  cy: number
   rx: number
   ry: number
-  /** The three rows of waves, as offsets from the name. */
-  waves: [number, number, number]
 }
 
-const WATERS: Record<string, Water> = {
-  // West of Maharashtra and Goa, whose coast is at x≈165 this far south.
-  'arabian-sea': { lines: ['Arabian', 'Sea'], x: 102, y: 672, rx: 96, ry: 200, waves: [82, 130, 178] },
-  // Between Odisha's coast (x≈672) and the Andamans (x≈865).
-  'bay-of-bengal': { lines: ['Bay of', 'Bengal'], x: 775, y: 664, rx: 100, ry: 200, waves: [82, 130, 178] },
-  // Under the whole peninsula, and above the bottom of the map.
-  'indian-ocean': { lines: ['Indian', 'Ocean'], x: 612, y: 918, rx: 170, ry: 110, waves: [72, 112, 152] },
-}
+/** The order the tour names them in, and the order they are painted in. */
+export const WATERS: Water[] = [
+  // West of Gujarat's southern coast and of the whole Konkan, clear of the
+  // Kachchh peninsula, which reaches out to x≈20 further north.
+  { id: 'arabian-sea', cx: 82, cy: 780, rx: 72, ry: 155 },
+  // Off Odisha and Andhra, inside the Andamans, below the Hooghly mouth.
+  { id: 'bay-of-bengal', cx: 780, cy: 740, rx: 95, ry: 175 },
+  // Below both of them. There is no room directly under the southern tip —
+  // it reaches y≈1075 of an 1100-unit map — so the widest water of the three
+  // lies south-east of it, where the open paper is.
+  { id: 'indian-ocean', cx: 620, cy: 1000, rx: 195, ry: 78 },
+]
+
+/** Where the rows of waves sit, as a fraction of the body's half-height. */
+const ROWS = [-0.68, -0.34, 0, 0.34, 0.68]
+
+/** How far a row drifts sideways, in viewBox units at the home view. Small:
+ *  this is water breathing, not a wave machine. */
+const DRIFT = 7
 
 /** A row of waves: one hump, then alternating reflections of it. */
 function wave(cx: number, cy: number, width: number): string {
   const step = width / 4
-  return `M${cx - width / 2},${cy} q${step / 2},-13 ${step},0 t${step},0 t${step},0 t${step},0`
+  const lift = -step * 0.34
+  return `M${cx - width / 2},${cy} q${step / 2},${lift} ${step},0 t${step},0 t${step},0 t${step},0`
 }
 
-function Sea({ water }: { water: Water }) {
+/** The rows across one body, narrowing towards its ends — a chord of the
+ *  ellipse, so the waves describe the shape of the water they are on. */
+function rows(w: Water) {
+  return ROWS.map((t) => ({
+    y: w.cy + t * w.ry,
+    width: 2 * w.rx * Math.sqrt(1 - t * t) * 0.74,
+  }))
+}
+
+function Body({ water, now, zoom }: { water: Water; now: boolean; zoom: number }) {
   const still = useStill()
-  const { x, y, rx, ry, lines, waves } = water
-  const rows = waves.map((dy) => y + dy)
+  /** Water that never moves is a puddle. But this is the only animation in
+   *  the tour that runs for the whole hold rather than landing and stopping,
+   *  and every frame of it is a software repaint on WebKit's legacy SVG
+   *  engine — so a slow iPad gets still water, drawn whole. */
+  const moving = !still && !isCheap()
+  const drift = DRIFT * zoom
+
   return (
-    <Layer hold={HOLD.sea}>
-      <ellipse cx={x} cy={y + 52} rx={rx} ry={ry} fill={C.sea} opacity="0.13" />
-      <motion.g
-        initial={still ? false : { y: 14, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: EASE_OUT }}
-      >
-        <text x={x} y={y} fontSize="46" textAnchor="middle" fill={C.deep}>{lines[0]}</text>
-        <text x={x} y={y + 50} fontSize="46" textAnchor="middle" fill={C.deep}>{lines[1]}</text>
-      </motion.g>
-      <g fill="none" stroke={C.sea} strokeWidth="8" strokeLinecap="round">
-        {rows.map((cy, i) => (
+    <motion.g
+      className={now ? 'cue-water is-now' : 'cue-water'}
+      data-sea={water.id}
+      /* Arriving gently, and never leaving: the two that are not being named
+         fall back rather than going away. */
+      initial={still ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: now ? 1 : 0.5, y: 0 }}
+      transition={{ duration: 0.55, ease: EASE_OUT }}
+    >
+      {/* Two overlapping bodies rather than one flat fill: the middle of the
+          water is deeper than its edge, which is the whole of what makes a
+          blue shape read as a sea instead of a sticker. */}
+      <ellipse cx={water.cx} cy={water.cy} rx={water.rx} ry={water.ry} fill={C.seaPale} opacity="0.5" />
+      <ellipse
+        cx={water.cx}
+        cy={water.cy}
+        rx={water.rx * 0.78}
+        ry={water.ry * 0.82}
+        fill={C.seaPale}
+        opacity="0.5"
+      />
+      <g fill="none" stroke={C.sea} strokeLinecap="round" strokeWidth={7 * zoom}>
+        {rows(water).map((row, i) => (
           <motion.path
-            key={cy}
-            d={wave(x, cy, i === 1 ? 148 : 112)}
+            key={row.y}
+            d={wave(water.cx, row.y, row.width)}
             initial={still ? false : { pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.45, delay: 0.15 + i * 0.09, ease: EASE_OUT }}
+            animate={moving ? { pathLength: 1, x: [0, drift, 0, -drift, 0] } : { pathLength: 1 }}
+            transition={{
+              pathLength: { duration: 0.5, delay: 0.12 + i * 0.07, ease: EASE_OUT },
+              // Each row on its own clock, or five rows slide as one board.
+              x: { duration: 5.4 + i * 0.6, repeat: Infinity, ease: 'easeInOut' },
+            }}
           />
         ))}
       </g>
+    </motion.g>
+  )
+}
+
+/**
+ * The three waters, with the one being named brought forward.
+ *
+ * `nonce` changes on every cue and does the same job it does for the
+ * greetings card: this component deliberately does NOT remount between the
+ * three seas — that is what lets them accumulate — so it is what tells the
+ * layer it is wanted again and restarts its hold.
+ */
+export function Seas({ named, nonce }: { named?: string; nonce?: string }) {
+  const zoom = useMapZoom()
+  return (
+    <Layer hold={HOLD.sea} restartOn={`${named ?? ''}:${nonce ?? ''}`}>
+      {WATERS.map((water) => (
+        <Body key={water.id} water={water} now={water.id === named} zoom={zoom} />
+      ))}
     </Layer>
   )
 }
 
-export const ArabianSea = () => <Sea water={WATERS['arabian-sea']} />
-export const BayOfBengal = () => <Sea water={WATERS['bay-of-bengal']} />
-export const IndianOcean = () => <Sea water={WATERS['indian-ocean']} />
+/** For `Symbol`, which maps a bare vocabulary name to art. The tour reaches
+ *  these through `overlays.tsx` instead, so that the three share one slot. */
+export const ArabianSea = () => <Seas named="arabian-sea" />
+export const BayOfBengal = () => <Seas named="bay-of-bengal" />
+export const IndianOcean = () => <Seas named="indian-ocean" />

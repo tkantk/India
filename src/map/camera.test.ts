@@ -485,3 +485,73 @@ describe('the bound camera', () => {
     await expect(camera.flyTo([0, 0, 10, 10], { duration: 0 })).resolves.toBeUndefined()
   })
 })
+
+/**
+ * Not everything that draws in the map's coordinates is inside the map.
+ *
+ * The tour's overlay is a sibling of `.map`, which puts it outside the
+ * `:scope > svg` the commit writes to; the only thing that keeps it
+ * registered on the geography is being told where the camera went. That
+ * makes this subscription part of the camera's contract, not a convenience.
+ */
+describe('watching the camera', () => {
+  const DELHI: Bbox = [316.2, 306.2, 16.3, 17.2]
+
+  it('announces the rect that was committed, to whoever draws outside the map', async () => {
+    const { stage, base } = map()
+    bindCamera(stage)
+    const seen: (Bbox | null)[] = []
+    const stop = camera.watch((v) => seen.push(v))
+    await camera.flyTo(DELHI, { duration: 0 })
+    stop()
+    // Exactly what landed on the map's own layers, in the same frame.
+    expect(seen.at(-1)?.join(' ')).toBe(base.getAttribute('viewBox'))
+  })
+
+  it('announces every commit, so art already on stage keeps up', async () => {
+    const { stage } = map()
+    bindCamera(stage)
+    const seen: (Bbox | null)[] = []
+    const stop = camera.watch((v) => seen.push(v))
+    await camera.flyTo(DELHI, { duration: 0 })
+    await camera.home({ duration: 0 })
+    stop()
+    expect(seen).toHaveLength(2)
+    expect(seen.at(-1)).toEqual([0, 0, 1000, 1100])
+  })
+
+  it('says there is no map at all when the map unmounts', () => {
+    const { stage } = map()
+    bindCamera(stage)
+    const seen: (Bbox | null)[] = []
+    const stop = camera.watch((v) => seen.push(v))
+    bindCamera(null)
+    stop()
+    expect(seen.at(-1)).toBeNull()
+  })
+
+  it('stops the moment a watcher lets go', async () => {
+    const { stage } = map()
+    bindCamera(stage)
+    let calls = 0
+    const stop = camera.watch(() => { calls++ })
+    stop()
+    await camera.flyTo(DELHI, { duration: 0 })
+    expect(calls).toBe(0)
+  })
+
+  it('carries on when one watcher throws, rather than stranding the flight', async () => {
+    const { stage, base } = map()
+    bindCamera(stage)
+    const seen: (Bbox | null)[] = []
+    const boom = camera.watch(() => { throw new Error('a component blew up') })
+    const stop = camera.watch((v) => seen.push(v))
+    vi.spyOn(console, 'debug').mockImplementation(() => {})
+    await expect(camera.flyTo(DELHI, { duration: 0 })).resolves.toBeUndefined()
+    boom()
+    stop()
+    expect(seen).toHaveLength(1)
+    // And the commit itself still happened.
+    expect(base.getAttribute('viewBox')).not.toBe('0 0 1000 1100')
+  })
+})

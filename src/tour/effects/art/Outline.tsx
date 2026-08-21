@@ -12,7 +12,7 @@
  */
 import { motion } from 'motion/react'
 import { isCheap } from '../../../lib/cheapMode'
-import { HOLD, Layer, useStill } from '../Reveal'
+import { HOLD, Layer, useMapZoom, useStill } from '../Reveal'
 import { INDIA_OUTLINE } from './geo'
 import { PALETTE as C } from './palette'
 
@@ -21,13 +21,15 @@ const DRAW_S = 2.2
 
 export function Outline() {
   const drawn = !useStill() && !isCheap()
+  // A pencil line keeps its weight while the country under it grows.
+  const zoom = useMapZoom()
   return (
     <Layer hold={HOLD.outline}>
       <motion.path
         d={INDIA_OUTLINE}
         fill="none"
         stroke={C.ink}
-        strokeWidth="3.2"
+        strokeWidth={3.2 * zoom}
         strokeLinecap="round"
         strokeLinejoin="round"
         opacity="0.85"

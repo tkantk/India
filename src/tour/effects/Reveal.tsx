@@ -22,6 +22,8 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { motion, useReducedMotionConfig } from 'motion/react'
 import geo from '../../data/geo.json'
+import type { Bbox } from '../../types'
+import { useCameraView } from '../../map/useCameraView'
 import { PALETTE } from './art/palette'
 import './effects.css'
 
@@ -63,9 +65,10 @@ type RevealProps = {
    *
    * Most effects never need it: `overlays.tsx` gives each cue a key nobody has
    * used before, so a second `revealSymbol` is a new component with new state.
-   * `Script` is the exception, because the three greetings arrive a second
-   * apart and are meant to accumulate on one card rather than replace each
-   * other, which means one component instance living across three cues.
+   * The two exceptions are the greetings card and the three seas, both of
+   * which are meant to ACCUMULATE — cues a few words apart that belong in one
+   * picture — so both live across several cues as one instance, and this is
+   * what tells that instance it has been named again.
    */
   restartOn?: string
   children: ReactNode
@@ -109,17 +112,15 @@ export function Reveal({ hold, variant = 'figure', restartOn, children }: Reveal
 export function Card({
   viewBox = '0 0 120 120',
   hold = HOLD.symbol,
-  restartOn,
   children,
 }: {
   viewBox?: string
   hold?: number
-  restartOn?: string
   children: ReactNode
 }) {
   const [, , w, h] = viewBox.split(' ').map(Number)
   return (
-    <Reveal hold={hold} restartOn={restartOn}>
+    <Reveal hold={hold}>
       <svg className="cue-art" viewBox={viewBox} aria-hidden="true">
         {/* The card. Cream on the map's beige, so a flat drawing has
             something to be flat against. */}
@@ -130,13 +131,60 @@ export function Card({
   )
 }
 
-/** Art drawn in the map's own coordinates, over the map. */
-export function Layer({ hold, children }: { hold: number; children: ReactNode }) {
+/** The map's own rect — the one to draw against when there is no map to ask.
+ *  That is the contact sheet, and any test that renders one effect alone. */
+const HOME = geo.viewBox as Bbox
+
+/**
+ * Art drawn in the map's own coordinates, over the map.
+ *
+ * The viewBox is the camera's LIVE committed rect, not the static home one.
+ * `.tour-overlay` is a sibling of `.map`, so the camera's commit — which
+ * writes the new rect onto every `:scope > svg` of the stage — never reaches
+ * this svg; without asking, a layer stays registered on wherever the map was
+ * when the app started. `tour.json` zooms to Delhi at beat 5 and never comes
+ * home, so by beat 10 that is the whole country against a view of Delhi: the
+ * Ganga as a fat blue stub matching nothing underneath it.
+ *
+ * Asking makes the art correct at any camera position, rather than correct
+ * as long as nobody adds a zoom to the content. See `camera.watch`.
+ */
+export function Layer({
+  hold,
+  restartOn,
+  children,
+}: {
+  hold: number
+  restartOn?: string
+  children: ReactNode
+}) {
+  const view = useCameraView() ?? HOME
   return (
-    <Reveal hold={hold} variant="layer">
-      <svg className="cue-map" viewBox={geo.viewBox.join(' ')} aria-hidden="true">
+    <Reveal hold={hold} variant="layer" restartOn={restartOn}>
+      <svg className="cue-map" viewBox={view.join(' ')} aria-hidden="true">
         {children}
       </svg>
     </Reveal>
   )
+}
+
+/**
+ * How wide the camera's view is against the home view: 1 at home, 0.096 with
+ * the camera on Delhi.
+ *
+ * A LINE drawn on the map — the outline a child traces, the Ganga — is a
+ * line, not a place: it should keep its weight on screen while the geography
+ * under it grows. Multiplying its stroke width by this does exactly what
+ * `vector-effect: non-scaling-stroke` does for the state borders in map.css
+ * ("the camera's 10.4x flight renders this 1.5-unit border at about 11 CSS
+ * pixels"), and does it in geometry, so the art at home is unchanged to the
+ * last decimal rather than being re-weighted by the browser.
+ *
+ * Filled geography is deliberately NOT scaled: a mountain and a body of
+ * water are places, and a place grows with the map. Only the lines — the
+ * outline, the river, the waves drawn on the water — hold their weight.
+ */
+export function useMapZoom(): number {
+  const view = useCameraView()
+  return view ? view[2] / HOME[2] : 1
 }

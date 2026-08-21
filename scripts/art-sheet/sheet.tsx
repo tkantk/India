@@ -11,7 +11,7 @@
  * down, which is also what "can you tell what it is across the room" means.
  */
 import { createRoot } from 'react-dom/client'
-import { MotionConfig } from 'motion/react'
+import { MotionConfig, MotionGlobalConfig } from 'motion/react'
 import geo from '../../src/data/geo.json'
 import vocab from '../../content/vocab.json'
 import { OVERLAYS } from '../../src/tour/overlays'
@@ -19,6 +19,22 @@ import '../../src/styles/base.css'
 import '../../src/map/map.css'
 import '../../src/tour/tourStage.css'
 import './sheet.css'
+
+/**
+ * Every animation lands instantly, before the shutter.
+ *
+ * Headless Chrome runs no animation frames — `requestAnimationFrame` never
+ * fires under a virtual time budget, and neither does the Web Animations API
+ * that Motion hands opacity to. Without this the whole sheet photographs its
+ * FIRST frame, which for art that fades in is a page of empty maps: every
+ * cue in the DOM, every one of them at `opacity: 0`. (Shimming rAF with
+ * setTimeout does not help — the accelerated values never finish either.)
+ *
+ * `skipAnimations` makes Motion apply every target value synchronously, so
+ * what is photographed is the settled state. It has to be set BEFORE the
+ * first render, which is why it is here and not inside a component.
+ */
+MotionGlobalConfig.skipAnimations = true
 
 type Cell = [verb: string, arg: string | undefined]
 
@@ -53,14 +69,11 @@ function MapUnder() {
 
 function Sheet() {
   return (
-    /* reducedMotion="always" on purpose. Headless Chrome runs no animation
-       frames at all — requestAnimationFrame never fires under a virtual time
-       budget — so anything Motion drives itself would be photographed frozen
-       at its first frame (the counter would read "1" for ever). Reduced motion
-       makes Motion jump every transform straight to its target and makes the
-       art skip its own draw-ons, which is exactly the settled state this sheet
-       is for. It is also, for free, a picture of what a child who has asked
-       for less motion sees: every symbol whole, nothing missing. */
+    /* reducedMotion="always" on purpose, on top of skipAnimations above: it
+       is what makes the art skip its own draw-ons (a `pathLength` is an SVG
+       attribute, not something Motion can jump for us) and it photographs,
+       for free, exactly what a child who has asked for less motion sees —
+       every symbol whole, nothing missing. */
     <MotionConfig reducedMotion="always">
       <h1>Namaste India — the tour art</h1>
       <p className="note">

@@ -226,6 +226,11 @@ export function flyTo(
     for (const layer of layers) layer.setAttribute('viewBox', rect)
     stage.style.transform = ''
     stage.style.willChange = ''
+    // Anything drawing in the map's coordinates from OUTSIDE the stage — the
+    // tour's overlay is a sibling of `.map`, not a child of it — has to hear
+    // about this in the same frame, or it stays registered on where the map
+    // used to be. See `watch` below.
+    if (bound && bound.stage === stage) announce()
   }
 
   const ms = opts.duration ?? (isCheap() ? CHEAP_MS : FLIGHT_MS)
@@ -278,10 +283,45 @@ export type CameraApi = {
   home(opts?: FlyOptions): Promise<void>
   /** The rect the map is showing right now, or null if no map is mounted. */
   view(): Bbox | null
+  /**
+   * Follow that rect. Fires on every commit, and whenever a map is bound or
+   * let go of. Returns the unsubscribe.
+   *
+   * This exists because not everything that draws in the map's coordinates is
+   * inside the map. The tour's overlay is a SIBLING of `.map` — it has to be,
+   * so that art can sit over the whole stage without being inside the layer
+   * the camera transforms — which puts it outside `bindCamera`'s
+   * `:scope > svg` and therefore outside the commit. Handing it the static
+   * home rect instead is how the Ganga ends up drawn across a view of Delhi.
+   * See `useCameraView`, which is the only caller.
+   */
+  watch(fn: (view: Bbox | null) => void): () => void
 }
 
 type Bound = { stage: HTMLElement; layers: SVGSVGElement[]; home: Bbox }
 let bound: Bound | null = null
+
+type Watcher = (view: Bbox | null) => void
+const watchers = new Set<Watcher>()
+
+/**
+ * Tell every watcher where the map is now.
+ *
+ * A copy of the set, so a watcher that unsubscribes on being called does not
+ * disturb the iteration; and each one is guarded, because this runs in the
+ * one expensive frame of a flight and a throwing subscriber must not leave
+ * the rest of them — or the flight — half done.
+ */
+function announce(): void {
+  const view = camera.view()
+  for (const watcher of [...watchers]) {
+    try {
+      watcher(view)
+    } catch (err) {
+      console.debug('[camera] a watcher threw', err)
+    }
+  }
+}
 
 /**
  * Point the camera at a mounted map, or at nothing.
@@ -309,11 +349,14 @@ export function bindCamera(stage: HTMLElement | null): void {
   // the whole detached 269 KB map would be retained behind it.
   if (bound && bound.stage !== stage) landInFlight(bound.stage)
   bound = null
-  if (!stage) return
-  const layers = [...stage.querySelectorAll<SVGSVGElement>(':scope > svg')]
-  const home = layers.length ? readViewBox(layers[0]) : null
-  if (!home) return
-  bound = { stage, layers, home }
+  if (stage) {
+    const layers = [...stage.querySelectorAll<SVGSVGElement>(':scope > svg')]
+    const home = layers.length ? readViewBox(layers[0]) : null
+    if (home) bound = { stage, layers, home }
+  }
+  // A new map, or no map at all: either way the rect the watchers are drawing
+  // against has just changed under them.
+  announce()
 }
 
 export const camera: CameraApi = {
@@ -329,5 +372,11 @@ export const camera: CameraApi = {
   },
   view() {
     return bound && bound.layers.length ? readViewBox(bound.layers[0]) : null
+  },
+  watch(fn) {
+    watchers.add(fn)
+    return () => {
+      watchers.delete(fn)
+    }
   },
 }

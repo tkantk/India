@@ -39,6 +39,7 @@
     "@vitejs/plugin-react": "^6.1.0",
     "@vitest/coverage-v8": "^4.1.11",
     "d3-geo": "^3.1.1",
+    "esbuild": "^0.28.2",
     "jsdom": "^27.0.1",
     "mapshaper": "^0.7.54",
     "typescript": "^7.0.2",

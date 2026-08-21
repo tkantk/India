@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { MotionConfig } from 'motion/react'
 import { Counter } from './Counter'
 
@@ -54,5 +54,52 @@ describe('Counter', () => {
     // nothing about it, and a NaN on stage is worse than no counter at all.
     const { container } = render(<Counter to={Number('twenty-eight')} durationMs={50} />)
     expect(container.textContent).not.toMatch(/nan/i)
+  })
+})
+
+/**
+ * The clamp, on its own.
+ *
+ * `Math.min(target, ...)` in Counter is invisible to every test above,
+ * because Motion's `easeOut` never overshoots numerically: delete the clamp
+ * and all six still pass. It is there for the easing nobody has chosen yet —
+ * a spring, an `backOut` — and the day someone chooses one, a child counting
+ * along with the narrator would hear "twenty-eight" and see 29.
+ *
+ * So this drives the counter's own onUpdate with a value an overshooting
+ * easing really would hand it, through the real component.
+ */
+describe("the counter's clamp", () => {
+  it('never shows a number past the target, whatever the easing hands it', async () => {
+    let onUpdate: ((v: number) => void) | undefined
+    vi.resetModules()
+    vi.doMock('motion/react', async () => {
+      const actual = await vi.importActual<typeof import('motion/react')>('motion/react')
+      return {
+        ...actual,
+        animate: (_from: number, _to: number, opts: { onUpdate?: (v: number) => void }) => {
+          onUpdate = opts.onUpdate
+          return { stop: () => {} }
+        },
+      }
+    })
+
+    try {
+      const { Counter } = await import('./Counter')
+      const { container } = render(<Counter to={28} durationMs={1000} />)
+      expect(onUpdate, 'the counter never started an animation').toBeTypeOf('function')
+
+      // What a springy easing does on its way to 28.
+      act(() => onUpdate!(29.7))
+      expect(container.textContent).toBe('28')
+      act(() => onUpdate!(28.4))
+      expect(container.textContent).toBe('28')
+      // And it still counts on the way up.
+      act(() => onUpdate!(12.6))
+      expect(container.textContent).toBe('13')
+    } finally {
+      vi.doUnmock('motion/react')
+      vi.resetModules()
+    }
   })
 })

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Symbol } from './effects/Symbol'
+import { Seas, WATERS } from './effects/art/Sea'
 import { Counter } from './effects/Counter'
 import { Flag } from './effects/Flag'
 import { River } from './effects/River'
@@ -41,8 +42,26 @@ function cue(verb: string, arg: string | undefined, art: ReactNode, key?: string
   )
 }
 
+/**
+ * The three seas are one picture, not three.
+ *
+ * "Water touches India on three sides" — and the three cues arrive seven
+ * words apart into this one slot, so with a fresh key each one would wipe out
+ * the last and the child would never see three of anything. Same exception,
+ * same reason and same mechanism as `showScript` below: a stable key keeps
+ * one mounted instance, and `nonce` moves the emphasis and restarts its hold.
+ *
+ * It belongs here rather than in `cues.ts`, which is Task 7's seam and stays
+ * shut: the registry hands `revealSymbol` its argument and this file decides
+ * what a picture of it is.
+ */
+const SEAS = new Set(WATERS.map((w) => w.id))
+
 export const OVERLAYS: Record<string, OverlayRenderer> = {
-  revealSymbol: (arg) => cue('revealSymbol', arg, <Symbol name={arg} />),
+  revealSymbol: (arg) =>
+    arg && SEAS.has(arg)
+      ? cue('revealSymbol', arg, <Seas named={arg} nonce={String(++nth)} />, 'seas')
+      : cue('revealSymbol', arg, <Symbol name={arg} />),
   unfurlFlag: (arg) => cue('unfurlFlag', arg, <Flag />),
   countTo: (arg) => cue('countTo', arg, <Counter to={Number(arg)} />),
   traceRiver: (arg) => cue('traceRiver', arg, <River name={arg} />),

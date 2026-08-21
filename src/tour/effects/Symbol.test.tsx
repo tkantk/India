@@ -10,14 +10,6 @@ import vocab from '../../../content/vocab.json'
 const baseCss = readFileSync('src/styles/base.css', 'utf8')
 
 describe('Symbol', () => {
-  it('renders every symbol in the declared vocabulary', () => {
-    for (const name of vocab.revealSymbol) {
-      const { container, unmount } = render(<Symbol name={name} />)
-      expect(container.querySelector('svg'), `${name} rendered nothing`).toBeTruthy()
-      unmount()
-    }
-  })
-
   it('renders nothing for an unknown symbol rather than crashing', () => {
     const { container } = render(<Symbol name="unicorn" />)
     expect(container).toBeEmptyDOMElement()
@@ -28,10 +20,16 @@ describe('Symbol', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('gives every symbol something to draw, not an empty frame', () => {
-    // `querySelector('svg')` passes on an empty <svg>. A symbol is only real
-    // if there are shapes in it — one big one, in `outline`'s case, so this
-    // weighs the drawing rather than counting its parts.
+  it('renders every symbol in the declared vocabulary, with something drawn in it', () => {
+    // THE contract: every value content is allowed to name has art, and this
+    // fails loudly the moment content names a symbol nobody drew.
+    //
+    // It asks for shapes rather than for an <svg>, and that is the whole
+    // point of it: `querySelector('svg')` is truthy on an EMPTY svg, so a
+    // Symbol mutated to return <svg /> for every name would pass that
+    // version of this test and prove nothing. A symbol is only real if there
+    // is something in the frame — one big something, in `outline`'s case, so
+    // this weighs the drawing rather than counting its parts.
     for (const name of vocab.revealSymbol) {
       const { container, unmount } = render(<Symbol name={name} />)
       const shapes = container.querySelectorAll('path, circle, ellipse, rect, polygon, line, text')

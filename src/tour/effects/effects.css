@@ -46,12 +46,6 @@
   height: 100%;
 }
 
-/* The name of a sea, written on the water. */
-.cue-map text {
-  font-family: inherit;
-  font-weight: 700;
-}
-
 /* ---------------------------------------------------------------- counter */
 
 /* The number is the whole point, so it is HTML text: real font fallback, real

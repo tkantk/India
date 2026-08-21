@@ -3,6 +3,7 @@ import { act, render } from '@testing-library/react'
 import { OVERLAYS } from '../overlays'
 import { GREETINGS } from './Script'
 import { GANGA, PEAKS } from './art/geo'
+import { WATERS } from './art/Sea'
 import vocab from '../../../content/vocab.json'
 import geo from '../../data/geo.json'
 
@@ -26,7 +27,9 @@ describe('the overlay registry', () => {
   it('draws real art for every symbol the content may name', () => {
     for (const symbol of vocab.revealSymbol) {
       const { container, unmount } = draw('revealSymbol', symbol)
-      expect(container.querySelector('svg'), `${symbol} drew nothing`).toBeTruthy()
+      // Shapes, not merely an <svg>: an empty frame is truthy too.
+      const shapes = container.querySelectorAll('path, circle, ellipse, rect, polygon, line')
+      expect(shapes.length, `${symbol} drew nothing`).toBeGreaterThan(0)
       unmount()
     }
   })
@@ -184,6 +187,139 @@ describe('the map-registered art', () => {
     expect(last.x).toBeLessThan(ax + aw)
     for (let i = 1; i < PEAKS.length; i++) {
       expect(PEAKS[i].x, `${PEAKS[i].name} is out of order`).toBeGreaterThan(PEAKS[i - 1].x)
+    }
+  })
+})
+
+/**
+ * "Water touches India on three sides. On the left of the map is the Arabian
+ * Sea. On the right is the Bay of Bengal. And underneath them both is the
+ * Indian Ocean."
+ *
+ * Three cues, seven words apart, into ONE overlay slot — and what the beat
+ * teaches is where the water is, to a listener who cannot read yet.
+ */
+describe('the three seas', () => {
+  const water = (id: string) => WATERS.find((w) => w.id === id)!
+  const bbox = (slug: string) => (geo.places as Record<string, { bbox: number[] }>)[slug].bbox
+
+  it('never writes the name of a sea down', () => {
+    // The audience is six. The narrator says the names; the art says where —
+    // a caption in English is the one thing this beat must not be.
+    for (const w of WATERS) {
+      const { container, unmount } = draw('revealSymbol', w.id)
+      expect(container.querySelectorAll('text'), `${w.id} is captioned`).toHaveLength(0)
+      expect(container.textContent?.trim(), `${w.id} is captioned`).toBe('')
+      unmount()
+    }
+  })
+
+  it('shows all three waters at once, with the one being named brought forward', () => {
+    for (const w of WATERS) {
+      const { container, unmount } = draw('revealSymbol', w.id)
+      // "on three sides" — a picture of one sea contradicts the sentence.
+      expect(container.querySelectorAll('.cue-water')).toHaveLength(WATERS.length)
+      const now = container.querySelectorAll('.cue-water.is-now')
+      expect(now, `${w.id} was not the one brought forward`).toHaveLength(1)
+      expect(now[0].getAttribute('data-sea')).toBe(w.id)
+      unmount()
+    }
+  })
+
+  it('keeps ONE water layer across the three of them, so they accumulate', () => {
+    // Same DOM node, moved emphasis — not three mounts, each wiping out the
+    // last. The same exception the greetings card gets, for the same reason.
+    const { container, rerender } = render(<>{OVERLAYS.revealSymbol('arabian-sea')}</>)
+    const layer = container.querySelector('.cue-map')
+    expect(layer).toBeTruthy()
+    rerender(<>{OVERLAYS.revealSymbol('bay-of-bengal')}</>)
+    expect(container.querySelector('.cue-map')).toBe(layer)
+    rerender(<>{OVERLAYS.revealSymbol('indian-ocean')}</>)
+    expect(container.querySelector('.cue-map')).toBe(layer)
+    expect(container.querySelector('.cue-water.is-now')?.getAttribute('data-sea'))
+      .toBe('indian-ocean')
+  })
+
+  it('brings the water back after it has taken itself off stage', () => {
+    // The stable key is what makes this possible to get wrong: "say it
+    // again" replays the beat into the instance that already dismissed
+    // itself.
+    vi.useFakeTimers()
+    const { container, rerender } = render(<>{OVERLAYS.revealSymbol('arabian-sea')}</>)
+    act(() => { vi.advanceTimersByTime(60_000) })
+    expect(container.querySelector('.cue-map')).toBeNull()
+    rerender(<>{OVERLAYS.revealSymbol('arabian-sea')}</>)
+    expect(container.querySelector('.cue-map')).toBeTruthy()
+  })
+
+  it('goes back to a symbol on a card when the cue is not a sea', () => {
+    // The special case is keyed on the argument, so it must let go again.
+    const { container, rerender } = render(<>{OVERLAYS.revealSymbol('arabian-sea')}</>)
+    expect(container.querySelector('.cue-water')).toBeTruthy()
+    rerender(<>{OVERLAYS.revealSymbol('tiger')}</>)
+    expect(container.querySelector('.cue-water')).toBeNull()
+    expect(container.querySelector('.cue-art')).toBeTruthy()
+  })
+
+  it('puts each sea where the narrator says it is', () => {
+    const [arabian, bengal, ocean] = [water('arabian-sea'), water('bay-of-bengal'), water('indian-ocean')]
+    // "On the left of the map" — the whole body of it west of the Konkan
+    // coast, not merely centred to the left.
+    expect(arabian.cx + arabian.rx).toBeLessThan(bbox('maharashtra')[0])
+    // "On the right" — east of Odisha, the coast it lies off.
+    expect(bengal.cx - bengal.rx).toBeGreaterThan(bbox('odisha')[0] + bbox('odisha')[2])
+    // "And underneath them both."
+    expect(ocean.cy).toBeGreaterThan(arabian.cy)
+    expect(ocean.cy).toBeGreaterThan(bengal.cy)
+    // On the map, all of it: a sea half off the edge is half a sea.
+    for (const w of WATERS) {
+      expect(w.cx - w.rx, `${w.id} runs off the left`).toBeGreaterThan(0)
+      expect(w.cx + w.rx, `${w.id} runs off the right`).toBeLessThan(geo.viewBox[2])
+      expect(w.cy - w.ry, `${w.id} runs off the top`).toBeGreaterThan(0)
+      expect(w.cy + w.ry, `${w.id} runs off the bottom`).toBeLessThan(geo.viewBox[3])
+    }
+  })
+
+  it('paints no water over the land', () => {
+    // Water on top of Gujarat is not a sea, it is a flood. The map is drawn
+    // from straight polygons (M/L/Z only), so this is the real test: sample
+    // each body, boundary and inside, against the real states.
+    const rings = (d: string) =>
+      d.split('Z')
+        .map((r) => (r.match(/-?[\d.]+,-?[\d.]+/g) ?? []).map((p) => p.split(',').map(Number)))
+        .filter((r) => r.length > 2)
+    const land = Object.entries(geo.places as Record<string, { d: string; bbox: number[] }>)
+      .map(([slug, p]) => ({ slug, bbox: p.bbox, rings: rings(p.d) }))
+
+    const covers = (ring: number[][], x: number, y: number) => {
+      let hit = false
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [xi, yi] = ring[i]
+        const [xj, yj] = ring[j]
+        if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) hit = !hit
+      }
+      return hit
+    }
+    const onLand = (x: number, y: number) =>
+      land.find(
+        (place) =>
+          x >= place.bbox[0] && x <= place.bbox[0] + place.bbox[2] &&
+          y >= place.bbox[1] && y <= place.bbox[1] + place.bbox[3] &&
+          place.rings.some((ring) => covers(ring, x, y)),
+      )?.slug
+
+    for (const w of WATERS) {
+      for (let i = 0; i < 72; i++) {
+        const a = (i / 72) * Math.PI * 2
+        // The rim, where a body is most likely to touch a coast, and a point
+        // partway in on the same bearing.
+        for (const r of [1, 0.6, 0.25]) {
+          const x = w.cx + Math.cos(a) * w.rx * r
+          const y = w.cy + Math.sin(a) * w.ry * r
+          expect(onLand(x, y), `${w.id} washes over land at ${Math.round(x)},${Math.round(y)}`)
+            .toBeUndefined()
+        }
+      }
     }
   })
 })
