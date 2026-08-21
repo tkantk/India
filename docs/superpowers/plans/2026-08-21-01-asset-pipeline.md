@@ -1428,12 +1428,21 @@ function collectLines() {
 const keyOf = (line) =>
   createHash('sha256').update(`${provider.signature()} ${line.text}`).digest('hex').slice(0, 16)
 
-// `force` clears the CACHE, so everything re-renders. It must NOT clear
-// `previous`: that is also the merge base for `--only`, and zeroing both
-// means `--only=rajasthan --force` writes a timings file containing only
-// Rajasthan and silently deletes every other place's entry.
-const cache = existsSync(CACHE) && !force ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
+// Neither file is ever wiped wholesale.
+//  - `previous` is the merge base for `--only`. Zeroing it makes
+//    `--only=rajasthan` write a timings file containing only Rajasthan and
+//    silently delete every other place's entry.
+//  - The cache is what stops the paid provider re-billing unchanged lines.
+//    `force` means "re-render the lines in scope even if cached", NOT
+//    "forget every other line's key" — that would make the next unscoped
+//    run re-render, and re-bill, the whole country for about $9.
+const cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
 const previous = existsSync(TIMINGS) ? JSON.parse(readFileSync(TIMINGS, 'utf8')) : {}
+
+/** The single definition of "this line needs rendering", shared by the cost
+ *  preflight and renderLine so the estimate cannot drift from the bill. */
+const needsRender = (line) =>
+  force || !(cache[line.id] === keyOf(line) && existsSync(join(OUT_DIR, `${line.id}.m4a`)) && previous[line.id])
 // Start from the previous timings when rendering a subset, or --only=rajasthan
 // would write a timings.json containing ONLY Rajasthan and silently delete
 // every other clip's entry.
@@ -1445,7 +1454,7 @@ const lines = collectLines().filter(l => !only || l.id.startsWith(only))
 console.log(`${lines.length} lines, provider "${providerName}"`)
 
 if (providerName === 'elevenlabs') {
-  const todo = lines.filter(l => !(cache[l.id] === keyOf(l) && existsSync(join('public', `audio/en/${l.id}.m4a`))))
+  const todo = lines.filter(needsRender)
   const chars = todo.reduce((a, l) => a + l.text.length, 0)
   console.log(`  ${todo.length} of ${lines.length} lines need rendering`)
   console.log(`  ${chars.toLocaleString()} characters, about $${(chars / 1000 * 0.10).toFixed(2)}`)
@@ -1464,7 +1473,7 @@ async function renderLine(line) {
   // build happened to write the file.
   const rel = `audio/en/${line.id}.m4a`
 
-  if (cache[line.id] === key && existsSync(abs) && previous[line.id]) {
+  if (!needsRender(line)) {
     // Audio is unchanged; still recompute cue times in case a cue moved.
     timings[line.id] = { ...previous[line.id], cues: cueTimes(line.cues, previous[line.id]) }
     reused++
