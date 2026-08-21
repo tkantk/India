@@ -1,8 +1,21 @@
 /* The tour art: what appears when the narrator names something.
 
-   Everything here is inside `.tour-overlay`, which is already absolutely
-   positioned over the map and `pointer-events: none` — the art is never a
-   tap target, and a child reaching for Kerala must not hit a tiger. */
+   THE ART IS NEVER A TAP TARGET. A child reaching for Kerala must not hit a
+   tiger, and beat 14's "tap any state on the map" has to be true for every
+   second of the tour, not only the seconds when nothing is being drawn.
+
+   Most of this is inside `.tour-overlay`, which is `pointer-events: none`
+   already — and that used to be the whole argument. It is not enough. Task
+   10's look-down marker answers a CAMERA verb, which the cue registry has no
+   picture for, so it is drawn by the sequencer as a child of the stage
+   instead: same classes, outside that slot, and therefore `pointer-events:
+   auto` over the whole map for the six seconds it is up. Measured in Chrome,
+   `elementFromPoint` over Delhi returned `svg.cue-map` and not the state
+   underneath it.
+
+   So the two wrappers that fill the stage are inert THEMSELVES, wherever
+   they are mounted. A rule about where a thing must live is a rule somebody
+   will break; this one cannot be. */
 
 /* The wrapper `overlays.tsx` puts round every effect. Fills the stage so a
    figure can be centred in it and a map layer can register against it. */
@@ -11,6 +24,7 @@
   inset: 0;
   display: grid;
   place-items: center;
+  pointer-events: none;
 }
 
 /* A drawing on a card, in the middle of the map. The grid matters: the
@@ -34,10 +48,14 @@
 
 /* Art drawn in the map's own viewBox. `.tour-overlay` and `.map` are the same
    box, and both svgs letterbox the same viewBox the same way, so this lands
-   on the geography underneath it. */
+   on the geography underneath it.
+
+   It fills the whole stage, so this is the one that swallows a tap when it is
+   mounted anywhere but the overlay. See the note at the top of this file. */
 .cue-layer {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
 .cue-map {

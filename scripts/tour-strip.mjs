@@ -266,6 +266,22 @@ const SNAPSHOT = `(() => {
     view: el('svg.base')?.getAttribute('viewBox') ?? null,
     playButton: el('.play-big')?.textContent ?? null,
     say: box(r('.say')),
+    /**
+     * What a finger put in the middle of the map actually reaches, RIGHT NOW.
+     *
+     * Recorded on every frame rather than once at the end, because the thing
+     * that swallows a tap is whatever happens to be drawn at that moment.
+     * The look-down marker fills the stage and is mounted outside
+     * .tour-overlay, so for the six seconds it was up a tap over Delhi hit
+     * svg.cue-map instead of Delhi — during a tour whose closing line is
+     * "tap any state on the map".
+     */
+    under: (() => {
+      const m = r('.map')
+      if (!m) return null
+      const u = document.elementFromPoint(m.left + m.width / 2, m.top + m.height / 2)
+      return u ? u.tagName.toLowerCase() + (u.getAttribute('class') ? '.' + u.getAttribute('class') : '') : 'nothing'
+    })(),
   }
 })()`
 
@@ -576,7 +592,8 @@ async function watchTheTour() {
       shots.push({ file, beat: beat.id, moment: moment.name, why: moment.why, snap, text: beat.text })
       console.log(
         `  ${beat.id} ${String(moment.name).padEnd(14)} word ${String(snap.word).padStart(2)}/${snap.words}` +
-        ` "${snap.saying ?? ''}"  art=${snap.art ?? '-'}  mor=${snap.mor}  lit=${snap.lit}`,
+        ` "${snap.saying ?? ''}"  art=${snap.art ?? '-'}  mor=${snap.mor}  lit=${snap.lit}` +
+        `  tap->${snap.under}`,
       )
       if (moment.name === 'beat') seen.push(snap)
     }
@@ -789,6 +806,18 @@ for (const row of cues) {
   )
 }
 
+/**
+ * Anything drawn over the map that a finger cannot get past. The tour's
+ * closing line is "tap any state on the map", and the whole design says a tap
+ * must be able to end it at any moment — so this is checked on every frame,
+ * not once.
+ */
+const SWALLOWS = /cue-layer|cue-map|cue-figure|cue-art|\.cue\b|say|tour-front|mor/
+const blocked = watched.shots.filter((s) => SWALLOWS.test(String(s.snap.under)))
+console.log(blocked.length === 0
+  ? '\na tap reached the map on every frame.'
+  : `\nA TAP WAS SWALLOWED on: ${blocked.map((b) => `${b.beat}/${b.moment} by ${b.snap.under}`).join(', ')}`)
+
 const layouts = await measureLayouts()
 
 writeFileSync(`${OUT}/tour-watch.json`, `${JSON.stringify({
@@ -835,6 +864,6 @@ console.log(bad.length === 0
 // A check, not a report. There are no layout tests in the vitest suite —
 // jsdom has no boxes to measure — so this is the only thing that can fail
 // when the bar stops fitting a phone or the credit goes back behind it.
-if (drift || bad.length) process.exitCode = 1
+if (drift || bad.length || blocked.length) process.exitCode = 1
 
 stop()
