@@ -1381,14 +1381,21 @@ import { join } from 'node:path'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { timingsFromAlignment, estimateTimings, cueTimes } from './lib/words.mjs'
 
-const providerName = (process.argv.find(a => a.startsWith('--provider=')) ?? '--provider=say').split('=')[1]
-const only = process.argv.find(a => a.startsWith('--only='))?.split('=')[1]
+const arg = (name, fallback) =>
+  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=') ?? fallback
+
+const providerName = arg('provider', 'say')
+const only = arg('only', null)
 const force = process.argv.includes('--force')
 
 const provider = await import(`./tts-providers/${providerName}.mjs`)
-const OUT_DIR = 'public/audio/en'
-const TIMINGS = 'src/data/timings.json'
-const CACHE = 'build/tts-cache.json'
+
+// Overridable so the test suite can write to a scratch directory. Without
+// this the tests would leave fixture audio in public/ and fixture entries in
+// the committed timings file. Production npm scripts pass none of these.
+const OUT_DIR = arg('audio-dir', 'public/audio/en')
+const TIMINGS = arg('timings', 'src/data/timings.json')
+const CACHE = arg('cache', 'build/tts-cache.json')
 
 mkdirSync(OUT_DIR, { recursive: true })
 mkdirSync('src/data', { recursive: true })
@@ -1447,8 +1454,11 @@ if (providerName === 'elevenlabs') {
 
 async function renderLine(line) {
   const key = keyOf(line)
+  const abs = join(OUT_DIR, `${line.id}.m4a`)
+  // The path stored in timings.json is always the production-relative one,
+  // because the app resolves it through assetUrl() regardless of where the
+  // build happened to write the file.
   const rel = `audio/en/${line.id}.m4a`
-  const abs = join('public', rel)
 
   if (cache[line.id] === key && existsSync(abs) && previous[line.id]) {
     // Audio is unchanged; still recompute cue times in case a cue moved.
