@@ -128,8 +128,19 @@ and its sound plays. Used by the Grand Tour for national symbols and by every St
 for state animals.
 
 ### Child controls
-Persistent, large (minimum 60px touch targets): pause/play, 🔁 say that again, 🐢 slower,
-volume, and home. Always visible, never nested in a menu.
+
+Persistent, always visible, never nested in a menu: pause/play, say that again, slower,
+volume, and home.
+
+**Touch targets are 104 CSS pixels, not 44.** Nielsen Norman Group's testing with children
+recommends 2cm by 2cm for under-nines — four times the adult figure — and 2cm is 104px on a
+standard iPad. Apple's 44pt is only 8.5mm there, below even the adult ergonomic minimum. The
+visible control can be smaller; the tappable area cannot. NN/g watched two seven-year-olds
+fail to hit a 5mm close button, fetch an Apple Pencil, and then give up on the app.
+
+Every control is **labelled with a word as well as a symbol**. Research on children's
+touchscreen interfaces found only 2% of apps follow the guidance to avoid bare abstract
+symbols, and a six-year-old does not reliably read a pause glyph.
 
 ---
 
@@ -154,9 +165,28 @@ Ladakh as Indian union territories. The chosen source is verified visually befor
 is built on top of it. Data must be post-2019: Ladakh separate, Telangana present,
 Dadra & Nagar Haveli merged with Daman & Diu.
 
-### Zoom is a transform
-One SVG. Zoom and pan are an animated `transform` on a group element, not a mapping library
-and not viewBox animation. This stays GPU-composited and smooth on old hardware.
+### Zoom is a transform on an HTML wrapper, then a commit
+
+One SVG, no mapping library. But **not** a transform on an SVG group, which was the original
+plan and is wrong.
+
+WebKit's legacy SVG engine — the one running on every iPad this needs to work on — declares
+`LegacyRenderSVGModelObject : public RenderElement`, not `RenderLayerModelObject`. An SVG
+child therefore can never own a compositor layer, so a transform on a `<g>` is a main-thread
+software repaint of all 36 paths, every frame. Animating the `viewBox` is worse still: it
+triggers layout, a full repaint, and eviction of the cached resource buffers on every frame.
+
+What works is a CSS transform on an **HTML wrapper div**, which can be composited, animated
+for 350–450ms, and then committed: on transition end, set the SVG's `viewBox` to the target
+rectangle and reset the transform to identity in the same frame. That pays one expensive
+frame instead of twenty-four, and ends up crisp — which also works around the WebKit bug
+where a composited layer stays rasterised at its pre-animation scale and looks soft while
+scaling up.
+
+Consequences that follow from the same constraint: no SVG `<filter>` anywhere in an animated
+path, because WebKit blurs on the CPU; a soft glow uses a CSS `drop-shadow()` shorthand on a
+separate composited element instead. Highlighting toggles a class on a cached node reference
+rather than re-rendering through React.
 
 ### Cues anchor to word index, not time
 This is the load-bearing decision of the whole design.
@@ -178,6 +208,11 @@ A single module owning one `AudioContext`, deliberately outside React state:
 
 Audio is unlocked by the first user gesture on the landing screen ("Tap to begin").
 Per-state audio is fetched lazily when the state is opened.
+
+There is no web API that can detect an iPad muted from Control Center, and an iPad has no
+physical ringer switch. A silent narrated site simply looks broken to a child. So the landing
+screen plays a short sound and asks whether it was heard, and every narrated moment is paired
+with a visible animation, so the site still communicates with the sound off.
 
 ### Artwork
 A kit of about 30 reusable SVG primitives — domes, minarets, shikharas, gopurams, fort

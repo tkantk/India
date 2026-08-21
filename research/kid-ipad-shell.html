@@ -1,0 +1,159 @@
+<!-- ============ HEAD ============ -->
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+<!-- Home Screen web app. The manifest is the modern route; the apple-* tags are
+     the legacy route and are still what older iPadOS honours. Ship both. -->
+<link rel="manifest" href="/app.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="India Map">
+<link rel="apple-touch-icon" href="/icon-180.png"><!-- 180x180, no transparency -->
+<meta name="theme-color" content="#0b3d2e">
+<meta name="format-detection" content="telephone=no">
+
+<style>
+/* ---------- TOKENS ---------------------------------------------------- */
+:root{
+  /* 104 CSS px == exactly 20 mm on a 264 ppi iPad == NN/g's 2 cm child target */
+  --tap: 104px;      /* design target for landmarks / state hotspots         */
+  --tap-min: 80px;   /* absolute floor (~15 mm on iPad) for secondary chrome */
+  --edge: 28px;      /* dead gutter: system edge-swipe lives here            */
+  --label: 24px;     /* ~14 pt: NN/g floor for young readers                 */
+}
+
+/* ---------- KILL THE DOCUMENT SCROLL => KILLS RUBBER-BAND ------------- */
+/* overscroll-behavior alone is not enough on iOS: WebKit's implementation
+   is partial and "has no effect on scroll containers that have no scrollable
+   overflow". Taking the document out of flow is what actually stops it.     */
+html{ height:100%; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body{
+  position:fixed; inset:0;
+  width:100%; height:100%;
+  margin:0; overflow:hidden;
+  overscroll-behavior:none;            /* Safari 16+; helps nested scrollers */
+  background:#0b3d2e;
+  font:400 var(--label)/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  touch-action:manipulation;           /* no double-tap zoom anywhere        */
+}
+
+/* ---------- STOP THE CHILD FIGHTING THE OS ---------------------------- */
+*{
+  -webkit-tap-highlight-color:transparent;  /* no grey flash on tap          */
+  -webkit-touch-callout:none;               /* no long-press "Copy/Save Image"*/
+  -webkit-user-select:none; user-select:none;
+  -webkit-user-drag:none;
+}
+/* Decorative art must never swallow a tap meant for the .hit above it.
+   NOTE: only apply pointer-events:none if your SVG paths are NOT the targets. */
+img, svg[aria-hidden="true"]{ -webkit-user-drag:none; pointer-events:none; }
+/* Let real text be selectable only where you deliberately want it. */
+.selectable{ -webkit-user-select:text; user-select:text; }
+
+/* The map surface: we own every finger on it, including two-finger pinch. */
+.map-surface{ touch-action:none; }
+
+/* ---------- HIT AREAS DECOUPLED FROM ARTWORK -------------------------- */
+/* The visible pin can be 40px of pretty illustration; the thing the finger
+   must find is this invisible 104px disc centred on it.                   */
+.hit{
+  position:absolute;
+  inline-size:var(--tap); block-size:var(--tap);
+  translate:-50% -50%;
+  display:grid; place-items:center;
+  padding:0; border:0; border-radius:50%;
+  background:transparent;
+  touch-action:manipulation;
+  cursor:pointer;
+}
+.hit::after{ content:""; position:absolute; inset:0; border-radius:50%; }
+
+/* Small states (Goa, Sikkim, Delhi, Tripura...) can't hold a 104px disc in
+   place. Pull them out to a rail with a leader line instead of shrinking. */
+.rail .hit{ position:static; translate:none; margin-block:12px; }
+
+/* ---------- FOCUS: this is the child's only feedback on a laptop ------- */
+:focus{ outline:none; }
+:focus-visible{
+  outline:6px solid #ffd400;
+  outline-offset:4px;
+  border-radius:12px;
+}
+/* Sticky-hover trap: iOS applies :hover on tap and it persists. Gate it. */
+@media (hover:hover) and (pointer:fine){
+  .hit:hover::after{ background:rgb(255 212 0 / .25); }
+}
+
+/* ---------- SAFE AREA + EDGE GUTTERS ---------------------------------- */
+/* viewport-fit=cover means YOU are now responsible for the notch/home bar. */
+.chrome{
+  padding-block-start:max(16px, env(safe-area-inset-top));
+  padding-block-end:max(24px, env(safe-area-inset-bottom));
+  padding-inline-start:max(var(--edge), env(safe-area-inset-left));
+  padding-inline-end:max(var(--edge), env(safe-area-inset-right));
+}
+/* Nothing tappable within --edge of left/right: that is Safari's back-swipe
+   and iPadOS's Slide Over gutter. There is no web API to defer them.       */
+
+/* ---------- ORIENTATION: no lock exists, so degrade -------------------- */
+.rotate-me{ display:none; }
+body.is-portrait .rotate-me{
+  display:grid; place-items:center;
+  position:fixed; inset:0; z-index:100;
+  background:#0b3d2e; color:#fff; text-align:center;
+}
+body.is-portrait .map-surface{ visibility:hidden; }
+
+/* ---------- TEXT FOR EARLY READERS ------------------------------------ */
+.label{
+  font-size:var(--label);        /* 24px ≈ 18pt, above NN/g's 14pt floor    */
+  font-weight:600;
+  line-height:1.5;               /* WCAG 1.4.12 Text Spacing                */
+  letter-spacing:.01em;
+  max-inline-size:22ch;          /* short lines: beginning readers lose place */
+  text-align:start;              /* never justify                            */
+  text-wrap:balance;
+  color:#fff;                    /* on #0b3d2e = 12.2:1, clears 1.4.6 AAA 7:1 */
+}
+/* Karaoke highlight so a 6-year-old can follow the narration word by word. */
+.word.is-spoken{ background:#ffd400; color:#111; border-radius:4px; }
+
+/* ---------- REDUCED MOTION: scope it, don't kill the app --------------- */
+@media (prefers-reduced-motion: reduce){
+  /* Remove vestibular triggers: large-area movement, parallax, rotation,
+     camera fly/zoom, confetti bursts. WCAG 2.3.3 exempts motion that is
+     "essential to the functionality", so the tapped-state highlight stays. */
+  .parallax,.confetti,.camera-fly{ animation:none !important; transform:none !important; }
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.15s !important;   /* cross-fade, don't slide        */
+    scroll-behavior:auto !important;
+  }
+  .hit[aria-current="true"]{ outline:6px solid #ffd400; } /* non-moving cue  */
+}
+</style>
+
+<!-- ============ MARKUP PATTERN ============ -->
+<!-- Real <button>s over the SVG: focusable, VoiceOver-reachable, Switch
+     Control-reachable. Never put onclick on a bare <path>.               -->
+<main class="map-surface chrome">
+  <svg viewBox="0 0 1000 1100" aria-hidden="true"><!-- artwork only --></svg>
+
+  <button class="hit"
+          style="left:38%; top:44%"
+          aria-label="Rajasthan. Play the story about Rajasthan."
+          aria-pressed="false"
+          data-audio="/audio/rajasthan.m4a">
+    <img src="/pins/rajasthan.svg" alt="" width="48" height="48">
+  </button>
+</main>
+
+<!-- One polite live region announces what is playing, for VoiceOver users
+     whose screen reader will otherwise talk over your narration.          -->
+<p id="now-playing" class="visually-hidden" aria-live="polite" role="status"></p>
+
+<div class="rotate-me" role="alertdialog" aria-label="Please turn the iPad sideways">
+  <img src="/rotate.svg" alt="Turn the iPad sideways" width="220" height="220">
+</div>
