@@ -1,0 +1,84 @@
+/* Controls: the five things a child can always reach, and never inside a
+   menu. Fixed to the viewport (not the document flow), so it cannot be
+   scrolled away, and padded against the safe-area insets directly, since a
+   fixed element sits outside body's own padding box. */
+.controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 4px;
+
+  background: var(--deep);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.18);
+
+  padding-top: 8px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+
+/* Compound selectors (scoped under .controls) so these always win over
+   .tap's single-class rules in base.css, regardless of which stylesheet a
+   bundler happens to concatenate first. */
+.controls .control {
+  flex: 1 1 0;
+  max-width: 160px;
+  border-radius: 18px;
+  /* --paper on --deep: ~11.5:1, comfortably past the 7:1 AAA target. */
+  color: var(--paper);
+}
+
+.controls .control:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.controls .control__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.controls .control__icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+/* The word every control carries. It is text a child reads, so it gets the
+   same 24px / AAA treatment as everywhere else, not a shrunk-down caption
+   — wrapping onto a second line is fine, an unreadably small label is not. */
+.controls .control__label {
+  font-size: var(--text);
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Stuck: the bar replaces itself with one full-width way out. */
+.controls--stuck {
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+
+.controls .carry-on {
+  width: 100%;
+  min-height: var(--tap);
+  border-radius: 18px;
+  /* --ink on --gold: ~11.3:1. (--ink on --saffron is only ~6.2:1 — short of
+     the 7:1 AAA target — which is why this button is gold, not saffron.) */
+  background: var(--gold);
+  color: var(--ink);
+  font-size: var(--text);
+  font-weight: 700;
+}
+
+.controls .carry-on:active {
+  filter: brightness(0.92);
+}
