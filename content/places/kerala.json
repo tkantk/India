@@ -7,7 +7,7 @@
   "intro": {
     "id": "kerala.intro",
     "kind": "intro",
-    "text": "This is Kerala, a long thin strip of land down the west side of India. The sea is on one side and green hills are on the other. It rains a great deal here, so everything grows, and coconut palms lean over every road. Tamil Nadu is its neighbour. The main city has a very long name. Thiruvananthapuram.",
+    "text": "This is Kerala, a long thin strip of land down the west side of India. The sea is on one side and green hills are on the other. It rains a great deal here, so everything grows, and coconut palms lean over every road. Tamil Nadu is one of its neighbours. The main city has a very long name. Thiruvananthapuram.",
     "cues": [
       { "word": 2, "do": "highlightState", "arg": "kerala" },
       { "word": 44, "do": "lightNeighbour", "arg": "tamil-nadu" }
@@ -80,7 +80,7 @@
       "line": {
         "id": "kerala.chinese-nets.line",
         "kind": "landmark",
-        "text": "These nets look like huge wooden spiders standing in the water. Four or five men pull down together on a rope, big stones swing up as a counterweight, and the whole net lifts out of the sea, dripping, with fish shining inside it."
+        "text": "These nets look like huge wooden spiders standing in the water. A man walks out along the beam, and his weight alone dips the net into the sea. To lift it again, the men haul on ropes, and heavy stones settle down onto a platform one by one. The stones go down, so the net comes up."
       }
     },
     {
@@ -91,8 +91,8 @@
       "line": {
         "id": "kerala.periyar.line",
         "kind": "landmark",
-        "text": "You go out on this lake in a boat, and then you wait. Wild elephants come down to the edge to drink, and they bring their babies with them. There are tigers back in those trees as well, but they are so good at hiding that hardly anybody sees one.",
-        "cues": [{ "word": 14, "do": "playSfx", "arg": "elephant" }]
+        "text": "You go out on this lake in a boat, and then you wait. You might see wild elephants come down to the edge to drink, and bring their babies with them. There are tigers back in those trees as well, but they are so good at hiding that hardly anybody sees one.",
+        "cues": [{ "word": 17, "do": "playSfx", "arg": "elephant" }]
       }
     }
   ]

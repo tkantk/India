@@ -129,3 +129,92 @@ describe('validate-content sound references', () => {
     expect(output).toContain('typo?')
   })
 })
+
+/** A schema-valid place, so these cases fail on the geo check and nothing else. */
+function place(dir, id, extraCues = []) {
+  mkdirSync(join(dir, 'content', 'places'), { recursive: true })
+  writeFileSync(join(dir, 'content', 'places', `${id}.json`), JSON.stringify({
+    id, name: id, type: 'state', capital: 'Somewhere', ambience: 'plains',
+    intro: {
+      id: `${id}.intro`, kind: 'intro', text: 'A place with a neighbour beside it.',
+      cues: [{ word: 0, do: 'highlightState', arg: id }, ...extraCues],
+    },
+    card: {
+      animal: { id: `${id}.card.animal`, kind: 'card', text: 'An animal lives here.' },
+      food: { id: `${id}.card.food`, kind: 'card', text: 'People eat well.' },
+      festival: { id: `${id}.card.festival`, kind: 'card', text: 'They celebrate often.' },
+      hello: { id: `${id}.card.hello`, kind: 'card', text: 'People say hello.' },
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: { id: `${id}.lm${i}.line`, kind: 'landmark', text: `Spot number ${i} is nice.` },
+    })),
+  }))
+}
+
+function geo(dir, slugs) {
+  mkdirSync(join(dir, 'src', 'data'), { recursive: true })
+  writeFileSync(join(dir, 'src', 'data', 'geo.json'), JSON.stringify({
+    places: Object.fromEntries(slugs.map(s => [s, { name: s, type: 'state' }])),
+  }))
+}
+
+describe('validate-content place references', () => {
+  it('rejects a place whose id is not a slug in geo.json', () => {
+    const dir = fixture()
+    place(dir, 'atlantis')
+    geo(dir, ['rajasthan', 'kerala'])
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('place "atlantis" is not a slug')
+  })
+
+  it('rejects a lightNeighbour cue naming a state that does not exist', () => {
+    const dir = fixture()
+    place(dir, 'rajasthan', [{ word: 3, do: 'lightNeighbour', arg: 'gujrat' }])
+    geo(dir, ['rajasthan', 'gujarat'])
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    // The typo, not the correctly-spelled state it was meant to be.
+    expect(output).toContain('place "gujrat" is not a slug')
+    expect(output).not.toContain('place "rajasthan" is not a slug')
+  })
+
+  it('rejects a zoomTo cue in the tour naming a place that does not exist', () => {
+    const dir = fixture()
+    writeFileSync(join(dir, 'content', 'tour.json'), JSON.stringify({
+      beats: [{
+        id: 'tour.05', kind: 'tour', text: 'We are flying to New Delhi now.',
+        cues: [{ word: 5, do: 'zoomTo', arg: 'new-delhi' }],
+      }],
+    }))
+    geo(dir, ['delhi'])
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('place "new-delhi" is not a slug')
+  })
+
+  it('does not flag place references that all resolve', () => {
+    const dir = fixture()
+    place(dir, 'rajasthan', [{ word: 3, do: 'lightNeighbour', arg: 'gujarat' }])
+    geo(dir, ['rajasthan', 'gujarat'])
+
+    const { output } = run(dir)
+    // content/tour.json and content/ui.json are still missing in this fixture,
+    // so the run exits non-zero overall; the point here is narrower.
+    expect(output).not.toContain('is not a slug')
+  })
+
+  it('rejects place references when geo.json has not been generated at all', () => {
+    const dir = fixture()
+    place(dir, 'rajasthan')
+
+    const { code, output } = run(dir)
+    expect(code).not.toBe(0)
+    expect(output).toContain('place reference(s)')
+    expect(output).toContain('npm run build:map')
+  })
+})

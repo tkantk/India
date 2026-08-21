@@ -7,11 +7,11 @@
   "intro": {
     "id": "delhi.intro",
     "kind": "intro",
-    "text": "This is Delhi, and Delhi is not a state. It is a union territory, which means the whole country looks after it together. India's capital city, New Delhi, sits right inside it. Haryana wraps around it. Delhi is enormous and busy, with the river Yamuna along one side and trains that run under the ground.",
+    "text": "This is Delhi, and Delhi is not a state. It is a union territory, which means the government of the whole of India has a big say in how it is run. India's capital city, New Delhi, sits right inside it. Haryana wraps around it. Delhi is enormous and busy, with the river Yamuna running through it and trains that go under the ground.",
     "cues": [
       { "word": 2, "do": "highlightState", "arg": "delhi" },
       { "word": 12, "do": "highlightUnionTerritories" },
-      { "word": 32, "do": "lightNeighbour", "arg": "haryana" }
+      { "word": 41, "do": "lightNeighbour", "arg": "haryana" }
     ]
   },
   "card": {
@@ -58,7 +58,7 @@
       "line": {
         "id": "delhi.qutub-minar.line",
         "kind": "landmark",
-        "text": "This tower is built of red stone and it climbs up in five steps, each one thinner than the one below. Inside, a staircase of three hundred and seventy-nine steps curls round and round like a snail shell. Nobody may climb it now, so the top belongs to the birds."
+        "text": "Most of this tower is red sandstone, but near the top there is a band of white marble. It climbs in five sections, each thinner than the one below. Inside, hundreds of steps spiral round and round like a snail shell. Nobody climbs them now, so the top belongs to the birds."
       }
     },
     {

@@ -7,7 +7,7 @@
   "intro": {
     "id": "odisha.intro",
     "kind": "intro",
-    "text": "This is Odisha, over on the east side of India, right beside the Bay of Bengal. A bay is a wide curve of sea, and this one washes along the edge of Odisha for hundreds of kilometres. West Bengal is its neighbour. Its main city is Bhubaneswar, and Bhubaneswar is full of old stone temples.",
+    "text": "This is Odisha, over on the east side of India, right beside the Bay of Bengal. A bay is a wide curve of sea, and this one washes along the edge of Odisha for hundreds of kilometres. West Bengal is one of its neighbours. Its main city is Bhubaneswar, and Bhubaneswar is full of old stone temples.",
     "cues": [
       { "word": 2, "do": "highlightState", "arg": "odisha" },
       { "word": 37, "do": "lightNeighbour", "arg": "west-bengal" }
@@ -92,7 +92,7 @@
       "line": {
         "id": "odisha.udayagiri.line",
         "kind": "landmark",
-        "text": "These little rooms were not built. They were cut straight into the rock of the hill with hammers and chisels, so that monks could sleep and sit quietly inside them. One is called the elephant cave, and by another doorway two stone elephants stand guard."
+        "text": "They cut these little rooms straight into the hill with hammers and chisels, which are metal tools for splitting stone. Monks lived in them. A monk is someone who gives away all he owns and lives very simply. Two stone elephants guard one of the doorways."
       }
     }
   ]

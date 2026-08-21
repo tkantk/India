@@ -10,6 +10,11 @@ const ids = new Map()
 let chars = 0
 
 const needSound = new Map()
+const needPlace = new Map()
+
+/** Cue verbs whose `arg` names a place on the map rather than a sound or a
+ *  symbol. Each one is a slug that has to exist in src/data/geo.json. */
+const PLACE_CUES = new Set(['highlightState', 'zoomTo', 'lightNeighbour'])
 
 function line(l, where) {
   if (ids.has(l.id)) problems.push(`duplicate line id "${l.id}" in ${where} and ${ids.get(l.id)}`)
@@ -18,11 +23,13 @@ function line(l, where) {
   if (l.sfx) needSound.set(l.sfx, `${where} (${l.id}.sfx)`)
   for (const c of l.cues ?? []) {
     if (c.do === 'playSfx' && c.arg) needSound.set(c.arg, `${where} (${l.id} cue)`)
+    if (PLACE_CUES.has(c.do) && c.arg) needPlace.set(c.arg, `${where} (${l.id} ${c.do} cue)`)
   }
 }
 
 function walkPlace(p, where) {
   needSound.set(p.ambience, `${where} (ambience)`)
+  needPlace.set(p.id, `${where} (id)`)
   line(p.intro, where)
   for (const l of Object.values(p.card)) line(l, where)
   for (const lm of p.landmarks) line(lm.line, where)
@@ -84,6 +91,22 @@ for (const [id, where] of needSound) {
 if (gaps.length) {
   console.log(`\n  ${gaps.length} sound(s) referenced but not yet sourced — these are silent for now:`)
   for (const g of gaps) console.log(`    - ${g}`)
+}
+
+// Every place id, and every cue that names a place, must resolve to a slug in
+// the generated map. There is no "not yet sourced" tier here as there is for
+// sounds: geo.json is generated from the official boundaries and already holds
+// all 36 places, so anything that misses is a typo. Left unchecked, a mistyped
+// neighbour is silent — lightNeighbour simply lights nothing, and the state it
+// was meant to name never glows while the narration says its name.
+const geoPath = 'src/data/geo.json'
+if (existsSync(geoPath)) {
+  const slugs = new Set(Object.keys(JSON.parse(readFileSync(geoPath, 'utf8')).places ?? {}))
+  for (const [id, where] of needPlace) {
+    if (!slugs.has(id)) problems.push(`${where}: place "${id}" is not a slug in ${geoPath}`)
+  }
+} else if (needPlace.size) {
+  problems.push(`${needPlace.size} place reference(s) but ${geoPath} does not exist — run npm run build:map`)
 }
 
 if (chars > CEILING) {

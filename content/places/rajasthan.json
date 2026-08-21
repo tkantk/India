@@ -25,12 +25,12 @@
     "food": {
       "id": "rajasthan.card.food",
       "kind": "card",
-      "text": "People here eat dal baati churma. Baati is a hard little ball of baked bread. You crack it open with your hands and dip it in warm buttery dal."
+      "text": "People here eat dal baati churma. Baati is a hard little ball of baked bread. You crack it open and dip it in dal, which is warm buttery soup made from lentils."
     },
     "festival": {
       "id": "rajasthan.card.festival",
       "kind": "card",
-      "text": "At the Pushkar fair, thousands of camels walk into a small town. Their owners brush them, shave patterns into their coats, hang bells on them, and then the camels race."
+      "text": "Thousands of camels come to the Pushkar fair to be bought and sold. Owners brush them and hang bells on them. A few get patterns shaved into their coats. Some race."
     },
     "hello": {
       "id": "rajasthan.card.hello",
@@ -59,7 +59,7 @@
       "line": {
         "id": "rajasthan.hawa-mahal.line",
         "kind": "landmark",
-        "text": "Count the windows. There are nine hundred and fifty-three of them. The wind comes in through all of them at once and keeps the whole place cool, which is why it is called Hawa Mahal. Hawa means wind. Mahal means palace."
+        "text": "Count the windows. There are nine hundred and fifty-three of them. The wind blows in at one side and out at the other, and that keeps the whole place cool, which is why it is called Hawa Mahal. Hawa means wind. Mahal means palace."
       }
     },
     {
