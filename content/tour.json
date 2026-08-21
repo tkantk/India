@@ -1,0 +1,119 @@
+{
+  "beats": [
+    {
+      "id": "tour.01",
+      "kind": "tour",
+      "text": "Namaste! I am Mor, and I am a peacock. Come with me. I want to show you my country, India.",
+      "cues": [{ "word": 8, "do": "playSfx", "arg": "peacock-call" }]
+    },
+    {
+      "id": "tour.02",
+      "kind": "tour",
+      "text": "Look at the map. That whole shape is India. It is wide across the top, and it comes down to a point at the bottom, like a giant kite dipping into the sea. Go on, trace the edge with your finger.",
+      "cues": [{ "word": 8, "do": "revealSymbol", "arg": "outline" }]
+    },
+    {
+      "id": "tour.03",
+      "kind": "tour",
+      "text": "India is made of twenty-eight states. A state is like a big piece of the country, and each one has its own food, its own festivals, and its own way of saying hello.",
+      "cues": [
+        { "word": 4, "do": "highlightAllStates" },
+        { "word": 5, "do": "countTo", "arg": "28" }
+      ]
+    },
+    {
+      "id": "tour.04",
+      "kind": "tour",
+      "text": "India also has eight union territories. Those are smaller pieces, and the government of the whole of India helps to look after them. Some of them are tiny islands, far out in the sea.",
+      "cues": [
+        { "word": 4, "do": "highlightUnionTerritories" },
+        { "word": 5, "do": "countTo", "arg": "8" }
+      ]
+    },
+    {
+      "id": "tour.05",
+      "kind": "tour",
+      "text": "Every country has one city where the people who run it come to work. In India that city is New Delhi. Hold on, we are flying there now. Look down. That big stone arch is called India Gate.",
+      "cues": [
+        { "word": 19, "do": "zoomTo", "arg": "delhi" },
+        { "word": 36, "do": "revealSymbol", "arg": "india-gate" }
+      ]
+    },
+    {
+      "id": "tour.06",
+      "kind": "tour",
+      "text": "This is our flag. The top stripe is saffron, a deep orange colour. The middle is white and the bottom is green. In the white part there is a blue wheel with twenty-four spokes. Count them with me.",
+      "cues": [
+        { "word": 3, "do": "unfurlFlag" },
+        { "word": 34, "do": "countTo", "arg": "24" }
+      ]
+    },
+    {
+      "id": "tour.07",
+      "kind": "tour",
+      "text": "Our national animal is the tiger. National means he belongs to the whole country. He is orange with black stripes, and he walks so quietly that you would never hear him coming.",
+      "cues": [
+        { "word": 4, "do": "revealSymbol", "arg": "tiger" },
+        { "word": 5, "do": "playSfx", "arg": "tiger-growl" }
+      ]
+    },
+    {
+      "id": "tour.08",
+      "kind": "tour",
+      "text": "Our national bird is the peacock, and that is me. In the rainy season I open my tail into a huge blue and green fan. Then I call out, loud enough for the whole village to hear.",
+      "cues": [
+        { "word": 5, "do": "revealSymbol", "arg": "peacock" },
+        { "word": 28, "do": "playSfx", "arg": "peacock-call" }
+      ]
+    },
+    {
+      "id": "tour.09",
+      "kind": "tour",
+      "text": "Our flower is the lotus. It starts in the mud at the bottom of a pond and pushes all the way up into the sunshine. Our tree is the banyan, which drops roots that hang down like ropes. Our fruit is the mango.",
+      "cues": [
+        { "word": 4, "do": "revealSymbol", "arg": "lotus" },
+        { "word": 4, "do": "playSfx", "arg": "water-ripple" },
+        { "word": 29, "do": "revealSymbol", "arg": "banyan" },
+        { "word": 42, "do": "revealSymbol", "arg": "mango" }
+      ]
+    },
+    {
+      "id": "tour.10",
+      "kind": "tour",
+      "text": "Watch this line of water. It is the river Ganga. It begins high up in the snowy mountains, then it runs and runs across the country until it pours itself out into the sea.",
+      "cues": [{ "word": 9, "do": "traceRiver", "arg": "ganga" }]
+    },
+    {
+      "id": "tour.11",
+      "kind": "tour",
+      "text": "Along the top of India stand the Himalaya mountains. They are the highest mountains in the world. Up at the very top the air is thin and cold, and the snow there never melts away.",
+      "cues": [{ "word": 7, "do": "raiseMountains" }]
+    },
+    {
+      "id": "tour.12",
+      "kind": "tour",
+      "text": "Water touches India on three sides. On the left of the map is the Arabian Sea. On the right is the Bay of Bengal. And underneath them both is the Indian Ocean.",
+      "cues": [
+        { "word": 14, "do": "revealSymbol", "arg": "arabian-sea" },
+        { "word": 21, "do": "revealSymbol", "arg": "bay-of-bengal" },
+        { "word": 30, "do": "revealSymbol", "arg": "indian-ocean" }
+      ]
+    },
+    {
+      "id": "tour.13",
+      "kind": "tour",
+      "text": "Lots and lots of people live here, and they do not all speak the same language. So there are lots of ways to say hello. Watch them pop up. Namaste. Namaskar. Vanakkam. Try saying one of them out loud.",
+      "cues": [
+        { "word": 29, "do": "showScript", "arg": "namaste" },
+        { "word": 30, "do": "showScript", "arg": "namaskar" },
+        { "word": 31, "do": "showScript", "arg": "vanakkam" }
+      ]
+    },
+    {
+      "id": "tour.14",
+      "kind": "tour",
+      "text": "Now it is your turn. Tap any state on the map, and the two of us will go and see it. There is no wrong one to pick. Come on. Let us go exploring!",
+      "cues": [{ "word": 10, "do": "highlightAllStates" }]
+    }
+  ]
+}

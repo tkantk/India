@@ -1,0 +1,29 @@
+{
+  "sfx": [
+    { "id": "tiger-growl",    "search": "tiger growl",              "note": "national animal, Grand Tour beat 7" },
+    { "id": "peacock-call",   "search": "peacock call",             "note": "national bird, Mor himself" },
+    { "id": "elephant",       "search": "elephant trumpet",         "note": "Kerala, Assam" },
+    { "id": "lion-roar",      "search": "lion roar",                "note": "Gujarat, Asiatic lion" },
+    { "id": "camel",          "search": "camel grunt",              "note": "Rajasthan" },
+    { "id": "rhino",          "search": "rhinoceros snort",         "note": "Assam" },
+    { "id": "hornbill",       "search": "great hornbill",           "note": "Arunachal, Kerala; Commons has a real Indian recording", "maxSeconds": 5 },
+    { "id": "indian-roller",  "search": "Indian roller call",       "note": "Odisha, Karnataka, Telangana; real Indian recording" },
+    { "id": "gibbon",         "search": "hoolock gibbon",           "note": "north-east", "maxSeconds": 6 },
+    { "id": "sparrow",        "search": "house sparrow chirp",      "note": "Delhi" },
+    { "id": "temple-bell",    "search": "temple bell single",       "note": "used on temple landmarks", "maxSeconds": 5 },
+    { "id": "water-ripple",   "search": "water drop ripple",        "note": "lotus bloom, Grand Tour beat 9" },
+    { "id": "chime-correct",  "search": "gentle chime",             "note": "passport stamp earned", "maxSeconds": 2 },
+    { "id": "whoosh-soft",    "search": "soft whoosh",              "note": "state opening animation" }
+  ],
+  "ambience": [
+    { "id": "desert",   "search": "desert wind",           "seconds": 20, "note": "Rajasthan" },
+    { "id": "ocean",    "search": "ocean waves beach",     "seconds": 20, "note": "Odisha, Goa, Tamil Nadu" },
+    { "id": "forest",   "search": "forest birdsong",       "seconds": 20, "note": "Kerala, north-east" },
+    { "id": "mountain", "search": "mountain wind",         "seconds": 20, "note": "Himachal, Ladakh, Sikkim" },
+    { "id": "river",    "search": "river stream flowing",  "seconds": 20, "note": "Bihar, UP, West Bengal" },
+    { "id": "city",     "search": "city street ambience",  "seconds": 20, "note": "Delhi, Mumbai" },
+    { "id": "plains",   "search": "field insects wind",    "seconds": 20, "note": "Punjab, Haryana, MP" },
+    { "id": "temple",   "search": "temple bells chanting", "seconds": 20, "note": "Odisha, Tamil Nadu" },
+    { "id": "island",   "search": "tropical beach palms",  "seconds": 20, "note": "Andamans, Lakshadweep" }
+  ]
+}

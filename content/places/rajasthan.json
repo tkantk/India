@@ -1,0 +1,100 @@
+{
+  "id": "rajasthan",
+  "name": "Rajasthan",
+  "type": "state",
+  "capital": "Jaipur",
+  "ambience": "desert",
+  "intro": {
+    "id": "rajasthan.intro",
+    "kind": "intro",
+    "text": "This is Rajasthan, the biggest state in all of India. Much of it is desert. A desert is a huge dry place where it hardly ever rains and the sun beats down all day. Most of this one is sand. Gujarat sits below it and Punjab sits up above. The main city is Jaipur, and old Jaipur is painted pink.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "rajasthan" },
+      { "word": 14, "do": "revealSymbol", "arg": "dune" },
+      { "word": 40, "do": "lightNeighbour", "arg": "gujarat" },
+      { "word": 45, "do": "lightNeighbour", "arg": "punjab" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "rajasthan.card.animal",
+      "kind": "card",
+      "text": "The camel lives here. That big hump on his back is packed with fat, not water. It feeds him when there is nothing to eat, so he can cross the hot sand for days.",
+      "sfx": "camel"
+    },
+    "food": {
+      "id": "rajasthan.card.food",
+      "kind": "card",
+      "text": "People here eat dal baati churma. Baati is a hard little ball of baked bread. You crack it open and dip it in dal, which is warm buttery soup made from lentils."
+    },
+    "festival": {
+      "id": "rajasthan.card.festival",
+      "kind": "card",
+      "text": "Thousands of camels come to the Pushkar fair to be bought and sold. Owners brush them and hang bells on them. A few get patterns shaved into their coats. Some race."
+    },
+    "hello": {
+      "id": "rajasthan.card.hello",
+      "kind": "card",
+      "text": "In Rajasthan people say Khamma Ghani. It is a warm and respectful way of saying hello, the kind you use when you are really pleased to see somebody.",
+      "script": "खम्मा घणी"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "rajasthan.thar",
+      "name": "The Thar Desert",
+      "photoQuery": "Thar Desert",
+      "scene": "dunes",
+      "line": {
+        "id": "rajasthan.thar.line",
+        "kind": "landmark",
+        "text": "These hills are not made of mud or of rock. They are made of sand. The wind keeps pushing at them, a little at a time, so the desert is slowly changing shape. Come back in a few years and some of these hills will have moved."
+      }
+    },
+    {
+      "id": "rajasthan.hawa-mahal",
+      "name": "Hawa Mahal",
+      "photoQuery": "Hawa Mahal",
+      "scene": "hawa-mahal",
+      "line": {
+        "id": "rajasthan.hawa-mahal.line",
+        "kind": "landmark",
+        "text": "Count the windows. There are nine hundred and fifty-three of them. The wind blows in at one side and out at the other, and that keeps the whole place cool, which is why it is called Hawa Mahal. Hawa means wind. Mahal means palace."
+      }
+    },
+    {
+      "id": "rajasthan.amber-fort",
+      "name": "Amber Fort",
+      "photoQuery": "Amer Fort",
+      "scene": "fort",
+      "line": {
+        "id": "rajasthan.amber-fort.line",
+        "kind": "landmark",
+        "text": "This fort sits high up on a hill, so the people inside could see anybody coming from far away. One hall in there is lined with thousands of tiny mirrors. Carry a small light into that room and it comes back at you from everywhere at once."
+      }
+    },
+    {
+      "id": "rajasthan.chand-baori",
+      "name": "Chand Baori",
+      "photoQuery": "Chand Baori",
+      "scene": "stepwell",
+      "line": {
+        "id": "rajasthan.chand-baori.line",
+        "kind": "landmark",
+        "text": "This is a well, but instead of a bucket it has stairs. Three thousand five hundred narrow steps zigzag down thirteen levels, like a staircase folded up inside a deep square hole, until they reach the cool water. In a desert, water is the most precious thing there is."
+      }
+    },
+    {
+      "id": "rajasthan.ranthambore",
+      "name": "Ranthambore",
+      "photoQuery": "Ranthambore National Park",
+      "scene": "forest-fort",
+      "line": {
+        "id": "rajasthan.ranthambore.line",
+        "kind": "landmark",
+        "text": "Real tigers live here, in a forest with an old broken fort standing in the middle of it. Tigers like to lie in the shade near the water, where it is cool. If you are very lucky and very quiet, you might see one.",
+        "cues": [{ "word": 1, "do": "playSfx", "arg": "tiger-growl" }]
+      }
+    }
+  ]
+}

@@ -175,7 +175,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          # Must be 24, not 22. `npm run validate` imports content/schema.ts
+          # directly and relies on native type stripping, which is unflagged
+          # only from Node 23.6 onwards. On Node 22 CI fails from Task 2 on.
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run validate
@@ -298,7 +301,19 @@ describe('PlaceSchema', () => {
     expect(PlaceSchema.safeParse(fat).success).toBe(false)
   })
 
-  it('rejects a cue pointing past the end of the line', () => {
+  it('rejects a cue exactly one word past the end', () => {
+    // Must be n, not some large number like 99. With 99 the test still passes
+    // when the check is loosened from `>= n` to `> n`, so it would not catch
+    // the off-by-one that lets an unreachable cue through.
+    const n = wordsOf(validLine.text).length
+    const bad = {
+      ...validPlace,
+      intro: { ...validLine, cues: [{ word: n, do: 'revealSymbol', arg: 'camel' }] },
+    }
+    expect(PlaceSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects a wildly out-of-range cue too', () => {
     const bad = {
       ...validPlace,
       intro: { ...validLine, cues: [{ word: 99, do: 'revealSymbol', arg: 'camel' }] },
@@ -440,7 +455,7 @@ export type Line = { id: string; kind: LineKind; text: string; cues?: Cue[]; sfx
 - [ ] **Step 4: Run it and watch it pass**
 
 Run: `npx vitest run content/schema.test.ts`
-Expected: PASS, 7 tests.
+Expected: PASS, 8 tests.
 
 - [ ] **Step 5: Write the validator `scripts/validate-content.mjs`**
 
@@ -450,7 +465,7 @@ The schema catches per-line problems. The validator catches whole-corpus problem
 #!/usr/bin/env node
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { PlaceSchema, TourSchema, UiSchema, LINE_BUDGET, wordsOf } from '../content/schema.ts'
+import { PlaceSchema, TourSchema, UiSchema } from '../content/schema.ts'
 
 const CEILING = 99_100
 const TARGET = 95_000
@@ -458,13 +473,20 @@ const problems = []
 const ids = new Map()
 let chars = 0
 
+const needSound = new Map()
+
 function line(l, where) {
   if (ids.has(l.id)) problems.push(`duplicate line id "${l.id}" in ${where} and ${ids.get(l.id)}`)
   ids.set(l.id, where)
   chars += l.text.length
+  if (l.sfx) needSound.set(l.sfx, `${where} (${l.id}.sfx)`)
+  for (const c of l.cues ?? []) {
+    if (c.do === 'playSfx' && c.arg) needSound.set(c.arg, `${where} (${l.id} cue)`)
+  }
 }
 
 function walkPlace(p, where) {
+  needSound.set(p.ambience, `${where} (ambience)`)
   line(p.intro, where)
   for (const l of Object.values(p.card)) line(l, where)
   for (const lm of p.landmarks) line(lm.line, where)
@@ -498,6 +520,36 @@ for (const [file, schema, key] of [
   for (const l of parsed.data[key]) line(l, file)
 }
 
+// Every sound reference is checked against two files, and the difference
+// between them matters:
+//   content/sounds.json      — the WANTED list. Curated by hand.
+//   src/data/sound-credits.json — what has actually been sourced.
+// Referencing an id in neither is a TYPO and fails the build. Referencing
+// one that is wanted but not yet sourced is a KNOWN GAP: it is reported
+// loudly every build but does not fail, because several sounds could not be
+// found on Commons and are waiting on a hand-picked replacement. Without
+// this split, content could not be authored at all until every last sound
+// existed; with it, a mistyped cue is still caught immediately.
+const wanted = new Set()
+if (existsSync('content/sounds.json')) {
+  const w = JSON.parse(readFileSync('content/sounds.json', 'utf8'))
+  for (const s of [...(w.sfx ?? []), ...(w.ambience ?? [])]) wanted.add(s.id)
+}
+const sourced = existsSync('src/data/sound-credits.json')
+  ? new Set(Object.keys(JSON.parse(readFileSync('src/data/sound-credits.json', 'utf8'))))
+  : new Set()
+
+const gaps = []
+for (const [id, where] of needSound) {
+  if (sourced.has(id)) continue
+  if (wanted.has(id)) gaps.push(`${id} (${where})`)
+  else problems.push(`${where}: sound "${id}" is in neither content/sounds.json nor sound-credits.json — typo?`)
+}
+if (gaps.length) {
+  console.log(`\n  ${gaps.length} sound(s) referenced but not yet sourced — these are silent for now:`)
+  for (const g of gaps) console.log(`    - ${g}`)
+}
+
 if (chars > CEILING) {
   problems.push(`narration is ${chars} characters, over the ${CEILING} ceiling — trim before rendering`)
 }
@@ -514,15 +566,32 @@ if (problems.length) {
 console.log('content OK')
 ```
 
-- [ ] **Step 6: Verify the validator runs and reports zero places**
+- [ ] **Step 6: Put `content/` under the type-checker**
+
+`tsconfig.app.json` includes only `src`, so nothing in CI type-checks
+`content/schema.ts`. Both the Vitest run and Node's native stripping only
+erase types; neither reports a type error. Add `content` to the app
+tsconfig's `include` array so `npm run build` covers it:
+
+```jsonc
+// tsconfig.app.json
+"include": ["src", "content"]
+```
+
+Run: `npm run build`
+Expected: succeeds. Then prove the check is live by temporarily giving
+`wordsOf` a bogus return type (`: number[]`), re-running `npm run build`,
+and confirming it now FAILS. Revert the bogus type.
+
+- [ ] **Step 7: Verify the validator runs and reports zero places**
 
 Run: `npm run validate`
 Expected: exit 1 with `missing content/tour.json` — correct, nothing is authored yet. This proves the validator actually checks rather than passing vacuously.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add content/schema.ts content/schema.test.ts scripts/validate-content.mjs
+git add content/schema.ts content/schema.test.ts scripts/validate-content.mjs tsconfig.app.json
 git commit -m "feat: content schema with character budgets and word-index cues
 
 Cues address a word index, not a timestamp, so re-rendering the narration
@@ -729,26 +798,35 @@ execFileSync('npx', [
 
 const raw = JSON.parse(readFileSync(`${RAW}/india-states.geojson`, 'utf8'))
 
-// 3. DEPICTION GATE. The official Survey of India rendering reaches 37.07N
+// 3. Rewind rings clockwise. MANDATORY, AND IT MUST COME BEFORE THE GATE.
+//    mapshaper emits RFC 7946 (CCW outer rings); d3-geo's spherical clipper
+//    needs CW. Two things break on CCW input, not one:
+//      a) every polygon renders as its own complement, giving one giant blob;
+//      b) geoBounds returns [[-180,-90],[180,90]] — the whole globe — because
+//         each ring reads as pole-enclosing. Measured: geoBounds(raw) gives
+//         north = 90, geoBounds(fc) gives north = 37.077.
+//    So a depiction gate placed before the rewind sees north = 90, passes
+//    unconditionally, and would wave through the de-facto dataset it exists
+//    to reject. Order is load-bearing.
+const fc = rewind(raw, true)
+
+// 4. DEPICTION GATE. The official Survey of India rendering reaches 37.07N
 //    (the tip of Gilgit-Baltistan). The de-facto rendering stops at 35.5N.
 //    Verified by point-in-polygon: Muzaffarabad and Mirpur fall in
 //    Jammu & Kashmir; Gilgit, Skardu, Aksai Chin and the Shaksgam Valley
-//    fall in Ladakh. Do not remove this check.
-const [, [, north]] = geoBounds(raw)
+//    fall in Ladakh. Do not remove this check, and do not move it above
+//    the rewind.
+const [, [, north]] = geoBounds(fc)
+console.log(`northern bound: ${north.toFixed(3)}N`)
 if (north < 36.5) {
   throw new Error(
     `northern bound is ${north.toFixed(3)}N, expected ~37.07N. ` +
     `This dataset uses the de-facto depiction, not the official one. Rejected.`,
   )
 }
-if (raw.features.length !== 36) {
-  throw new Error(`expected 36 states and union territories, got ${raw.features.length}`)
+if (fc.features.length !== 36) {
+  throw new Error(`expected 36 states and union territories, got ${fc.features.length}`)
 }
-
-// 4. Rewind rings clockwise. MANDATORY. mapshaper emits RFC 7946 (CCW outer
-//    rings); d3-geo's spherical clipper needs CW. Feed it CCW and every
-//    polygon renders as its own complement — one giant blob over the viewBox.
-const fc = rewind(raw, true)
 
 const projection = geoConicConformal()
   .parallels([12.4729, 35.1728])   // Survey of India LCC standard parallels
@@ -853,6 +931,31 @@ describe('generated geo.json', () => {
   it('gives island territories no land neighbours', () => {
     expect(geo.places.lakshadweep.neighbours).toEqual([])
     expect(geo.places['andaman-nicobar'].neighbours).toEqual([])
+  })
+
+  it('keeps every state inside a sane fraction of the viewBox', () => {
+    // This is the automated half of the blob check. If the rings are not
+    // rewound clockwise, d3 renders each polygon as its own complement and
+    // every bbox balloons to span the whole viewBox — measured: Rajasthan
+    // goes from [74.7, 254.3, 286.9, 261.7] to [0, 288.8, 1000, 522.3].
+    // Without this assertion all the other tests still pass on a broken map.
+    const [, , vw, vh] = geo.viewBox
+    for (const [slug, p] of Object.entries(geo.places)) {
+      expect(p.bbox[2], `${slug} spans the full viewBox width — rings not rewound?`)
+        .toBeLessThan(vw * 0.75)
+      expect(p.bbox[3], `${slug} spans the full viewBox height — rings not rewound?`)
+        .toBeLessThan(vh * 0.75)
+    }
+  })
+
+  it('places every state inside the viewBox', () => {
+    const [, , vw, vh] = geo.viewBox
+    for (const [slug, p] of Object.entries(geo.places)) {
+      expect(p.bbox[0], `${slug} starts left of the viewBox`).toBeGreaterThanOrEqual(-1)
+      expect(p.bbox[1], `${slug} starts above the viewBox`).toBeGreaterThanOrEqual(-1)
+      expect(p.bbox[0] + p.bbox[2], `${slug} runs off the right`).toBeLessThanOrEqual(vw + 1)
+      expect(p.bbox[1] + p.bbox[3], `${slug} runs off the bottom`).toBeLessThanOrEqual(vh + 1)
+    }
   })
 
   it('credits DataMeet, as CC BY 4.0 requires', () => {
@@ -1315,14 +1418,21 @@ import { join } from 'node:path'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { timingsFromAlignment, estimateTimings, cueTimes } from './lib/words.mjs'
 
-const providerName = (process.argv.find(a => a.startsWith('--provider=')) ?? '--provider=say').split('=')[1]
-const only = process.argv.find(a => a.startsWith('--only='))?.split('=')[1]
+const arg = (name, fallback) =>
+  process.argv.find(a => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=') ?? fallback
+
+const providerName = arg('provider', 'say')
+const only = arg('only', null)
 const force = process.argv.includes('--force')
 
 const provider = await import(`./tts-providers/${providerName}.mjs`)
-const OUT_DIR = 'public/audio/en'
-const TIMINGS = 'src/data/timings.json'
-const CACHE = 'build/tts-cache.json'
+
+// Overridable so the test suite can write to a scratch directory. Without
+// this the tests would leave fixture audio in public/ and fixture entries in
+// the committed timings file. Production npm scripts pass none of these.
+const OUT_DIR = arg('audio-dir', 'public/audio/en')
+const TIMINGS = arg('timings', 'src/data/timings.json')
+const CACHE = arg('cache', 'build/tts-cache.json')
 
 mkdirSync(OUT_DIR, { recursive: true })
 mkdirSync('src/data', { recursive: true })
@@ -1355,8 +1465,21 @@ function collectLines() {
 const keyOf = (line) =>
   createHash('sha256').update(`${provider.signature()} ${line.text}`).digest('hex').slice(0, 16)
 
-const cache = existsSync(CACHE) && !force ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
-const previous = existsSync(TIMINGS) && !force ? JSON.parse(readFileSync(TIMINGS, 'utf8')) : {}
+// Neither file is ever wiped wholesale.
+//  - `previous` is the merge base for `--only`. Zeroing it makes
+//    `--only=rajasthan` write a timings file containing only Rajasthan and
+//    silently delete every other place's entry.
+//  - The cache is what stops the paid provider re-billing unchanged lines.
+//    `force` means "re-render the lines in scope even if cached", NOT
+//    "forget every other line's key" — that would make the next unscoped
+//    run re-render, and re-bill, the whole country for about $9.
+const cache = existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {}
+const previous = existsSync(TIMINGS) ? JSON.parse(readFileSync(TIMINGS, 'utf8')) : {}
+
+/** The single definition of "this line needs rendering", shared by the cost
+ *  preflight and renderLine so the estimate cannot drift from the bill. */
+const needsRender = (line) =>
+  force || !(cache[line.id] === keyOf(line) && existsSync(join(OUT_DIR, `${line.id}.m4a`)) && previous[line.id])
 // Start from the previous timings when rendering a subset, or --only=rajasthan
 // would write a timings.json containing ONLY Rajasthan and silently delete
 // every other clip's entry.
@@ -1368,7 +1491,7 @@ const lines = collectLines().filter(l => !only || l.id.startsWith(only))
 console.log(`${lines.length} lines, provider "${providerName}"`)
 
 if (providerName === 'elevenlabs') {
-  const todo = lines.filter(l => !(cache[l.id] === keyOf(l) && existsSync(join('public', `audio/en/${l.id}.m4a`))))
+  const todo = lines.filter(needsRender)
   const chars = todo.reduce((a, l) => a + l.text.length, 0)
   console.log(`  ${todo.length} of ${lines.length} lines need rendering`)
   console.log(`  ${chars.toLocaleString()} characters, about $${(chars / 1000 * 0.10).toFixed(2)}`)
@@ -1381,10 +1504,13 @@ if (providerName === 'elevenlabs') {
 
 async function renderLine(line) {
   const key = keyOf(line)
+  const abs = join(OUT_DIR, `${line.id}.m4a`)
+  // The path stored in timings.json is always the production-relative one,
+  // because the app resolves it through assetUrl() regardless of where the
+  // build happened to write the file.
   const rel = `audio/en/${line.id}.m4a`
-  const abs = join('public', rel)
 
-  if (cache[line.id] === key && existsSync(abs) && previous[line.id]) {
+  if (!needsRender(line)) {
     // Audio is unchanged; still recompute cue times in case a cue moved.
     timings[line.id] = { ...previous[line.id], cues: cueTimes(line.cues, previous[line.id]) }
     reused++
@@ -1397,6 +1523,15 @@ async function renderLine(line) {
   toM4a(wav, abs, 56000)
 
   const duration = durationOf(abs)
+  // A zero duration means afinfo's output did not match probe()'s regexes —
+  // its format varies by macOS version. Left unguarded, estimateTimings
+  // would put every word at t=0 and the highlight would never advance.
+  if (!(duration > 0)) {
+    throw new Error(
+      `could not read a duration from ${abs}. Run \`afinfo\` on it by hand and ` +
+      `fix the regexes in scripts/lib/encode.mjs — do not ship zero timings.`,
+    )
+  }
   const t = alignment
     ? timingsFromAlignment(line.text, alignment)
     : estimateTimings(line.text, duration)
@@ -2617,7 +2752,13 @@ async function grab(kind, item) {
       { stdio: 'inherit' })
     toM4a(looped, out, 56000)
   } else {
-    toM4a(wav, out, 64000)
+    // Trim. A one-shot fires on a single narrated word, so it must be short —
+    // raw Commons sources run to 96 seconds and would still be playing several
+    // sentences later, over the top of the narration.
+    const cut = join(tmp, `${item.id}.cut.wav`)
+    execFileSync('python3', ['scripts/lib/trim.py', wav, cut, String(item.maxSeconds ?? 3)],
+      { stdio: 'inherit' })
+    toM4a(cut, out, 64000)
   }
 
   credits[item.id] = {
