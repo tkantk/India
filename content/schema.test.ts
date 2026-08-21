@@ -40,7 +40,19 @@ describe('PlaceSchema', () => {
     expect(PlaceSchema.safeParse(fat).success).toBe(false)
   })
 
-  it('rejects a cue pointing past the end of the line', () => {
+  it('rejects a cue exactly one word past the end', () => {
+    // Must be n, not some large number like 99. With 99 the test still passes
+    // when the check is loosened from `>= n` to `> n`, so it would not catch
+    // the off-by-one that lets an unreachable cue through.
+    const n = wordsOf(validLine.text).length
+    const bad = {
+      ...validPlace,
+      intro: { ...validLine, cues: [{ word: n, do: 'revealSymbol', arg: 'camel' }] },
+    }
+    expect(PlaceSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects a wildly out-of-range cue too', () => {
     const bad = {
       ...validPlace,
       intro: { ...validLine, cues: [{ word: 99, do: 'revealSymbol', arg: 'camel' }] },

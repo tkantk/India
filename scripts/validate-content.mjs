@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { PlaceSchema, TourSchema, UiSchema, LINE_BUDGET, wordsOf } from '../content/schema.ts'
+import { PlaceSchema, TourSchema, UiSchema } from '../content/schema.ts'
 
 const CEILING = 99_100
 const TARGET = 95_000
