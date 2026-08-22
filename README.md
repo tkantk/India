@@ -89,27 +89,49 @@ The two fetch scripts talk to the Wikimedia API and identify themselves with
 a descriptive User-Agent, as [Wikimedia's policy](https://meta.wikimedia.org/wiki/User-Agent_policy)
 requires (`scripts/lib/wiki.mjs`).
 
-## Attribution
+## Assets and attribution
 
-This project depends on data and media it doesn't own, and the licences
-require the credit to be visible, not just logged here:
+This repository redistributes 32 files it doesn't own — one set of map
+boundaries, 20 photographs and 11 sounds — and 25 of them are under licences
+that require the author named and the licence linked. Those licences attach
+that duty to *sharing* the file, not to displaying it, so it's owed by the
+repository and by the deployed site whether or not anything is on screen.
+
+It's paid in the app, at **`#/credits`**, reachable from the small `Credits`
+link on the licence line under the map. That page renders every entry in the
+two generated credits files verbatim, grouped into map, photographs and
+sounds.
 
 - **India state boundaries** are from the [DataMeet](https://github.com/datameet/maps)
   India community, licensed CC BY 4.0. Required attribution — shown in the
-  app itself, near the map — is: *"India state boundaries by DataMeet India
-  community (CC BY 4.0)"*.
-- **Photographs and sound effects** are sourced from Wikimedia Commons, each
+  app itself, on the map — is: *"India state boundaries by DataMeet India
+  community (CC BY 4.0)"*. They are simplified and reprojected by
+  `npm run build:map`, which the credits page and `NOTICE` both declare.
+- **Photographs** (`public/photos/`) are sourced from Wikimedia Commons, each
   individually licence-checked at fetch time (only CC0, public domain, CC BY
-  and CC BY-SA are accepted; anything unclear is rejected). Per-file artist,
-  licence and source-link credits are generated into
-  [`src/data/photo-credits.json`](src/data/photo-credits.json) and
-  [`src/data/sound-credits.json`](src/data/sound-credits.json), and rendered
-  wherever that media is shown.
+  and CC BY-SA are accepted; anything unclear is rejected) and stored exactly
+  as Wikimedia's thumbnail service delivered them. Per-file credits are in
+  [`src/data/photo-credits.json`](src/data/photo-credits.json).
+- **Sounds** (`public/audio/sfx/`, `public/audio/ambience/`) come the same
+  way, but are *edited*: cut to length, levelled, and in the case of an
+  ambient bed welded into a seamless loop. That makes them Adapted Material,
+  so the seven whose sources are CC BY-SA are themselves offered under
+  CC BY-SA, and each one records what was done to it in the `modifications`
+  field of [`src/data/sound-credits.json`](src/data/sound-credits.json). The
+  fetcher writes that field from the parameters it actually used, so the
+  notice cannot drift from the pipeline —
+  `node scripts/fetch-sounds.mjs --offline` regenerates the credits from
+  what's already on disk, downloading nothing.
 
 ## License
 
-The application code in this repository has no licence file yet — treat it
-as all-rights-reserved unless the owner adds one. The third-party map data,
-photographs and sounds it bundles carry the licences described above and in
-the generated credits files, independent of whatever licence the code ends
-up under.
+The code is **MIT** — see [`LICENSE`](LICENSE).
+
+The bundled third-party map data, photographs and sounds are **not** MIT.
+They keep their own licences, listed file by file in
+[`NOTICE`](NOTICE) and in the two generated credits files. In short: the map
+geometry in `src/data/geo.json` derives from DataMeet's boundaries under
+CC BY 4.0; the photographs in `public/photos/` remain under their individual
+licences in `photo-credits.json`; the sounds remain under theirs in
+`sound-credits.json`, and the seven modified CC BY-SA files are themselves
+offered under CC BY-SA.

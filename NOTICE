@@ -1,0 +1,91 @@
+Namaste India — Mor's Big Journey
+https://github.com/tkantk/India
+
+The MIT licence in LICENSE covers the code in this repository and nothing
+else. This repository also redistributes 32 files that other people made, and
+those keep their own licences. The split, file by file:
+
+--------------------------------------------------------------------------
+1. CODE — MIT
+--------------------------------------------------------------------------
+
+Everything under src/, scripts/, content/ and docs/, plus the configuration
+at the root, is Copyright (c) 2026 Tushar Kant Kar and licensed MIT. See
+LICENSE.
+
+The one exception inside src/ is src/data/, which is generated build output
+derived from the third-party sources below.
+
+--------------------------------------------------------------------------
+2. MAP BOUNDARIES — CC BY 4.0
+--------------------------------------------------------------------------
+
+src/data/geo.json and src/data/hit.json are derived from the India state and
+union territory boundaries published by the DataMeet India community:
+
+    https://github.com/datameet/maps
+    Licensed CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+
+Required attribution, shown in the app on the map itself:
+
+    "India state boundaries by DataMeet India community (CC BY 4.0)"
+
+MODIFIED: simplified to about 2% of its original vertices (Visvalingam,
+shape-preserving), reprojected conic conformal, and rendered to SVG path data.
+See scripts/build-map.mjs and scripts/build-hitlayer.mjs.
+
+--------------------------------------------------------------------------
+3. PHOTOGRAPHS — individual licences, see src/data/photo-credits.json
+--------------------------------------------------------------------------
+
+The 20 photographs in public/photos/ come from Wikimedia Commons and remain
+under their own individual licences: CC0, public domain, CC BY 2.0, CC BY 4.0,
+CC BY-SA 3.0 and CC BY-SA 4.0. 18 of the 20 require attribution.
+
+Per-file artist, licence, licence URL, source page and ready-to-render
+attribution are in src/data/photo-credits.json, and are displayed in the app
+at #/credits.
+
+NOT MODIFIED: each file is a thumbnail rendered by Wikimedia's own servers and
+stored byte for byte as it was delivered. That is a change of format and size,
+not of content, so none of these is an adaptation.
+
+--------------------------------------------------------------------------
+4. SOUNDS — individual licences, see src/data/sound-credits.json
+--------------------------------------------------------------------------
+
+The 11 sounds in public/audio/ come from Wikimedia Commons and remain under
+their own individual licences: CC0, public domain, CC BY-SA 3.0 and
+CC BY-SA 4.0. 7 of the 11 require attribution.
+
+Per-file artist, licence, licence URL, source page, ready-to-render
+attribution and a description of what was changed are in
+src/data/sound-credits.json, and are displayed in the app at #/credits.
+
+MODIFIED: every one of them. One-shots are truncated to a cap, peak-normalised
+to -1 dBFS and given a 150 ms fade-out (scripts/lib/trim.py); ambient beds are
+truncated to 20 s, loudness-normalised to -26 dBFS RMS under a -3 dBFS peak
+ceiling, and welded into a seamless loop with a 3 s equal-power crossfade
+(scripts/lib/loop.py). All are then decoded to mono and re-encoded as AAC.
+
+Cutting and levelling change the content, so these are Adapted Material.
+Accordingly, the seven files below — the modified versions, not the originals
+— are offered under the same licence as their sources:
+
+    public/audio/ambience/ocean.m4a          CC BY-SA 4.0
+    public/audio/ambience/forest.m4a         CC BY-SA 4.0
+    public/audio/sfx/peacock-call.m4a        CC BY-SA 4.0
+    public/audio/sfx/hornbill.m4a            CC BY-SA 4.0
+    public/audio/sfx/indian-roller.m4a       CC BY-SA 4.0
+    public/audio/sfx/gibbon.m4a              CC BY-SA 4.0
+    public/audio/sfx/sparrow.m4a             CC BY-SA 3.0
+
+--------------------------------------------------------------------------
+5. NARRATION AUDIO
+--------------------------------------------------------------------------
+
+The narration in public/audio/en/ is synthesised from the scripts in
+content/, which are MIT with the code. It currently uses the free macOS `say`
+voice; a paid ElevenLabs render is subject to that provider's own terms, which
+are not a licence this repository can grant. Regenerate it yourself with
+`npm run tts:draft`.
