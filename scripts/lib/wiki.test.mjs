@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { licencePolicy, vet, attribution, realWidth, stripQuery } from './wiki.mjs'
+import { licencePolicy, vet, attribution, realWidth, stripQuery, UA } from './wiki.mjs'
 
 const freeFile = {
   imagerepository: 'shared',
@@ -15,6 +15,27 @@ const freeFile = {
   },
   descriptionurl: 'https://commons.wikimedia.org/wiki/File:Konarka_Temple.jpg',
 }
+
+// Wikimedia's User-Agent policy (meta.wikimedia.org/wiki/User-Agent_policy)
+// requires the shape `<client>/<version> (<contact>) <library>/<version>` and
+// accepts either a contact URL or an email in the parens. We don't pin the
+// exact string here — that would just be a change-detector for whichever
+// contact we're using this week — we assert the shape the policy demands.
+describe('UA', () => {
+  it('is non-empty', () => {
+    expect(UA.length).toBeGreaterThan(0)
+  })
+
+  it('names the client and a library, per the client/version (contact) library shape', () => {
+    expect(UA).toMatch(/^\S+\/\S+ \(.+\) \S+$/)
+  })
+
+  it('carries a reachable contact (a URL) inside the parens, as the policy requires', () => {
+    const contact = UA.match(/\(([^)]+)\)/)?.[1] ?? ''
+    expect(contact.length).toBeGreaterThan(0)
+    expect(contact).toMatch(/^https?:\/\//)
+  })
+})
 
 describe('realWidth', () => {
   it('reads the width actually delivered, not the width requested', () => {

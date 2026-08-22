@@ -5,7 +5,7 @@
  * this is a non-interactive task.
  */
 export const UA =
-  'NamasteIndia/1.0 (https://github.com/OWNER/REPO; tushar.et1@gmail.com) node-fetch'
+  'NamasteIndia/1.0 (https://github.com/tkantk/India; https://github.com/tkantk/India/issues) node-fetch'
 
 export const EN = 'https://en.wikipedia.org/w/api.php'
 export const WD = 'https://www.wikidata.org/w/api.php'

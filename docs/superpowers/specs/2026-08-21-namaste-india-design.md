@@ -9,8 +9,8 @@ An interactive, narrated map of India for a 6–8 year old. Static site, hosted 
 ## 1. Purpose and success criteria
 
 A child of 6–8 opens the site on an iPad, taps a big play button, and is taken on a
-guided, spoken tour of India. He can then tap any state, hear about it, and explore
-five landmarks inside it. He learns the shape of his country, its states and capitals,
+guided, spoken tour of India. They can then tap any state, hear about it, and explore
+five landmarks inside it. They learn the shape of the country, its states and capitals,
 its animals, food, festivals and greetings — by listening and touching, not reading a wall of text.
 
 **It has succeeded when:**

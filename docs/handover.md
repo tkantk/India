@@ -48,7 +48,7 @@ proxied; two remain genuinely open:
 - ✅ Photographs were reviewed; two needed hand-picked overrides, recorded in `scripts/fetch-photos.mjs`.
 - ✅ Facts were checked and 16 false claims removed.
 - ⬜ **Nobody has listened to the audio.** Every clip is verified mono, 44.1 kHz and plausibly long, but no human has heard one.
-- ⬜ **Nobody has read the narration aloud to the child it is for.** That is the real test.
+- ⬜ **Nobody has read the narration aloud to a 6–8 year old.** That is the real test.
 
 **3. Two photographs are weak but not wrong.** `odisha.konark` shows the temple
 without its famous wheel; `rajasthan.ranthambore` is an empty landscape with

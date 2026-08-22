@@ -21,7 +21,7 @@ Every task's requirements implicitly include this section. Values are copied ver
 - **Vite `base` MUST be `'./'`** and routing MUST be `HashRouter`. Never mix `'./'` with `BrowserRouter` — deep links break only in production.
 - **Never write a leading-slash asset path.** Always `` `${import.meta.env.BASE_URL}audio/x.m4a` ``. A literal `/audio/x.m4a` 404s on a project page.
 - **Large binaries live in `public/`, committed as ordinary Git objects.** Git LFS is forbidden: "Git LFS cannot be used with GitHub Pages sites."
-- **Every Wikimedia request MUST send a descriptive User-Agent.** Exactly: `NamasteIndia/1.0 (https://github.com/OWNER/REPO; tushar.et1@gmail.com) node-fetch`. An empty UA returns HTTP 403. Requests go in series, never parallel. Send `maxlag=5` and `Accept-Encoding: gzip`.
+- **Every Wikimedia request MUST send a descriptive User-Agent.** Exactly: `NamasteIndia/1.0 (https://github.com/tkantk/India; https://github.com/tkantk/India/issues) node-fetch`. An empty UA returns HTTP 403. Requests go in series, never parallel. Send `maxlag=5` and `Accept-Encoding: gzip`.
 - **Map data source is DataMeet `States/Admin2.shp`, licence CC BY 4.0.** Attribution string, required verbatim somewhere user-visible: `India state boundaries by DataMeet India community (CC BY 4.0)`.
 - **Map depiction gate:** the generated GeoJSON's northern bound MUST be ≈37.07. If it is ≈35.5 the dataset uses the de-facto depiction and MUST be rejected.
 - **Narration character budget is 95,000 target / 99,100 ceiling.** `validate-content.mjs` fails the build above the ceiling.
@@ -2122,7 +2122,7 @@ Expected: FAIL, cannot resolve `./wiki.mjs`.
  * this is a non-interactive task.
  */
 export const UA =
-  'NamasteIndia/1.0 (https://github.com/OWNER/REPO; tushar.et1@gmail.com) node-fetch'
+  'NamasteIndia/1.0 (https://github.com/tkantk/India; https://github.com/tkantk/India/issues) node-fetch'
 
 export const EN = 'https://en.wikipedia.org/w/api.php'
 export const WD = 'https://www.wikidata.org/w/api.php'
