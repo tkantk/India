@@ -84,9 +84,29 @@ const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
  */
 const MAX_SCALE = 12
 
-/** The room a *place* gets when the map's own camera flies to it. The
- *  primitive below takes what it is given; this is the map's house style. */
-const PLACE_PADDING = 40
+/**
+ * The room a *place* gets when the map's own camera flies to it. The
+ * primitive below takes what it is given; this is the map's house style.
+ *
+ * Must be at least the largest tap-target radius any place can have —
+ * `build-hitlayer.mjs`'s `TARGET_PIN_R`, 112.6 viewBox units — because
+ * `frame()` centres and pads the *bbox*, and a place's pin (its pole of
+ * inaccessibility) is only guaranteed to fall somewhere *inside* that bbox,
+ * not at its centre. A pin sitting near one edge, plus its own radius, can
+ * reach up to `pinR` past that edge; padding smaller than the largest
+ * possible `pinR` can crop the far side of a legitimate tap off the fitted
+ * view entirely. This held at 40 while the island territories' geometry was
+ * a handful of undersized triangles whose (wrong) pole happened to sit well
+ * inside a (too-small) bbox; rebuilding that geometry correctly moved
+ * Lakshadweep's real pole to within 0.2 units of its own bbox edge, which
+ * 40 units of padding cannot cover. 113 is provably sufficient for every
+ * current and future place: `build-hitlayer.test.mjs` already asserts every
+ * pin sits inside its own bbox, and `TARGET_PIN_R` is the hard ceiling on
+ * `pinR` — so this is not a per-place magic number, it holds by
+ * construction. (Verified against the worst two cases directly: Andaman &
+ * Nicobar needed 91.7, Lakshadweep 75.0.)
+ */
+const PLACE_PADDING = 113
 
 /**
  * The transform that brings `bbox` into the middle of `view`, with `padding`
