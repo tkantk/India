@@ -1,5 +1,7 @@
 # Namaste India — state of play
 
+**Live at https://tkantk.github.io/India/** since 2026-08-22.
+
 Last updated 2026-08-21, at the end of **Plan 1 (asset pipeline)**.
 
 Read this before starting Plan 2. It records what exists, what is deliberately
@@ -24,6 +26,21 @@ Pipelines, all re-runnable: `build:map`, `tts:draft`, `tts:final`, `fetch:photos
 `fetch:sounds`, `contact-sheet`.
 
 ---
+
+## Known gap worth watching on a real device
+
+**The start gate has no escape route.** `StartGate.begin()` awaits `unlock()`,
+and only then advances to the audibility check. If `AudioContext.resume()`
+never reaches `running` — which WebKit bug 263627 documents as possible, and
+which is exactly what the engine's own `stuck` flag exists to handle — the
+child stays on "Tap here to begin" forever, with no feedback and no way past.
+Every later screen has a way out (Controls surfaces "Tap to carry on"); the
+first one does not. Reproduced deliberately in headless Chrome, where a
+synthetic click cannot unlock audio: the gate simply never advances.
+
+On a real device a real tap should always unlock, so this may never fire. But
+if the iPad test shows any hesitation on that first screen, this is why, and
+the fix is a timeout plus a visible retry.
 
 ## Waiting on a human
 
