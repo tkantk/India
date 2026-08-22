@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const html = readFileSync('index.html', 'utf8')
 const css = readFileSync('src/styles/base.css', 'utf8')
@@ -10,6 +10,20 @@ describe('index.html platform hardening', () => {
     expect(meta).toContain('width=device-width')
     expect(meta).toContain('initial-scale=1')
     expect(meta).toContain('viewport-fit=cover')
+  })
+
+  it('wears the project\'s own icon, and carries no scaffold artwork', () => {
+    // The first commit shipped Vite's purple lightning bolt — a third-party
+    // brand mark with Figma-exported filter ids, no provenance and no
+    // licence — as the site's identity, while the project's own peacock
+    // feather sat unused behind the web manifest. The bolt is gone; nothing
+    // may quietly reinstate it.
+    expect(existsSync('public/favicon.svg'), 'the scaffold favicon is back').toBe(false)
+    const icon = html.match(/<link rel="icon"[^>]*>/)?.[0] ?? ''
+    expect(icon).toContain('icon-192.png')
+    expect(html).not.toContain('favicon.svg')
+    // A relative href: a leading slash 404s on a GitHub Pages project page.
+    expect(icon).not.toMatch(/href="\//)
   })
 
   it('declares itself installable to the Home Screen', () => {
