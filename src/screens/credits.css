@@ -1,0 +1,153 @@
+/* The credits page.
+
+   THE ONE SCREEN IN THIS APP THAT IS NOT FOR THE CHILD, and the styling says
+   so out loud. Everywhere else `--text` is 24px because a six-year-old is
+   reading it; this is a page of licence attributions that an adult, or a
+   robot, reads once. 17px in a measured column is the right size for that,
+   and pretending otherwise would turn 31 credits into forty screenfuls of
+   scrolling.
+
+   What does NOT relax is contrast. --ink on --paper is 15.6:1 and the muted
+   grey below is 8.8:1, both far past the 7:1 AAA target the rest of the app
+   is held to. */
+
+.credits {
+  /* base.css pins body with `position: fixed; overflow: hidden` to kill the
+     iOS rubber-band bounce, so nothing scrolls unless it is given its own
+     scroller. This is that scroller: the page is 31 credits long and every
+     one of them has to be reachable. */
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  background: var(--paper);
+  color: var(--ink);
+
+  /* Text a reader may well want to copy — an attribution is a thing people
+     paste into their own credits page. base.css turns selection off globally
+     so a child dragging a finger across the map does not select the country;
+     here it goes back on. */
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* A measured column. Long attribution lines set the full width of a desktop
+   window are unreadable, and this page is nothing but long lines. */
+.credits__column {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 20px 4px 64px;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* The way out, first thing in the reading order and first thing on screen.
+   Nobody should have to scroll 31 credits to find their way back to the map. */
+.credits__back {
+  display: inline-block;
+  padding: 10px 0;
+  font-weight: 600;
+}
+
+.credits h1 {
+  margin: 8px 0 16px;
+  font-size: 30px;
+  line-height: 1.2;
+  color: var(--deep);
+}
+
+.credits h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  color: var(--deep);
+}
+
+.credits h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.credits__lede {
+  margin: 0 0 28px;
+}
+
+/* Each section's standing explanation: what this group of files is, and what
+   was or was not done to it. The distinction between the photographs (stored
+   as Wikimedia sent them) and the sounds (cut and levelled, therefore Adapted
+   Material) is the whole legal difference between the two lists, so it is set
+   apart rather than buried. */
+.credits__note {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--leaf);
+  border-radius: 0 8px 8px 0;
+  background: rgba(63, 143, 87, 0.09);
+}
+
+.credits__section {
+  margin: 0 0 36px;
+}
+
+.credits__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credit-item {
+  padding: 14px 0;
+  border-top: 1px solid rgba(18, 36, 28, 0.14);
+}
+
+.credit-item__title {
+  /* File names from Commons run long and contain no spaces to break on. */
+  overflow-wrap: anywhere;
+}
+
+/* Which bundled file this credit is actually about. Small and grey: it is
+   the index, not the credit. #3d4a41 on --paper is 8.8:1. */
+.credit-item__file {
+  margin: 2px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: #3d4a41;
+  overflow-wrap: anywhere;
+}
+
+/* The generated attribution, rendered verbatim. */
+.credit-item__by {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* Where to go and check, for the one credit this app writes by hand rather
+   than generating: the map. Every other entry links its own source from
+   inside `attributionHtml`. */
+.credit-item__source {
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+
+/* The modification notice. CC BY 4.0 s3(a)(1)(B) and CC BY-SA 4.0 s3(a)(1)(B)
+   both require an indication that the material was modified; for share-alike
+   it also has to say what licence the modified version is offered under. */
+.credit-item__edit {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: #3d4a41;
+}
+
+/* Underlined, not merely coloured: colour alone fails WCAG 1.4.1, and half
+   the links here sit inside generated markup this stylesheet does not get to
+   restructure. --deep on --paper is 13.1:1. */
+.credits a {
+  color: var(--deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.credits a:focus-visible {
+  outline: 3px solid var(--saffron);
+  outline-offset: 2px;
+}

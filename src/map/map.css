@@ -141,3 +141,24 @@
   /* Text, not a target: it must never swallow a tap meant for Kerala. */
   pointer-events: none;
 }
+
+/* The one exception, and it is deliberately small.
+
+   25 of the 32 third-party files this app ships require a visible credit,
+   and they do not fit on a map. This is the door to the page that carries
+   them (src/screens/Credits.tsx) — findable by an adult reading the line it
+   sits on, and far too small and too quiet to read as a sixth control to a
+   child. `pointer-events` goes back to `auto` for the anchor alone, so the
+   rest of the credit still lets a tap through to the state underneath it.
+
+   No extra padding: the credit lane is measured in `grandTour.css` and by
+   `npm run tour:strip` at four viewports, and a taller credit walks into the
+   play button on a phone. --deep on --paper is 13.1:1; underlined, so it is
+   not colour alone that marks it as a link. */
+.map .credit__more {
+  pointer-events: auto;
+  color: var(--deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}

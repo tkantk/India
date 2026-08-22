@@ -160,8 +160,24 @@ export function MapStage({ onPick }: Props) {
           </svg>
         )}
       </div>
-      {/* CC BY 4.0 obliges us to credit the source, in the open. */}
-      <p className="credit">{geo.attribution}</p>
+      {/* CC BY 4.0 obliges us to credit the source, in the open.
+
+          And the boundaries are only one of 32 third-party assets: 20
+          photographs and 11 sounds ship with this app too, 25 of them under
+          licences that require the author named and the licence linked. They
+          cannot all sit on the map, so the credit line is also the door to
+          the page that does carry them. A small link on a line that is
+          already about licensing — not a sixth 104px button beside the five
+          a child actually uses.
+
+          `<span>` around the attribution, not bare text: the required
+          wording has to stay one findable string now that it has a
+          neighbour. */}
+      <p className="credit">
+        <span>{geo.attribution}</span>
+        {' · '}
+        <a className="credit__more" href="#/credits">Credits</a>
+      </p>
     </div>
   )
 }

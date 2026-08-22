@@ -260,6 +260,18 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   }, [])
   useEffect(() => stopShimmer, [stopShimmer])
 
+  /**
+   * Leaving this screen stops the tour.
+   *
+   * The engine is module-scoped on purpose — it outlives every component, so
+   * that React's StrictMode cannot close an AudioContext out from under an
+   * iPad. The flip side is that unmounting the sequencer does NOT silence it:
+   * the beat effect's cleanup only unhooks `onEnd`, and the clip carries on
+   * playing to nobody. There is somewhere else to go now (the credits page,
+   * and Plan 3's state screens), so this is the moment that becomes audible.
+   */
+  useEffect(() => () => { n.stop() }, [n])
+
   const beat = at === null ? null : BEATS[at] ?? null
 
   /** The end of the road: home, one shimmer over the whole map, and the big

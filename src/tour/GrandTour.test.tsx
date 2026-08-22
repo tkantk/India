@@ -332,6 +332,18 @@ describe('GrandTour', () => {
     expect(played).toHaveLength(1)
   })
 
+  it('goes quiet when the screen is left, rather than talking to nobody', async () => {
+    // There is somewhere else to go now: the credits page hangs off the map's
+    // licence line. The engine is module-scoped and outlives this component,
+    // so unmounting alone would leave the beat playing on the next screen.
+    autoEnd = false
+    const { unmount } = mount({ autoStart: true })
+    await waitFor(() => expect(played).toHaveLength(1))
+    expect(narrator.stop).not.toHaveBeenCalled()
+    unmount()
+    expect(narrator.stop).toHaveBeenCalled()
+  })
+
   it('starts on the big button, which carries a word and a child-sized target', async () => {
     autoEnd = false
     mount()

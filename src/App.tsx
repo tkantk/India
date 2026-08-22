@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import { StartGate } from './screens/StartGate'
 import { IndiaScreen } from './screens/IndiaScreen'
+import { Credits } from './screens/Credits'
 import { getNarrator } from './audio/Narrator'
 
 // The engine is built on first use, which is inside the tap handler: iOS only
@@ -39,6 +40,12 @@ function App() {
             )
           }
         />
+        {/* Not behind the gate. The credits are owed to the people whose
+            photographs and recordings this app redistributes, and the licence
+            terms do not care whether a child has tapped "I heard it" — so the
+            deep link works from a cold start, and from the map's credit line
+            at any point in the tour. */}
+        <Route path="/credits" element={<Credits />} />
       </Routes>
     </MotionConfig>
   )

@@ -236,6 +236,23 @@ describe('MapStage', () => {
     expect(screen.getByText(geo.attribution)).toBeVisible()
   })
 
+  it('carries the way in to the credits for the other 31 files', () => {
+    // The boundaries are one of 32 third-party assets, and the other 31 —
+    // 20 photographs and 11 sounds, 25 of which legally require a credit —
+    // cannot all fit on the map. This link is where they live. It hangs off
+    // the credit line rather than the control bar because it is for the
+    // adult and for the licensor, not for the six-year-old whose five
+    // buttons must not have to compete with a sixth.
+    const { container } = mount()
+    const credit = container.querySelector('p.credit')!
+    const link = credit.querySelector('a')!
+    // A plain hash link, not <Link>: MapStage is mounted here and by the
+    // headless probes with no Router around it, and under HashRouter this
+    // navigates identically.
+    expect(link).toHaveAttribute('href', '#/credits')
+    expect(link.textContent).toMatch(/credits/i)
+  })
+
   it('keeps the very same path elements across a re-render', () => {
     // The whole architecture rests on this. `useMapNodes` caches the 36
     // visible paths once, on mount, and highlights a state by toggling a
