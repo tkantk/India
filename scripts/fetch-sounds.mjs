@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+/**
+ * Source the sound effects and ambient beds from Wikimedia Commons, cut them
+ * to size, and write `src/data/sound-credits.json`.
+ *
+ *   node scripts/fetch-sounds.mjs              the whole job
+ *   node scripts/fetch-sounds.mjs --offline    credits only, no network at all
+ *
+ * `--offline` exists because the credit record has to be able to catch up
+ * with the pipeline without re-fetching a byte. Everything that describes
+ * what we DID to a file — the `modifications` notice CC BY-SA s3(a)(1)(B)
+ * obliges us to publish — is derived from local parameters and the duration
+ * already measured off the encoded file, so it can be regenerated for audio
+ * that is already on disk. Nothing is downloaded, nothing is re-encoded, and
+ * sounds that were never found stay not-found.
+ */
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -7,6 +22,10 @@ import {
   api, sleep, licencePolicy, attribution, stripQuery, COMMONS, EM_FILTER, UA,
 } from './lib/wiki.mjs'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
+import { LOOP, TRIM, modificationsFor } from './lib/soundEdits.mjs'
+
+/** No network at all: refresh what can be derived from disk, and stop. */
+const OFFLINE = process.argv.includes('--offline')
 
 const want = JSON.parse(readFileSync('content/sounds.json', 'utf8'))
 const CREDITS = 'src/data/sound-credits.json'
@@ -65,18 +84,28 @@ async function fileInfo(fileTitle) {
  * these sounds are CC BY-SA 3.0 or 4.0 and are only legally usable if the app
  * can render a credit and a link to the licence. Without those fields it
  * cannot, whatever the interface does.
+ *
+ * Plus one field the photo pipeline has no need of: `modifications`. Photos
+ * are server-rendered thumbnails stored byte-for-byte as Wikimedia sent them.
+ * These sounds are cut, normalised and looped, which makes them Adapted
+ * Material — see scripts/lib/soundEdits.mjs for why, and for where the
+ * sentence comes from.
  */
-const creditFor = (kind, item, fileTitle, ii) => ({
-  file: relFor(kind, item.id),
-  kind,
-  url: stripQuery(ii.url),
-  fileTitle,
+const creditFor = (kind, item, fileTitle, ii) => {
   // Measured from the encoded file, not the requested cap: trim.py passes a
   // source shorter than maxSeconds through untouched, so the elephant is 1.44s
   // even though it was allowed 3.
-  seconds: Math.round(durationOf(join(dirFor(kind), `${item.id}.m4a`)) * 100) / 100,
-  ...attribution(ii),
-})
+  const seconds = Math.round(durationOf(join(dirFor(kind), `${item.id}.m4a`)) * 100) / 100
+  return {
+    file: relFor(kind, item.id),
+    kind,
+    url: stripQuery(ii.url),
+    fileTitle,
+    seconds,
+    modifications: modificationsFor(kind, item, seconds),
+    ...attribution(ii),
+  }
+}
 
 const problems = []
 
@@ -87,11 +116,23 @@ const problems = []
  * costs one metadata request and no bytes.
  */
 async function grab(kind, item) {
-  const have = credits[item.id]
+  let have = credits[item.id]
   const out = join(dirFor(kind), `${item.id}.m4a`)
 
   if (have && existsSync(out)) {
+    // The modification notice costs nothing to recompute and no network at
+    // all: it is derived from the parameters below and the duration already
+    // measured off this very file. Backfilled before the early return, so a
+    // credit written before the field existed picks it up on any run.
+    const modifications = modificationsFor(kind, item, have.seconds)
+    if (have.modifications !== modifications) {
+      have = { ...have, modifications }
+      credits[item.id] = have
+      console.log(`  ${item.id}: modifications recorded — ${modifications}`)
+    }
+
     if (have.attributionHtml) { console.log(`  ${item.id}: already have it`); return }
+    if (OFFLINE) { console.log(`  ${item.id}: credit is incomplete, but --offline`); return }
 
     let ii
     try {
@@ -120,6 +161,8 @@ async function grab(kind, item) {
     return
   }
 
+  if (OFFLINE) { console.log(`  ${item.id}: not on disk, and --offline`); return }
+
   const hit = await commonsAudio(item.search)
   await sleep(1000)
   if (!hit) { console.log(`  ${item.id}: NOT FOUND for "${item.search}"`); return }
@@ -132,18 +175,24 @@ async function grab(kind, item) {
   const wav = join(tmp, `${item.id}.wav`)
   toMonoWav(raw, wav)
 
+  // The numbers come from soundEdits.mjs, which is also what writes the
+  // `modifications` notice — one source, so the notice cannot describe a
+  // pipeline that no longer exists.
   if (kind === 'ambience') {
     const looped = join(tmp, `${item.id}.loop.wav`)
-    execFileSync('python3', ['scripts/lib/loop.py', wav, looped, String(item.seconds ?? 20), '3'],
-      { stdio: 'inherit' })
+    execFileSync('python3', [
+      'scripts/lib/loop.py', wav, looped,
+      String(item.seconds ?? LOOP.defaultSeconds), String(LOOP.crossfadeSeconds),
+    ], { stdio: 'inherit' })
     toM4a(looped, out, 56000)
   } else {
     // Trim. A one-shot fires on a single narrated word, so it must be short —
     // raw Commons sources run to 96 seconds and would still be playing several
     // sentences later, over the top of the narration.
     const cut = join(tmp, `${item.id}.cut.wav`)
-    execFileSync('python3', ['scripts/lib/trim.py', wav, cut, String(item.maxSeconds ?? 3)],
-      { stdio: 'inherit' })
+    execFileSync('python3', [
+      'scripts/lib/trim.py', wav, cut, String(item.maxSeconds ?? TRIM.defaultMaxSeconds),
+    ], { stdio: 'inherit' })
     toM4a(cut, out, 64000)
   }
 
@@ -179,12 +228,18 @@ const missing = [...want.sfx, ...want.ambience].filter(i => !credits[i.id])
 console.log(`\n${Object.keys(credits).length} sounds`)
 const attributed = Object.values(credits).filter(c => c.attributionRequired).length
 console.log(`${attributed} of them legally require a visible credit and licence link`)
+const adapted = Object.values(credits).filter(c => /^cc-by-sa/i.test(c.licence)).length
+console.log(`${adapted} are share-alike, so the edited file must be offered under the same licence`)
 if (problems.length) {
   console.log(`\n${problems.length} credit problem(s):`)
   for (const p of problems) console.log(`  ${p}`)
   process.exitCode = 1
 }
-if (missing.length) {
+if (OFFLINE) {
+  // Nothing was attempted, so nothing failed. A missing sound is still
+  // missing, but that is yesterday's news and must not fail today's run.
+  console.log(`\n--offline: credits refreshed from disk. ${missing.length} sound(s) still unsourced.`)
+} else if (missing.length) {
   console.log(`${missing.length} not found on Commons. Get a free Freesound token at`)
   console.log(`https://freesound.org/apiv2/apply/ and hand-pick these:`)
   for (const m of missing) console.log(`  ${m.id}  (${m.search})`)

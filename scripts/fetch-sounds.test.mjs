@@ -49,4 +49,32 @@ describe('sound-credits.json', () => {
       expect([...photoFields], `photo credits lost ${f}`).toContain(f)
     }
   })
+
+  /**
+   * The pipeline edits every sound it ships: trim.py truncates, peak-
+   * normalises and fades; loop.py truncates, loudness-normalises and welds a
+   * loop. Those are edits to the content, so a CC BY-SA source becomes
+   * Adapted Material, and s3(a)(1)(B) obliges us to say we modified it. The
+   * credits page renders `modifications` — it cannot say anything the data
+   * does not carry.
+   */
+  it('records what the pipeline did to every sound', () => {
+    for (const [id, c] of Object.entries(sounds)) {
+      expect(typeof c.modifications, `${id} has no modifications notice`).toBe('string')
+      expect(c.modifications.length, `${id}'s modifications notice is empty`).toBeGreaterThan(0)
+    }
+  })
+
+  it('declares an edit for every share-alike sound, since each one is Adapted Material', () => {
+    const shareAlike = Object.entries(sounds).filter(([, c]) => /^cc-by-sa/i.test(c.licence))
+    // Seven of the eleven. If that count ever drops to zero the assertions
+    // below would pass vacuously, which is exactly the regression to catch.
+    expect(shareAlike.length).toBeGreaterThan(0)
+    for (const [id, c] of shareAlike) {
+      expect(c.modifications, `${id} is ${c.licenceShort} and must declare its edits`)
+        .toMatch(/normalised/)
+      expect(c.licenceUrl, `${id} must link the licence its adaptation is offered under`)
+        .toMatch(/^https?:\/\//)
+    }
+  })
 })
