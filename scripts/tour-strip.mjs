@@ -291,6 +291,7 @@ const LAYOUT = `(() => {
   const el = (s) => document.querySelector(s)
   const r = (s) => el(s)?.getBoundingClientRect() ?? null
   const round = (n) => Math.round(n * 10) / 10
+  const box = (b) => b && { left: round(b.left), top: round(b.top), right: round(b.right), bottom: round(b.bottom), w: round(b.width), h: round(b.height) }
   const over = (a, b) => {
     if (!a || !b) return null
     const w = Math.min(a.right, b.right) - Math.max(a.left, b.left)
@@ -310,6 +311,17 @@ const LAYOUT = `(() => {
   const bar = el('.controls')
   const barBox = r('.controls')
   const morInk = ink()
+  /**
+   * WHERE THE COUNTRY IS ACTUALLY DRAWN.
+   *
+   * Not .map, and this is the whole reason the gate missed the iPad. .map
+   * is 100% x 100% of .tour-stage, so its rect is always the stage and
+   * always looks fine; the SVG inside it fits itself to that box with the
+   * default preserveAspectRatio, so the drawn country is a DIFFERENT
+   * rectangle — and it is the drawn country a child is looking at. The <g>
+   * inside svg.base gives it directly, with the camera's transform included.
+   */
+  const mapInk = el('svg.base g') && el('svg.base g').getBoundingClientRect()
   const credit = r('.map .credit')
   const play = r('.play-big')
   const say = r('.say')
@@ -322,6 +334,32 @@ const LAYOUT = `(() => {
       bigEnough: box.width >= 103.5 && box.height >= 103.5,
     }
   })
+  /**
+   * The rectangle the map is ALLOWED to use: the viewport, less the fixed
+   * control bar, less the credit lane, less the band the read-along occupies.
+   * Anything the map draws outside this is either behind furniture or off the
+   * screen, and both of those are the bug.
+   */
+  const clear = (() => {
+    let top = 0, bottom = innerHeight, left = 0, right = innerWidth
+    for (const band of [barBox, credit, say]) {
+      if (!band || band.width <= 0 || band.height <= 0) continue
+      // A full-width band only: a band that leaves room beside it (the iPad's
+      // read-along, which stops short of Mor) does not shorten the map, it
+      // just must not sit on it - mapUnderSay below is what catches that.
+      const fullWidth = band.left <= left + 0.5 && band.right >= right - 0.5
+      if (!fullWidth) continue
+      if (band.top <= top + 0.5) top = Math.max(top, band.bottom)
+      if (band.bottom >= bottom - 0.5) bottom = Math.min(bottom, band.top)
+    }
+    return { top, bottom, left, right }
+  })()
+  const outside = (b, f) => b && {
+    top: round(Math.max(0, f.top - b.top)),
+    bottom: round(Math.max(0, b.bottom - f.bottom)),
+    left: round(Math.max(0, f.left - b.left)),
+    right: round(Math.max(0, b.right - f.right)),
+  }
   return {
     viewport: [innerWidth, innerHeight],
     // .controls is left:0 right:0, so its own rect is always the viewport
@@ -340,6 +378,21 @@ const LAYOUT = `(() => {
     creditOverSay: over(credit, say),
     creditOverMor: over(credit, morInk),
     creditVisible: credit ? credit.bottom <= (barBox ? barBox.top : innerHeight) + 0.5 : false,
+    // ------------------------------------------------------------- the map
+    mapBox: box(r('.map')),
+    mapInk: box(mapInk),
+    clearBand: { top: round(clear.top), bottom: round(clear.bottom) },
+    /** How far the drawn country pokes out of the space it is allowed. */
+    mapOutsideClear: outside(mapInk, clear),
+    /** How far it pokes off the screen itself. */
+    mapOffScreen: outside(mapInk, { top: 0, bottom: innerHeight, left: 0, right: innerWidth }),
+    /** How much of it the fixed bar is standing on. */
+    mapUnderBar: over(mapInk, barBox),
+    /** And how much of it the words are standing on. The read-along is
+     *  translucent, but "you can faintly see Tamil Nadu through the caption"
+     *  is not the map being visible. */
+    mapUnderSay: over(mapInk, say),
+    mapUnderPlay: over(mapInk, play),
     sayOverBar: over(say, barBox),
     sayOverMor: over(say, morInk),
     sayOverPlay: over(say, play),
@@ -656,8 +709,27 @@ function checkCues(log) {
  * What counts as wrong. One definition, so a full run and a `--only=layout`
  * run cannot disagree about whether the screen is all right.
  */
+const poking = (o) => o && (o.top > 0.5 || o.bottom > 0.5 || o.left > 0.5 || o.right > 0.5)
+
+/**
+ * THE MAP HAS TO BE ON THE SCREEN.
+ *
+ * This is the check the gate did not have, and the iPad found out. Every
+ * clause above is about the FURNITURE — the bar, the peacock, the credit, the
+ * words — colliding with each other. Not one of them looked at the thing all
+ * that furniture is arranged around, so an app that drew the country 120px
+ * down behind the control bar and then parked the read-along on Tamil Nadu
+ * reported "no collisions at any of the four viewports".
+ *
+ * Measured on the drawn country (`mapInk`), never on `.map`: `.map` is
+ * 100% x 100% of the stage, so its rect is the stage and is always fine.
+ */
+const mapHidden = (f) =>
+  poking(f.mapOffScreen) || poking(f.mapOutsideClear) || f.mapUnderBar || f.mapUnderSay
+
 const collides = (l) =>
-  l.idle.barOverflow > 0 || !l.idle.buttons.every((b) => b.onScreen && b.bigEnough)
+  mapHidden(l.idle) || mapHidden(l.talking)
+  || l.idle.barOverflow > 0 || !l.idle.buttons.every((b) => b.onScreen && b.bigEnough)
   || !l.idle.creditVisible || l.idle.morInkOverPlay || l.idle.morInkOverBar
   || l.idle.creditOverPlay || l.idle.creditOverMor
   || l.talking.sayOverBar || l.talking.sayOverMor || l.talking.sayOverPlay
@@ -676,11 +748,35 @@ const collides = (l) =>
   || /tour-front|say|mor/.test(String(l.talking.tapReaches.throughTheWords))
   || !/play-big/.test(String(l.idle.tapReaches.onThePlayButton))
 
+/**
+ * WHAT A REAL DEVICE ACTUALLY GIVES A WEB PAGE.
+ *
+ * The first four are the old list, and three of them are fictional: no iPad
+ * sold this decade is 768x1024, and NONE of them ever hands a page its full
+ * point size in Safari, because the URL bar and the tab bar are above it.
+ * An iPad Air 11" is 820x1180 points; open a tab in Safari and the page gets
+ * 820x1024 or, with the tab bar showing, 820x984. Those hundred and fifty
+ * missing pixels are exactly the ones the layout was quietly spending.
+ *
+ * So every iPad appears twice: the standalone height (added to Home Screen,
+ * no chrome) and the Safari height (a tab, with chrome). The Safari rows are
+ * the ones that fail; the standalone rows are why nobody noticed.
+ */
 const DEVICES = [
   ['phone', 390, 844],
   ['small phone', 375, 812],
-  ['iPad portrait', 768, 1024],
-  ['iPad landscape', 1024, 768],
+  ['iPad mini standalone', 744, 1133],
+  ['iPad mini Safari', 744, 977],
+  ['iPad Air 11 standalone', 820, 1180],
+  ['iPad Air 11 Safari', 820, 1024],
+  ['iPad Air 11 Safari + tabs', 820, 984],
+  ['iPad Air 11 Safari landscape', 1180, 704],
+  ['iPad Pro 13 Safari', 1024, 1210],
+  ['iPad Pro 13 Safari landscape', 1366, 868],
+  // The two the gate has always run. Kept so a regression in them still
+  // shows, not because anything is this shape.
+  ['legacy iPad portrait', 768, 1024],
+  ['legacy iPad landscape', 1024, 768],
 ]
 
 async function measureLayouts() {
@@ -715,6 +811,12 @@ async function measureLayouts() {
       `  words over credit: ${talking.creditOverSay ? `${talking.creditOverSay.w}x${talking.creditOverSay.h}` : 'no'}` +
       `  Mor over credit (talking): ${talking.creditOverMor ? `${talking.creditOverMor.w}x${talking.creditOverMor.h}` : 'no'}` +
       `  words over Mor: ${talking.sayOverMor ? `${talking.sayOverMor.w}x${talking.sayOverMor.h}` : 'no'}\n` +
+      `  ${' '.repeat(14)} THE MAP: drawn ${idle.mapInk.w}x${idle.mapInk.h} at y ${idle.mapInk.top}..${idle.mapInk.bottom}` +
+      `, clear band y ${idle.clearBand.top}..${idle.clearBand.bottom}` +
+      `, off screen ${JSON.stringify(idle.mapOffScreen)}` +
+      `, behind the bar ${idle.mapUnderBar ? `${idle.mapUnderBar.w}x${idle.mapUnderBar.h}` : 'no'}` +
+      `, under the words ${talking.mapUnderSay ? `${talking.mapUnderSay.w}x${talking.mapUnderSay.h}` : 'no'}` +
+      `, outside its space ${JSON.stringify(talking.mapOutsideClear)}\n` +
       `  ${' '.repeat(14)} a tap lands on: map ${talking.tapReaches.middleOfTheMap}` +
       `, through Mor ${talking.tapReaches.throughMor}` +
       `, through the words ${talking.tapReaches.throughTheWords}` +
