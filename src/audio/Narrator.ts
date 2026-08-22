@@ -91,6 +91,14 @@ export class Narrator {
   /** Pending "let the bed back up" from settle(). */
   private settleTimer: ReturnType<typeof setTimeout> | null = null
 
+  /** Diagnostics-only: the last three `statechange` events the context has
+   *  actually fired, oldest first. See the getters below. */
+  private changeLog: { state: string; at: number }[] = []
+  /** Diagnostics-only: timing of the most recent `resumeContext()` call. */
+  private resumeStartedAt: number | null = null
+  private resumeSettledFlag: boolean | null = null
+  private resumeSettledAt: number | null = null
+
   constructor(ctx: AudioContext) {
     this.ctx = ctx
     this.master = ctx.createGain()
@@ -151,9 +159,17 @@ export class Narrator {
    * state is re-read *after* resume() settles rather than assumed.
    */
   async resumeContext(): Promise<boolean> {
+    // Diagnostics-only bookkeeping: `resumeSettledFlag` sits at `false` from
+    // here until the line after the await, so a `ctx.resume()` that never
+    // settles (bug 281566) leaves it `false` forever — that is the signature
+    // the panel is built to show, not a bug in the flag.
+    this.resumeStartedAt = performance.now()
+    this.resumeSettledFlag = false
     try {
       if (this.ctx.state !== 'running') await this.ctx.resume()
     } catch { /* the state check below is the real answer */ }
+    this.resumeSettledFlag = true
+    this.resumeSettledAt = performance.now()
     const ok = this.ctx.state === 'running'
     this.setStuck(!ok)
     return ok
@@ -173,6 +189,11 @@ export class Narrator {
 
   private onStateChange = () => {
     const state: string = this.ctx.state
+    // Diagnostics-only: record every state the context actually announces,
+    // capped at the last three. An empty log after a long session is itself
+    // a finding — bug 283419 is silence with `state` stuck at "running" and
+    // no `statechange` ever firing.
+    this.changeLog = [...this.changeLog, { state, at: performance.now() }].slice(-3)
     if (state === 'running') this.setStuck(false)
     // "interrupted" is WebKit-only and absent from AudioContextState.
     else if (state === 'interrupted') this.setStuck(true)
@@ -182,6 +203,46 @@ export class Narrator {
     if (v === this.stuckFlag) return
     this.stuckFlag = v
     this.emit()
+  }
+
+  // -------------------------------------------------------- diagnostics-only
+
+  /**
+   * Everything in this section exists only for `?debug=audio` (see
+   * `src/audio/diagnostics.ts`). Every member is read-only: nothing here may
+   * change what the engine does, only report it. A probe that could repair
+   * the bug it is measuring would destroy the evidence Task 1 exists to
+   * collect — that repair work is Task 2's, once the readout says which of
+   * the four bugs is actually firing.
+   */
+
+  /** Raw `ctx.state`, never coerced or interpreted. The panel's whole point
+   *  is showing this next to whether the clock is actually moving — WebKit
+   *  reports "running" in at least two of the four bugs while nothing is
+   *  happening. */
+  get diagState(): string { return this.ctx.state }
+
+  /** Raw `ctx.currentTime` — the audio hardware clock, in seconds. */
+  get diagCurrentTime(): number { return this.ctx.currentTime }
+
+  /** The last three `statechange` events the context has actually fired,
+   *  oldest first. */
+  get diagStateChanges(): { state: string; at: number }[] { return this.changeLog }
+
+  /** `null` before any `resumeContext()` call this session; `false` from the
+   *  moment one starts until its underlying `ctx.resume()` returns or
+   *  throws; `true` once it has. Bug 281566 is a `resume()` promise that
+   *  never settles, which leaves this at `false` for good — that is the
+   *  signature, not a stuck flag. */
+  get diagResumeSettled(): boolean | null { return this.resumeSettledFlag }
+
+  /** Milliseconds since the most recent `resumeContext()` call started —
+   *  frozen once it settles, still counting up for as long as
+   *  `diagResumeSettled` reads `false`. `null` before the first call. */
+  get diagResumeMs(): number | null {
+    if (this.resumeStartedAt === null) return null
+    const end = this.resumeSettledFlag ? this.resumeSettledAt! : performance.now()
+    return end - this.resumeStartedAt
   }
 
   // ---------------------------------------------------------------- transport

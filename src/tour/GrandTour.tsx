@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { getNarrator } from '../audio/Narrator'
+import { AudioDebugPanel } from '../audio/diagnostics'
 import { camera } from '../map/camera'
 import { STAGGER_MS, useMapNodes } from '../map/useMapNodes'
 import type { MapApi } from '../map/useMapNodes'
@@ -419,6 +420,12 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
 
   return (
     <>
+      {/* Task 1 scaffolding: a read-only `?debug=audio` readout of the audio
+          clock, for finding which WebKit bug is actually firing on the
+          iPad before Task 2 attempts any repair. Renders nothing without
+          the flag; Task 12 deletes it once the repair is verified. */}
+      <AudioDebugPanel />
+
       <TourStage onPickState={pick} onCue={saw} scene={beat?.id ?? ''}>
         {/* "Look down." Drawn in the map's own coordinates, over the place
             the camera has just flown to. Not part of the overlay slot: that
