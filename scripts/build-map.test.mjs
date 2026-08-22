@@ -224,6 +224,14 @@ describe('a real render, not a jsdom assertion: with vs. without Lakshadweep', (
 
   // Three Chrome spawns in sequence (two screenshots, one diff), each with
   // its own process start-up cost — comfortably past vitest's 5s default.
+  //
+  // 120s, not 20s. 20s passed on a developer machine and TIMED OUT IN CI at
+  // 21,788ms, failing the Pages deploy for a build whose map was correct.
+  // A shared runner is slower and contended, and this test pays three cold
+  // Chrome start-ups before it measures anything. The number has to clear
+  // the worst runner we ever get, not the laptop it was written on: a false
+  // red here blocks a deploy, and a build gate that cries wolf is one people
+  // learn to re-run rather than read.
   it.skipIf(!CHROME)('differ by far more than the old 13-pixel baseline', () => {
     const hit = JSON.parse(readFileSync('src/data/hit.json', 'utf8'))
     const fill = '\n  html, body { width: 100%; height: 100%; }' // mirrors probe-camera.mjs
@@ -297,5 +305,5 @@ Promise.all([load('pixel-test-with.png'), load('pixel-test-without.png')]).then(
       `${result.fullyPainted} reach at least half the land colour (>=${HALF_LAND_COLOUR} on a channel). ` +
       `Old baseline: 13 pixels differing at all, max 1/255, 0 reaching half the land colour.`)
     expect(result.fullyPainted).toBeGreaterThan(200)
-  }, 20000)
+  }, 120000)
 })
