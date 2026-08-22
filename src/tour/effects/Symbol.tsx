@@ -17,7 +17,11 @@ import { IndiaGate } from './art/IndiaGate'
 import { Outline } from './art/Outline'
 import { ArabianSea, BayOfBengal, IndianOcean } from './art/Sea'
 
-const ART: Record<string, () => ReactNode> = {
+/** Every entry takes the same `hold` prop `Symbol` is given, and falls back
+ *  to its own constant when it is not, so this table stays uniform whether a
+ *  cue carried a derived hold or not. */
+type ArtProps = { hold?: number }
+const ART: Record<string, (props: ArtProps) => ReactNode> = {
   'arabian-sea': ArabianSea,
   banyan: Banyan,
   'bay-of-bengal': BayOfBengal,
@@ -31,7 +35,7 @@ const ART: Record<string, () => ReactNode> = {
   tiger: Tiger,
 }
 
-export function Symbol({ name }: { name: string | undefined }) {
+export function Symbol({ name, hold }: { name: string | undefined; hold?: number }) {
   const Art = name ? ART[name] : undefined
-  return Art ? <Art /> : null
+  return Art ? <Art hold={hold} /> : null
 }

@@ -133,10 +133,20 @@ function Body({ water, now, zoom }: { water: Water; now: boolean; zoom: number }
  * three seas — that is what lets them accumulate — so it is what tells the
  * layer it is wanted again and restarts its hold.
  */
-export function Seas({ named, nonce }: { named?: string; nonce?: string }) {
+/** `hold` is the cue's derived lifetime, in ms; falls back to `HOLD.sea`
+ *  when none reached this cue. */
+export function Seas({
+  named,
+  nonce,
+  hold = HOLD.sea,
+}: {
+  named?: string
+  nonce?: string
+  hold?: number
+}) {
   const zoom = useMapZoom()
   return (
-    <Layer hold={HOLD.sea} restartOn={`${named ?? ''}:${nonce ?? ''}`}>
+    <Layer hold={hold} restartOn={`${named ?? ''}:${nonce ?? ''}`}>
       {WATERS.map((water) => (
         <Body key={water.id} water={water} now={water.id === named} zoom={zoom} />
       ))}
@@ -146,6 +156,6 @@ export function Seas({ named, nonce }: { named?: string; nonce?: string }) {
 
 /** For `Symbol`, which maps a bare vocabulary name to art. The tour reaches
  *  these through `overlays.tsx` instead, so that the three share one slot. */
-export const ArabianSea = () => <Seas named="arabian-sea" />
-export const BayOfBengal = () => <Seas named="bay-of-bengal" />
-export const IndianOcean = () => <Seas named="indian-ocean" />
+export const ArabianSea = ({ hold }: { hold?: number } = {}) => <Seas named="arabian-sea" hold={hold} />
+export const BayOfBengal = ({ hold }: { hold?: number } = {}) => <Seas named="bay-of-bengal" hold={hold} />
+export const IndianOcean = ({ hold }: { hold?: number } = {}) => <Seas named="indian-ocean" hold={hold} />

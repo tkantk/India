@@ -444,6 +444,23 @@ describe('the look-down marker', () => {
     await userEvent.click(screen.getByRole('button', { name: /home/i }))
     expect(marker()).toBeNull()
   })
+
+  it('dismisses at the zoomTo cue\'s own derived hold, not the HOLD.here fallback', () => {
+    // Task 3: zoomTo is an art verb precisely because this ring is what its
+    // derived hold times (the brief's own worked example — beat 5's ring
+    // used to die three seconds before India Gate arrived on the same spot).
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount()
+      act(() => { narrator.onCue({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi', hold: 1000 }) })
+      expect(marker()).toBeTruthy()
+      // Short of HOLD.here (5600ms) + FADE_MS, but past the given hold.
+      act(() => { vi.advanceTimersByTime(1000 + FADE_MS + 50) })
+      expect(marker()).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 describe('stageHold', () => {
@@ -464,6 +481,16 @@ describe('stageHold', () => {
     for (const verb of ['playSfx', 'highlightAllStates', 'highlightUnionTerritories', 'zoomTo', 'wobble']) {
       expect(hold(verb)).toBe(0)
     }
+  })
+
+  it('prefers the cue\'s own derived hold over the constant, when it has one', () => {
+    // Task 3: the constants in Reveal.tsx are a fallback now, not the
+    // primary source — a cue's own `hold`, derived from the real audio,
+    // wins whenever it is present.
+    expect(stageHold({ t: 0, word: 0, do: 'revealSymbol', arg: 'tiger', hold: 14480 })).toBe(14480)
+    expect(stageHold({ t: 0, word: 0, do: 'countTo', arg: '28', hold: 1631 })).toBe(1631)
+    // Even where the derived hold happens to be shorter than the constant.
+    expect(stageHold({ t: 0, word: 0, do: 'showScript', arg: 'namaste', hold: 500 })).toBe(500)
   })
 
   it('covers every art verb the content actually uses', () => {

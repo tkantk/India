@@ -8,10 +8,10 @@ import { motion } from 'motion/react'
 import { Card, EASE_OUT, useStill } from '../Reveal'
 import { PALETTE as C } from './palette'
 
-export function Mango() {
+export function Mango({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card>
+    <Card hold={hold}>
       {/* stalk and leaves */}
       <path d="M60,30 C60,22 59,17 57,12" fill="none" stroke={C.bark} strokeWidth="3" strokeLinecap="round" />
       <motion.g

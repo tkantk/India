@@ -34,7 +34,12 @@ export type CueApi = {
   setOverlay: (node: ReactNode | null) => void
 }
 
-export type CueHandler = (arg: string | undefined, api: CueApi) => void
+/**
+ * `hold` is the art's derived lifetime (`Cue.hold`, in ms), handed to `art()`
+ * so it can pass it on to `overlays.tsx`. Every other handler ignores the
+ * third argument, which JS/TS both allow a shorter function to do.
+ */
+export type CueHandler = (arg: string | undefined, api: CueApi, hold?: number) => void
 
 type GeoPlace = { type: 'state' | 'ut'; bbox: Bbox }
 const PLACES = geo.places as unknown as Record<string, GeoPlace>
@@ -51,9 +56,9 @@ const UT_SLUGS = Object.keys(PLACES).filter((slug) => PLACES[slug].type === 'ut'
  * placeholder for real art without touching a line here.
  */
 function art(verb: string): CueHandler {
-  return (arg, api) => {
+  return (arg, api, hold) => {
     const render = OVERLAYS[verb]
-    if (render) api.setOverlay(render(arg))
+    if (render) api.setOverlay(render(arg, hold))
   }
 }
 
@@ -107,7 +112,7 @@ export function dispatch(cue: Cue, api: CueApi): void {
     return
   }
   try {
-    handler(cue.arg, api)
+    handler(cue.arg, api, cue.hold)
   } catch (err) {
     console.debug(`[cues] "${cue.do}" failed`, err)
   }

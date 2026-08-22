@@ -97,9 +97,9 @@ export function PeacockBody({ eye }: { eye?: ReactNode }) {
   )
 }
 
-export function Peacock() {
+export function Peacock({ hold }: { hold?: number } = {}) {
   return (
-    <Card>
+    <Card hold={hold}>
       {FEATHERS.map((f, i) => (
         <motion.g
           key={f.angle}

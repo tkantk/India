@@ -120,10 +120,14 @@ const SEAS = new Set(WATERS.map((w) => w.id))
  * on screen at some point, and handing that to Mor would leave him fanned
  * out from beat 2 to the end of the tour.
  *
- * The numbers are `HOLD`, imported from the art, so a hold retuned there
- * retunes Mor with it.
+ * `cue.hold` — derived once at build time from the clip's own duration, see
+ * `scripts/lib/words.mjs`'s `cueTimes` — is preferred whenever a cue carries
+ * one, so Mor's fan expires with the picture rather than on a stale
+ * constant. The switch below is only the fallback: a cue resolved without a
+ * clip duration (the draft-voice pipeline) never gets a `hold` at all.
  */
 export function stageHold(cue: Cue): number {
+  if (cue.hold !== undefined) return cue.hold
   switch (cue.do) {
     case 'revealSymbol':
       // Two of the eleven symbols are not cards: the outline is a map layer a
@@ -176,8 +180,9 @@ export function comesHome(clip: Clip, view: Bbox | null): boolean {
  */
 function useStageLife(map: MapApi) {
   const [showing, setShowing] = useState<string | null>(null)
-  /** Where the camera has just landed, if it landed anywhere. */
-  const [here, setHere] = useState<{ at: [number, number]; nonce: number } | null>(null)
+  /** Where the camera has just landed, if it landed anywhere. `hold` is the
+   *  zoomTo cue's own derived lifetime — see `Here.tsx`. */
+  const [here, setHere] = useState<{ at: [number, number]; nonce: number; hold?: number } | null>(null)
   const fan = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wave = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -201,7 +206,7 @@ function useStageLife(map: MapApi) {
       // is to look at when it lands. A fresh nonce so a replayed beat draws
       // it again rather than reusing a marker that has already gone.
       const place = cue.arg ? PLACES[cue.arg] : undefined
-      if (place) setHere({ at: centreOf(place.bbox), nonce: ++marked })
+      if (place) setHere({ at: centreOf(place.bbox), nonce: ++marked, hold: cue.hold })
       return
     }
     if (HIGHLIGHTS.has(cue.do)) {
@@ -431,7 +436,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
             the camera has just flown to. Not part of the overlay slot: that
             belongs to the cue registry, and this answers a camera verb the
             registry has no picture for. */}
-        {here && <Here key={here.nonce} at={here.at} />}
+        {here && <Here key={here.nonce} at={here.at} hold={here.hold} />}
 
         {/* The sentence being spoken, with the word lit. `data-beat` is how a
             person watching with devtools open — and the frame-strip probe —

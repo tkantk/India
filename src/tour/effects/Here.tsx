@@ -39,14 +39,17 @@ const AFTER_THE_FLIGHT = 0.45
  */
 const R = 80
 
-export function Here({ at }: { at: [number, number] }) {
+/** `hold` is `zoomTo`'s own derived lifetime, in ms — `zoomTo` is an art
+ *  verb precisely because it is what times this ring. Falls back to
+ *  `HOLD.here` when none reached this cue. */
+export function Here({ at, hold = HOLD.here }: { at: [number, number]; hold?: number }) {
   const zoom = useMapZoom()
   const still = useStill()
   const [cx, cy] = at
   const r = R * zoom
 
   return (
-    <Layer hold={HOLD.here}>
+    <Layer hold={hold}>
       <motion.g
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

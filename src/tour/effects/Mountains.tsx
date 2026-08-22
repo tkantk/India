@@ -22,9 +22,11 @@ const SNOW = 0.38
  *  the stagger below still wants that one. */
 const BACK_TO_FRONT = [...PEAKS].sort((a, b) => a.y - b.y)
 
-export function Mountains() {
+/** `hold` is the cue's derived lifetime, in ms; falls back to
+ *  `HOLD.mountains` when none reached this cue. */
+export function Mountains({ hold = HOLD.mountains }: { hold?: number } = {}) {
   return (
-    <Layer hold={HOLD.mountains}>
+    <Layer hold={hold}>
       {BACK_TO_FRONT.map((peak) => {
         const base = peak.y + HEIGHT
         const sx = HALF * SNOW

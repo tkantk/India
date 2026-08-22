@@ -324,6 +324,59 @@ describe('the three seas', () => {
   })
 })
 
+/**
+ * `OverlayRenderer` widened from `(arg) => ReactNode` to `(arg, hold) =>
+ * ReactNode` (Task 3) so that a cue's derived lifetime (`Cue.hold`) reaches
+ * the effect that actually has to time itself by it. This is the seam that
+ * proves the second argument is not dropped on the floor anywhere between
+ * `OVERLAYS[verb]` and the timer that dismisses the picture.
+ */
+describe('the overlay registry honours a derived hold', () => {
+  // `Reveal` renders its `motion.div` (`.cue-figure` or `.cue-layer`) only
+  // while it has not yet dismissed itself; the wrapping `.cue` div from
+  // `overlays.tsx` stays mounted throughout, so it cannot be the signal.
+  const stillUp = (container: HTMLElement) => container.querySelector('.cue-figure, .cue-layer') !== null
+
+  it('dismisses a symbol at the given hold rather than the default constant', () => {
+    vi.useFakeTimers()
+    const { container } = render(<>{OVERLAYS.revealSymbol('tiger', 2000)}</>)
+    expect(stillUp(container)).toBe(true)
+    // Well past the default HOLD.symbol (6000ms), but short of the given hold.
+    act(() => { vi.advanceTimersByTime(2000 + 450 - 50) })
+    expect(stillUp(container)).toBe(true)
+    act(() => { vi.advanceTimersByTime(100) })
+    expect(stillUp(container)).toBe(false)
+  })
+
+  it('dismisses the accumulated seas at the given hold', () => {
+    vi.useFakeTimers()
+    const { container } = render(<>{OVERLAYS.revealSymbol('arabian-sea', 1500)}</>)
+    act(() => { vi.advanceTimersByTime(1500 + 450 + 50) })
+    expect(stillUp(container)).toBe(false)
+  })
+
+  it('dismisses the flag, the counter, the river, the mountains and a script card at the given hold', () => {
+    vi.useFakeTimers()
+    for (const [verb, arg] of [
+      ['unfurlFlag', undefined], ['countTo', '28'], ['traceRiver', 'ganga'],
+      ['raiseMountains', undefined], ['showScript', 'namaste'],
+    ] as const) {
+      const { container, unmount } = render(<>{OVERLAYS[verb](arg, 1200)}</>)
+      act(() => { vi.advanceTimersByTime(1200 + 450 + 50) })
+      expect(stillUp(container), `${verb} did not honour its derived hold`).toBe(false)
+      unmount()
+    }
+  })
+
+  it('still falls back to the default constant when no hold is given', () => {
+    vi.useFakeTimers()
+    const { container } = render(<>{OVERLAYS.revealSymbol('tiger')}</>)
+    // Short of HOLD.symbol (6000ms): still up.
+    act(() => { vi.advanceTimersByTime(4000) })
+    expect(stillUp(container)).toBe(true)
+  })
+})
+
 afterEach(() => {
   vi.useRealTimers()
 })

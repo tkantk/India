@@ -19,10 +19,10 @@ const ROPES = [
   { d: 'M102,54 C104,66 101,78 103,92' },
 ] as { d: string; foot?: number }[]
 
-export function Banyan() {
+export function Banyan({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card>
+    <Card hold={hold}>
       {/* the ground it has stood on for two hundred years */}
       <ellipse cx="60" cy="108" rx="48" ry="6" fill={C.sand} />
 

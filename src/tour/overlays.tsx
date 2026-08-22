@@ -15,7 +15,14 @@ import { Script } from './effects/Script'
  * of them takes itself off stage again — there is no `onDone` in this
  * signature and nothing ever clears the slot.
  */
-export type OverlayRenderer = (arg: string | undefined) => ReactNode
+/**
+ * `hold` is the cue's derived lifetime in ms (`Cue.hold`, from
+ * `scripts/lib/words.mjs`'s `cueTimes`) -- how long this picture should stay
+ * before it takes itself off. Every effect below defaults it to its own
+ * constant, so a call with `hold` omitted (the draft-voice pipeline, or any
+ * test that renders one effect alone) behaves exactly as it always has.
+ */
+export type OverlayRenderer = (arg: string | undefined, hold?: number) => ReactNode
 
 /**
  * Why every effect gets a key nobody has used before.
@@ -58,17 +65,18 @@ function cue(verb: string, arg: string | undefined, art: ReactNode, key?: string
 const SEAS = new Set(WATERS.map((w) => w.id))
 
 export const OVERLAYS: Record<string, OverlayRenderer> = {
-  revealSymbol: (arg) =>
+  revealSymbol: (arg, hold) =>
     arg && SEAS.has(arg)
-      ? cue('revealSymbol', arg, <Seas named={arg} nonce={String(++nth)} />, 'seas')
-      : cue('revealSymbol', arg, <Symbol name={arg} />),
-  unfurlFlag: (arg) => cue('unfurlFlag', arg, <Flag />),
-  countTo: (arg) => cue('countTo', arg, <Counter to={Number(arg)} />),
-  traceRiver: (arg) => cue('traceRiver', arg, <River name={arg} />),
-  raiseMountains: (arg) => cue('raiseMountains', arg, <Mountains />),
+      ? cue('revealSymbol', arg, <Seas named={arg} nonce={String(++nth)} hold={hold} />, 'seas')
+      : cue('revealSymbol', arg, <Symbol name={arg} hold={hold} />),
+  unfurlFlag: (arg, hold) => cue('unfurlFlag', arg, <Flag hold={hold} />),
+  countTo: (arg, hold) => cue('countTo', arg, <Counter to={Number(arg)} hold={hold} />),
+  traceRiver: (arg, hold) => cue('traceRiver', arg, <River name={arg} hold={hold} />),
+  raiseMountains: (arg, hold) => cue('raiseMountains', arg, <Mountains hold={hold} />),
   // Stable key, on purpose: the three greetings arrive a second apart and
   // belong on one card together, so this must be one component instance
   // across all three cues rather than three mounts. `nonce` is what restarts
   // its hold each time.
-  showScript: (arg) => cue('showScript', arg, <Script greeting={arg} nonce={String(++nth)} />, 'showScript'),
+  showScript: (arg, hold) =>
+    cue('showScript', arg, <Script greeting={arg} nonce={String(++nth)} hold={hold} />, 'showScript'),
 }

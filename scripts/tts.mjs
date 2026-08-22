@@ -110,8 +110,10 @@ async function renderLine(line) {
   const abs = join(OUT_DIR, `${line.id}.m4a`)
 
   if (!force && cachedFor(line)) {
-    // Audio is unchanged; still recompute cue times in case a cue moved.
-    timings[line.id] = { ...previous[line.id], cues: cueTimes(line.cues, previous[line.id]) }
+    // Audio is unchanged; still recompute cue times (and holds) in case a
+    // cue moved.
+    const prev = previous[line.id]
+    timings[line.id] = { ...prev, cues: cueTimes(line.cues, prev, prev.duration) }
     reused++
     return
   }
@@ -135,7 +137,7 @@ async function renderLine(line) {
     ? timingsFromAlignment(line.text, alignment)
     : estimateTimings(line.text, duration)
 
-  timings[line.id] = { audio: rel, duration, ...t, cues: cueTimes(line.cues, t) }
+  timings[line.id] = { audio: rel, duration, ...t, cues: cueTimes(line.cues, t, duration) }
   cache[line.id] = key
   rendered++
   process.stdout.write(`\r  rendered ${rendered}, reused ${reused}   `)

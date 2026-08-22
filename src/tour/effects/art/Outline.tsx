@@ -19,12 +19,14 @@ import { PALETTE as C } from './palette'
 /** Slow on purpose: a child is meant to be tracing it. */
 const DRAW_S = 2.2
 
-export function Outline() {
+/** `hold` is the cue's derived lifetime, in ms; falls back to `HOLD.outline`
+ *  when none reached this cue. */
+export function Outline({ hold = HOLD.outline }: { hold?: number } = {}) {
   const drawn = !useStill() && !isCheap()
   // A pencil line keeps its weight while the country under it grows.
   const zoom = useMapZoom()
   return (
-    <Layer hold={HOLD.outline}>
+    <Layer hold={hold}>
       <motion.path
         d={INDIA_OUTLINE}
         fill="none"

@@ -14,8 +14,15 @@ export type Bbox = [number, number, number, number]
  * a word index to a time — that happened once, against the real rendered
  * audio, in `scripts/tts.mjs`. `word` is kept only so a cue can be traced
  * back to the word that triggered it.
+ *
+ * `hold` — in **milliseconds**, unlike `t` — is how long an art cue's
+ * picture should stay on screen, also resolved once in `scripts/tts.mjs`
+ * (`words.mjs`'s `cueTimes`) from the clip's own duration and the cue after
+ * it. Present only on the verbs that put a picture on stage; absent on a cue
+ * resolved without a clip duration (the draft-voice pipeline), in which case
+ * every effect falls back to its own constant.
  */
-export type Cue = { t: number; word: number; do: string; arg?: string }
+export type Cue = { t: number; word: number; do: string; arg?: string; hold?: number }
 
 /** One narrated line: its audio file, its words, and when each is spoken. */
 export type Clip = {

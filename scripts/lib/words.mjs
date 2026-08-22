@@ -61,15 +61,67 @@ export function estimateTimings(text, duration) {
   return { words: spans.map(s => s.word), starts, ends }
 }
 
+/** Verbs that put a picture on stage and so need their own lifetime. Every
+ *  other verb the content uses (playSfx, highlightAllStates,
+ *  highlightUnionTerritories, highlightState, lightNeighbour) is camera or
+ *  map work, not art, and gets no hold at all.
+ *
+ *  zoomTo belongs here even though it looks like pure camera work: it also
+ *  raises the "look down" ring at the end of the flight (Here.tsx), and that
+ *  ring's lifetime is exactly what this hold times. */
+const ART_VERBS = new Set([
+  'revealSymbol', 'showScript', 'countTo', 'unfurlFlag',
+  'traceRiver', 'raiseMountains', 'zoomTo',
+])
+
+/** The three seas are one accumulating picture, the same way the three
+ *  greetings are (see `groupOf` below): a second sea cue adds to the first
+ *  rather than replacing it, so the first must not be truncated by it. */
+const ACCUMULATING_SEAS = new Set(['arabian-sea', 'bay-of-bengal', 'indian-ocean'])
+
+const MIN_HOLD_MS = 1000
+
+/** Uncapped art is a picture of the sentence's subject, and the subject is
+ *  what the sentence is about — every art verb but one is left alone.
+ *  `countTo` is the exception: `GrandTour.tsx`'s whole-map highlight
+ *  (`HIGHLIGHT_MS`) is built on the assumption that the counter's hold is
+ *  this short, and left uncapped the derived counter holds run 13-15s,
+ *  which would leave all 28 states (or all 8 union territories) lit for
+ *  practically the whole beat. */
+const HOLD_CAP_MS = { countTo: 5000 }
+
+/**
+ * Which accumulating picture, if any, a cue belongs to.
+ *
+ * Two cues in the same group must not truncate each other — the later one
+ * is adding to the picture, not replacing it. Every other cue is its own
+ * group of one, keyed by its position, so that even a verb that repeats
+ * (tour.09's three separate `revealSymbol` cards) is still truncated by
+ * whichever art cue comes after it.
+ */
+function groupOf(cue, index) {
+  if (cue.do === 'showScript') return 'showScript'
+  if (cue.do === 'revealSymbol' && ACCUMULATING_SEAS.has(cue.arg)) return 'seas'
+  return `solo:${index}`
+}
+
 /**
  * Resolve authored word-index cues into playback times.
  *
  * This is the join that lets the site be built against a free draft voice and
  * then re-rendered with the paid one: the content only ever says "at word 14",
  * and the times are recomputed from whatever timings the current voice produced.
+ *
+ * With a third argument — the clip's own duration — every art cue also gets
+ * a `hold`: how long its picture stays on screen, in milliseconds, derived
+ * from when the *next independent* art cue fires (or the clip's end, if
+ * none does) rather than a hardcoded per-verb guess. Omit `duration` and no
+ * cue gets a `hold` at all: that is the built-time-only draft-voice pipeline
+ * and the single-effect tests, where every effect falls back to its own
+ * constant.
  */
-export function cueTimes(cues, timings) {
-  return (cues ?? [])
+export function cueTimes(cues, timings, duration) {
+  const resolved = (cues ?? [])
     .map(c => {
       if (c.word >= timings.starts.length) {
         throw new Error(`cue word index ${c.word} is out of range (${timings.starts.length} words)`)
@@ -77,6 +129,25 @@ export function cueTimes(cues, timings) {
       return { ...c, t: timings.starts[c.word] }
     })
     .sort((a, b) => a.t - b.t)
+
+  if (duration === undefined) return resolved
+
+  const art = resolved
+    .map((cue, i) => ({ cue, i, group: groupOf(cue, i) }))
+    .filter((e) => ART_VERBS.has(e.cue.do))
+
+  return resolved.map((cue, i) => {
+    if (!ART_VERBS.has(cue.do)) return cue
+    const group = groupOf(cue, i)
+    // The next art cue that is NOT part of this one's accumulating group —
+    // an accumulating member is skipped over, exactly as if it were not
+    // independent art at all.
+    const next = art.find((e) => e.i > i && e.group !== group)
+    const end = next ? Math.min(next.cue.t, duration) : duration
+    const cap = HOLD_CAP_MS[cue.do] ?? Infinity
+    const hold = Math.min(Math.max((end - cue.t) * 1000, MIN_HOLD_MS), cap)
+    return { ...cue, hold }
+  })
 }
 
 const round = n => Math.round(n * 1000) / 1000

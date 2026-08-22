@@ -17,9 +17,13 @@ type Props = {
   /** Roughly forty a second, so 28 lands in about the time it takes to say
    *  "twenty-eight states". */
   durationMs?: number
+  /** How long the disc stays up, in ms. Derived from the cue (see
+   *  `Cue.hold`); falls back to `HOLD.counter` when no derived hold reached
+   *  this cue — a single-effect test, or the draft-voice pipeline. */
+  hold?: number
 }
 
-export function Counter({ to, durationMs = 1300 }: Props) {
+export function Counter({ to, durationMs = 1300, hold = HOLD.counter }: Props) {
   const still = useStill()
   const target = Math.round(to)
   // The argument comes off authored content as a string. cues.ts guarantees
@@ -46,7 +50,7 @@ export function Counter({ to, durationMs = 1300 }: Props) {
   if (!countable) return null
 
   return (
-    <Reveal hold={HOLD.counter}>
+    <Reveal hold={hold}>
       <div className="cue-counter">
         <svg className="cue-counter__disc" viewBox="0 0 120 120" aria-hidden="true">
           <circle cx="60" cy="60" r="56" fill={C.paper} />

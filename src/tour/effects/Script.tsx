@@ -30,13 +30,16 @@ type Props = {
    * tells the card it is wanted again and restarts its hold.
    */
   nonce?: string
+  /** How long the card stays up, in ms. Derived from the cue; falls back to
+   *  `HOLD.script` when none reached this cue. */
+  hold?: number
 }
 
-export function Script({ greeting, nonce }: Props) {
+export function Script({ greeting, nonce, hold = HOLD.script }: Props) {
   if (!greeting || !GREETINGS[greeting]) return null
 
   return (
-    <Reveal hold={HOLD.script} restartOn={`${greeting}:${nonce ?? ''}`}>
+    <Reveal hold={hold} restartOn={`${greeting}:${nonce ?? ''}`}>
       <div className="cue-script">
         {ORDER.map((id) => {
           const now = id === greeting

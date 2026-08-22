@@ -15,7 +15,7 @@ const OUTER = [-72, -40, 0, 40, 72]
 const INNER = [-26, 0, 26]
 const HEART = { x: 60, y: 62 }
 
-export function Lotus() {
+export function Lotus({ hold }: { hold?: number } = {}) {
   const still = useStill()
   /* The placing is a plain <g transform>, and only what is INSIDE it moves.
      Motion writes `style.transform`, which is the same CSS property the SVG
@@ -34,7 +34,7 @@ export function Lotus() {
   )
 
   return (
-    <Card>
+    <Card hold={hold}>
       {/* the sunshine it is pushing up into */}
       <circle cx="97" cy="22" r="10" fill={C.gold} />
       <g stroke={C.gold} strokeWidth="2.6" strokeLinecap="round">

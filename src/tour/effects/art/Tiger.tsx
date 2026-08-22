@@ -21,10 +21,10 @@ const STRIPES = [
   'M95,75 C90,76 86,77 81,78',
 ]
 
-export function Tiger() {
+export function Tiger({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card>
+    <Card hold={hold}>
       {/* ears */}
       <circle cx="30" cy="36" r="14" fill={C.saffron} />
       <circle cx="90" cy="36" r="14" fill={C.saffron} />

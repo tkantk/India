@@ -35,9 +35,12 @@ const SPOKES = Array.from({ length: 24 }, (_, i) => {
   }
 })
 
-export function Flag() {
+/** `hold` is the cue's derived lifetime, in ms; falls back to `HOLD.flag`
+ *  when none reached this cue (a single-effect test, or the draft-voice
+ *  pipeline). */
+export function Flag({ hold = HOLD.flag }: { hold?: number } = {}) {
   return (
-    <Card viewBox="0 0 180 120" hold={HOLD.flag}>
+    <Card viewBox="0 0 180 120" hold={hold}>
       {/* the pole. Without it this is a striped rectangle. */}
       <rect x="12" y="6" width="6" height="110" rx="3" fill={C.bark} />
 

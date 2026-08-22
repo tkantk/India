@@ -17,7 +17,7 @@ import { PALETTE as C } from './art/palette'
 const RIVERS: Record<string, string> = { ganga: GANGA }
 const DRAW_S = 1.8
 
-export function River({ name }: { name: string | undefined }) {
+export function River({ name, hold = HOLD.river }: { name: string | undefined; hold?: number }) {
   const still = useStill()
   // The river's COURSE is geography and grows with the map; the width of the
   // line that draws it is not. Without this, the camera on Delhi renders a
@@ -33,7 +33,7 @@ export function River({ name }: { name: string | undefined }) {
   }
 
   return (
-    <Layer hold={HOLD.river}>
+    <Layer hold={hold}>
       {/* the shallows either side, then the water itself */}
       <motion.path
         d={d}

@@ -17,10 +17,10 @@ function Person({ x }: { x: number }) {
   )
 }
 
-export function IndiaGate() {
+export function IndiaGate({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card>
+    <Card hold={hold}>
       {/* the lawns all round it */}
       <path d="M0,102 C30,97 90,97 120,102 L120,120 L0,120 Z" fill={C.leaf} />
 

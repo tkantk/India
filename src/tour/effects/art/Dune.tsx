@@ -8,10 +8,10 @@ import { motion } from 'motion/react'
 import { Card, EASE_OUT, useStill } from '../Reveal'
 import { PALETTE as C } from './palette'
 
-export function Dune() {
+export function Dune({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card>
+    <Card hold={hold}>
       {/* the sun that beats down all day */}
       <circle cx="93" cy="26" r="11" fill={C.gold} />
 

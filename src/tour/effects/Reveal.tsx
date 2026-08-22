@@ -27,10 +27,26 @@ import { useCameraView } from '../../map/useCameraView'
 import { PALETTE } from './art/palette'
 import './effects.css'
 
-/** How long each kind of art stays before it takes itself off, in ms.
- *  Tuned against the beats in content/tour.json: long enough to look at,
- *  short enough that the map is clear again before the next sentence needs
- *  it. Every one of them is cut short in practice by the next cue. */
+/**
+ * FALLBACK constants, in ms — not the primary source of an effect's
+ * lifetime.
+ *
+ * The real hold is `Cue.hold`, derived once at build time
+ * (`scripts/lib/words.mjs`'s `cueTimes`) from the clip's own duration and
+ * the cue that follows: how long a picture actually needs to stay depends on
+ * how long the sentence spends describing it, which these numbers cannot
+ * know. Every effect below takes `hold` as a prop and defaults it to the
+ * matching constant here, so this table is only ever read when no derived
+ * hold reached the effect — the draft-voice pipeline (no rendered audio to
+ * derive from yet) and a test that renders one effect alone.
+ *
+ * They used to be tuned by hand against `content/tour.json`, on the
+ * assumption that "the next cue" would cut each one short in practice. It
+ * did not: watched end to end, the tiger's card closed six seconds into a
+ * fourteen-second sentence still describing it, and the Delhi ring in
+ * particular fell three seconds short of the India Gate cue it was tuned to
+ * meet (see `Here.tsx`). That gap is what `Cue.hold` exists to close.
+ */
 export const HOLD = {
   symbol: 6000,
   sea: 7000,
@@ -40,9 +56,7 @@ export const HOLD = {
   script: 8000,
   counter: 5000,
   flag: 12000,
-  /** The "look down" ring at the end of a flight. Tuned to beat 5: the cue
-   *  fires at 5.72s and India Gate rises at 11.86s, so the ring finishes
-   *  fading exactly as the Gate arrives on the same spot. */
+  /** The "look down" ring at the end of a flight — see `Here.tsx`. */
   here: 5600,
 } as const
 
