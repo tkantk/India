@@ -19,3 +19,4 @@ review/
 # repository only by the owner's GLOBAL gitignore — which does not travel
 # with a clone, so the first person to fork this would commit theirs.
 .claude/
+.idea/
