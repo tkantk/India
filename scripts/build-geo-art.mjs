@@ -33,11 +33,21 @@ if (!existsSync(STATES)) {
 //    simplification than the map itself gets. keep-shapes holds on to the
 //    Andaman and Nicobar islands, which are visibly part of the country a
 //    child is tracing.
+//
+//    STATES is unsimplified since Task 5 (build-map.mjs now simplifies its
+//    own output per ring, in projected space, instead of leaning on
+//    mapshaper here). This file's own simplification target is still a flat
+//    mapshaper percentage — that is fine for a single decorative outline,
+//    which unlike the map itself does not need cartographic fidelity down to
+//    an atoll — but the percentage has to be retuned against the ~50x denser
+//    input: 6% of the old (already 2%-simplified) points produced a 6.5 KB
+//    outline; 6% of the raw ~1,034,000 points produced a 190 KB one. 0.1%
+//    lands back in the same ballpark as before.
 console.log('dissolving')
 execFileSync('npx', [
   'mapshaper', STATES,
   '-dissolve',
-  '-simplify', 'visvalingam', 'percentage=6%', 'keep-shapes',
+  '-simplify', 'visvalingam', 'percentage=0.1%', 'keep-shapes',
   '-o', 'precision=0.001', OUTLINE, 'format=geojson',
 ], { stdio: 'inherit' })
 

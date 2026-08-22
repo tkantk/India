@@ -75,6 +75,32 @@
    `highlightUnionTerritories` needs no second entry point in the API. */
 .map .base path.lit[data-type='ut'] { fill: var(--lit-ut); }
 
+/* Andaman & Nicobar and Lakshadweep: archipelagos of atolls, some narrower
+   than the 1.5px --land-edge border above, which is the same cream as the
+   page and erodes anything smaller than itself down to nothing (measured:
+   deleting Lakshadweep from the data used to change 13 pixels on the whole
+   map). `[data-islands]` is set by hitLayer.ts on exactly the places with no
+   land neighbours — derived, not a second hand-copied list of two slugs.
+
+   The standard cartographic fix for a shape too small for its own line
+   weight is to widen the line, the same way a map draws a river wider than
+   it is — position stays exact, only the width is inflated. --land, not
+   --land-edge: a self-coloured stroke straddling a shape DILATES it instead
+   of eroding it, so the exact ring geometry from build-map.mjs no longer
+   matters as much once painted. And because it is non-scaling-stroke, the 4
+   is CSS pixels at every zoom: the exaggeration shrinks on its own as the
+   camera flies in and the true coastline takes over. */
+.map .base path[data-islands] {
+  stroke: var(--land);
+  stroke-width: 4;
+}
+
+/* Without these, a lit island territory would show its highlight colour only
+   in the interior, ringed by a 4px band still painted in plain --land — the
+   opposite of "this place is lit". */
+.map .base path[data-islands].lit { stroke: var(--lit-state); }
+.map .base path[data-islands].lit[data-type='ut'] { stroke: var(--lit-ut); }
+
 /* Layer 2 — the hit targets. The layer is transparent to taps; its children
    are the targets. In SVG, as in HTML, a child may opt back in to hit testing
    that an ancestor has opted out of. */

@@ -80,10 +80,30 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  */
 export const needsPin = (place: HitPlace) => place.r < FINGERTIP_R
 
+/**
+ * A place with no land neighbours is offshore — exactly Andaman & Nicobar
+ * and Lakshadweep — derived from `geo.json` rather than listed by slug. The
+ * project has already been bitten once by a hand-copied list going stale
+ * silently (`scripts/lib/words.mjs`); this stays correct if the data ever
+ * grows a third archipelago, in the same spirit as `needsPin` above.
+ *
+ * It matters because these two are archipelagos of atolls far smaller than
+ * anything else on the map: `--land-edge`, the default border colour, is the
+ * same cream as the page background, so on a shape narrower than its own
+ * stroke it paints nothing at all (see map.css's `[data-islands]` rules,
+ * which switch these places to a wider, self-coloured stroke instead).
+ */
+export const isIslandTerritory = (place: { neighbours: string[] }) => place.neighbours.length === 0
+
 /** The visible layer's paths: 36 of them, several thousand points each. */
-export function baseMarkup(places: Record<string, { type: string; d: string }>): string {
+export function baseMarkup(
+  places: Record<string, { type: string; d: string; neighbours: string[] }>,
+): string {
   return Object.entries(places)
-    .map(([slug, p]) => `<path data-slug="${slug}" data-type="${p.type}" d="${p.d}"/>`)
+    .map(([slug, p]) => {
+      const islands = isIslandTerritory(p) ? ' data-islands' : ''
+      return `<path data-slug="${slug}" data-type="${p.type}"${islands} d="${p.d}"/>`
+    })
     .join('')
 }
 

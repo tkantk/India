@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import rewind from '@mapbox/geojson-rewind'
 import { geoConicConformal, geoPath, geoBounds } from 'd3-geo'
-import { slugify, classify, shareBorder, boundsOf } from './lib/geo.mjs'
+import { slugify, classify, shareBorder, boundsOf, simplifyRing } from './lib/geo.mjs'
 
 const W = 1000, H = 1100
 const RAW = 'build/map'
@@ -23,14 +23,19 @@ for (const ext of ['shp', 'shx', 'dbf', 'prj', 'cpg']) {
   writeFileSync(out, Buffer.from(await res.arrayBuffer()))
 }
 
-// 2. Clean, then simplify. ORDER MATTERS: "-simplify ... -clean" silently
-//    DISCARDS the simplification and writes an 18 MB file. keep-shapes stops
-//    mapshaper deleting Lakshadweep and the smaller Andaman islands.
-console.log('simplifying')
+// 2. Clean only. Simplification used to happen right here, in mapshaper,
+//    as a single "-simplify visvalingam percentage=2% keep-shapes" over all
+//    36 features in lon/lat space. keep-shapes protects a FEATURE from
+//    disappearing, not its rings, so the one area threshold sized to look
+//    right on Rajasthan treated an atoll's entire coastline as noise:
+//    Lakshadweep shipped 4 of its 35 islands, Andaman & Nicobar 52 of its
+//    220. Simplification now happens per ring, in PROJECTED viewBox units,
+//    after the projection below — see step 6. -clean alone fixes topology
+//    (self-intersections, slivers) without touching point density.
+console.log('cleaning')
 execFileSync('npx', [
   'mapshaper', `${RAW}/Admin2.shp`,
   '-clean',
-  '-simplify', 'visvalingam', 'percentage=2%', 'keep-shapes',
   '-o', 'precision=0.0001', `${RAW}/india-states.geojson`, 'format=geojson',
 ], { stdio: 'inherit' })
 
@@ -81,12 +86,114 @@ const path = geoPath(projection)
 const ringsOf = (geom) =>
   geom.type === 'Polygon' ? geom.coordinates : geom.coordinates.flat()
 
+// 6. Per-ring, screen-space simplification. This is what step 2 used to do in
+//    mapshaper, in lon/lat degrees, once, over every feature; it now runs
+//    here, in the projected viewBox coordinates every path actually ships
+//    in, the same way build-hitlayer.mjs already simplifies the (much
+//    coarser) hit geometry.
+//
+//    A single ERROR TOLERANCE in screen-space units, rather than mapshaper's
+//    area PERCENTAGE, is what makes this scale-fair: a wobble small enough to
+//    be invisible on Rajasthan (0.3 units is 0.19px at the worst-case home
+//    view — see build-hitlayer.mjs's TARGET_PIN_R comment for that 0.462
+//    px/unit figure) is nearly the whole extent of an atoll, so the same
+//    tolerance compresses a big state hard and barely touches a tiny one,
+//    instead of erasing it.
+const SIMPLIFY_ERROR = 0.3
+// A pure error tolerance can still flatten a ring smaller than the tolerance
+// itself down to its two furthest-apart points — a zero-area line, which is
+// worse than the three-point triangles this task exists to fix, and would
+// stay a line at any camera zoom (Task 6+ flies to every place, including
+// these). This floor guarantees every ring keeps enough points to still read
+// as a shape once the camera arrives, at the cost of very slightly
+// undersimplifying the smallest islands.
+const MIN_RING_POINTS = 6
+
+// segDist2, rdp and simplifyRing (the closed-ring RDP primitive) live in
+// lib/geo.mjs now — build-hitlayer.mjs needs the identical logic for its own
+// point-budget simplification, and two copies of a recursive geometry
+// algorithm is exactly the kind of thing that silently drifts apart under a
+// future tweak.
+
+/** simplifyRing at a stated error, except it never goes below `minPoints`
+ *  (clamped to the ring's own original size). Reaching for the floor only
+ *  ever happens on rings small enough that `capEps` alone would flatten them
+ *  — real states never come close to it. */
+function simplifyRingToError(ring, capEps, minPoints) {
+  if (ring.length < 4) return ring
+  const floor = Math.min(minPoints, ring.length)
+  const atCap = simplifyRing(ring, capEps)
+  if (atCap.length >= floor) return atCap
+  let lo = 0, hi = capEps, best = ring
+  for (let i = 0; i < 20; i++) {
+    const eps = (lo + hi) / 2
+    const candidate = simplifyRing(ring, eps)
+    if (candidate.length >= floor) { best = candidate; lo = eps } else { hi = eps }
+  }
+  return best
+}
+
+const round = (v, decimals) => {
+  const f = 10 ** decimals
+  return Math.round(v * f) / f
+}
+
+/**
+ * 1 decimal place, same rounding build-hitlayer.mjs uses for its own paths:
+ * enough precision that no join is visibly off, far more compact than full
+ * float precision — for a ring the size of a state.
+ *
+ * For a ring smaller than that, 1 decimal is not a compactness choice, it is
+ * data loss: an atoll can be a few hundredths of a unit across after
+ * projection, and rounding every vertex to the nearest 0.1 collapses its
+ * narrow axis to exactly 0 — erasing the very ring `simplifyRingToError`'s
+ * point floor just fought to keep. So precision is per-ring, widened just
+ * enough that the ring's own narrowest axis still rounds to something
+ * nonzero, capped at 4 decimals as a backstop against pathological input.
+ */
+function precisionFor(ring) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+  for (const [x, y] of ring) {
+    if (x < x0) x0 = x
+    if (x > x1) x1 = x
+    if (y < y0) y0 = y
+    if (y > y1) y1 = y
+  }
+  // Rounding the DELTA is not the same as the delta of the ROUNDINGS: a raw
+  // gap of 0.08 rounds to "0.1" (looks fine) even though its own endpoints —
+  // say 963.96 and 964.04 — both round to 964.0 independently, which is what
+  // toPath actually does to every vertex. So this checks the thing that
+  // actually happens: round each extreme, then see if either axis collapsed.
+  let decimals = 1
+  while (decimals < 4 &&
+    (round(x1, decimals) - round(x0, decimals) <= 0 || round(y1, decimals) - round(y0, decimals) <= 0)
+  ) decimals++
+  return decimals
+}
+
+// toFixed + trim, not String(round(...)): dividing by a power of ten and
+// letting String() render the result reliably introduces float noise once
+// decimals goes past 1 (e.g. "0.06999999999999999"), which toFixed avoids.
+const fmtNum = (v, decimals) => {
+  const s = v.toFixed(decimals)
+  return s.includes('.') ? s.replace(/0+$/, '').replace(/\.$/, '') : s
+}
+
+const toPath = (rings) =>
+  rings.map((r) => {
+    const decimals = precisionFor(r)
+    return `M${r.map(([x, y]) => `${fmtNum(x, decimals)},${fmtNum(y, decimals)}`).join('L')}Z`
+  }).join('')
+
 const places = {}
 for (const f of fc.features) {
   const name = f.properties.ST_NM
   const slug = slugify(name)
-  // 1 decimal place: 345 KB of path data becomes 262 KB, with no visible change.
-  const d = path(f).replace(/(-?\d+\.\d)\d+/g, '$1')
+  const rings = ringsOf(f.geometry)
+    .map((ring) => ring.map(([lon, lat]) => projection([lon, lat])).filter(Boolean))
+    .filter((r) => r.length >= 3)
+    .map((r) => simplifyRingToError(r, SIMPLIFY_ERROR, MIN_RING_POINTS))
+  const d = toPath(rings)
   places[slug] = {
     name,
     type: classify(name),
@@ -116,3 +223,9 @@ writeFileSync('src/data/geo.json',
 const kb = (JSON.stringify(places).length / 1024).toFixed(0)
 console.log(`wrote src/data/geo.json — ${slugs.length} places, ${kb} KB`)
 console.log(`  rajasthan neighbours: ${places.rajasthan.neighbours.join(', ')}`)
+for (const slug of ['lakshadweep', 'andaman-nicobar']) {
+  const p = places[slug]
+  const rings = p.d.split('M').filter((s) => s.trim())
+  const points = (p.d.match(/,/g) ?? []).length
+  console.log(`  ${slug}: ${rings.length} rings, ${points} points`)
+}

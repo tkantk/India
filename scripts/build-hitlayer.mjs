@@ -22,6 +22,7 @@
  *   { places: { [slug]: { d, pin: [x, y], r: number, pinR: number } } }
  */
 import { readFileSync, writeFileSync } from 'node:fs'
+import { segDist2, simplifyRing } from './lib/geo.mjs'
 
 /** Points per place, across all its rings. 36 x ~100 x ~12 chars is ~43 KB,
  *  a sixth of the visible geometry. At this density the largest state's
@@ -82,55 +83,9 @@ const bboxOf = (ring) => {
   return [x0, y0, x1 - x0, y1 - y0]
 }
 
-/** Squared distance from p to the segment ab. Squared, so the inner loop of
- *  both RDP and the pole search stays free of sqrt. */
-function segDist2([px, py], [ax, ay], [bx, by]) {
-  const dx = bx - ax, dy = by - ay
-  const len = dx * dx + dy * dy
-  let t = len === 0 ? 0 : ((px - ax) * dx + (py - ay) * dy) / len
-  t = t < 0 ? 0 : t > 1 ? 1 : t
-  const qx = ax + t * dx - px, qy = ay + t * dy - py
-  return qx * qx + qy * qy
-}
-
-// ------------------------------------------------- Ramer-Douglas-Peucker
-
-/** RDP over an open polyline. Both endpoints are always kept. */
-function rdp(pts, eps2) {
-  if (pts.length < 3) return pts.slice()
-  const a = pts[0], b = pts[pts.length - 1]
-  let idx = -1, worst = -1
-  for (let i = 1; i < pts.length - 1; i++) {
-    const d = segDist2(pts[i], a, b)
-    if (d > worst) { worst = d; idx = i }
-  }
-  if (worst <= eps2) return [a, b]
-  const left = rdp(pts.slice(0, idx + 1), eps2)
-  const right = rdp(pts.slice(idx), eps2)
-  return left.slice(0, -1).concat(right)
-}
-
-/**
- * RDP over a closed ring. A ring has no endpoints to anchor, so it is cut at
- * its first point and at the point furthest from it, and the two halves are
- * simplified separately. Running RDP straight along the ring as if it were an
- * open line collapses it towards a single spike instead.
- */
-function simplifyRing(ring, eps) {
-  if (ring.length < 4) return ring
-  let far = 0, best = -1
-  for (let i = 1; i < ring.length; i++) {
-    const dx = ring[i][0] - ring[0][0], dy = ring[i][1] - ring[0][1]
-    const d = dx * dx + dy * dy
-    if (d > best) { best = d; far = i }
-  }
-  const eps2 = eps * eps
-  const head = rdp(ring.slice(0, far + 1), eps2)
-  const tail = rdp(ring.slice(far).concat([ring[0]]), eps2)
-  // Drop each half's trailing anchor: `head` ends where `tail` begins, and
-  // `tail` ends back at ring[0], which Z re-supplies.
-  return head.slice(0, -1).concat(tail.slice(0, -1))
-}
+// segDist2 and simplifyRing (the closed-ring RDP primitive, used below by
+// simplifyPlace) now live in lib/geo.mjs, shared with build-map.mjs's own
+// per-ring simplification — see the import at the top of this file.
 
 /**
  * Simplify every ring of one place under a shared point budget, by binary
