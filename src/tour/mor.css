@@ -1,0 +1,76 @@
+/* Mor, and the one thing about him that is not a drawing: where he stands.
+
+   HE MOUNTS INSIDE `.tour-stage` (src/tour/tourStage.css), as its last child
+   — after `.tour-overlay`, so he stands in front of the art he is presenting
+   rather than behind it, and inside the same positioned box as the map, so
+   "the bottom corner" means the bottom corner of the map a child is looking
+   at rather than of some outer frame. Anything else that gives him a
+   positioned ancestor the size of the map will do; nothing else will. */
+
+.mor {
+  position: absolute;
+
+  /* Bottom RIGHT, and the corner is not a coin toss. map.css puts the CC BY
+     credit for the boundaries at bottom LEFT of the same box, and a credit
+     with a peacock standing on it is not a credit. The right-hand corner is
+     also open water on this map — the Bay of Bengal — so he is not covering
+     a state a child might be reaching for. */
+  right: 8px;
+
+  /* Clear of the control bar, which is `position: fixed; bottom: 0` and
+     therefore lies OVER the bottom of this box rather than under it. The bar
+     is 8px + one --tap button + its own bottom padding, so about 120px; this
+     is that plus a margin, expressed in --tap so it tracks the tap target if
+     that is ever re-tuned rather than quietly going stale.
+
+     `--mor-floor` is the knob: Task 10's play button is centred at the
+     bottom and at least 2 x --tap, and on a screen too narrow for the two of
+     them side by side it is the play button that owns the middle and Mor who
+     moves up. Raising this is how. */
+  bottom: var(--mor-floor, calc(var(--tap) + 40px));
+
+  /* Small. He is a guide, not a mascot parked on top of the country: about a
+     fifth of the short side of an iPad, and never bigger than a thumb and a
+     half however large the screen gets. */
+  width: min(21vmin, 136px);
+  aspect-ratio: 1;
+
+  /* He grows on his own feet when he talks and when he shows, so the extra
+     size goes upwards into empty sea instead of sideways into the controls. */
+  transform-origin: bottom center;
+
+  /* Scenery, never a target. A child reaching for Tamil Nadu must not get a
+     peacock, and the map's own snap-to-nearest (MapStage) only works if the
+     tap reaches the stage underneath him. */
+  pointer-events: none;
+
+  /* Above the map and above the tour art, and below the control bar, which
+     is z-index 20 in the root stacking context. `.tour-stage` sets no
+     z-index of its own, so these two are compared directly and the bar wins
+     — a second line of defence behind the `bottom` above. */
+  z-index: 2;
+}
+
+.mor__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  /* He faces LEFT, into the country he is showing you.
+
+     The peacock is drawn facing right — beat 8's reveal sits in the middle
+     of the map, where either way is inward. Mor does not: he stands in the
+     right-hand corner, and drawn as he comes he would spend the whole tour
+     looking out at the edge of the screen with his back to India. Mirroring
+     is a transform, so it is still the same bird, shape for shape, and it
+     tucks the folded train into the corner behind him. The open fan is
+     symmetric, so `showing` is unchanged by it, and the drop-shadow below
+     has no sideways offset to flip. */
+  transform: scaleX(-1);
+  /* On the <svg> ROOT, never on a child: an SVG child cannot own a
+     compositor layer in WebKit's legacy engine, so a drop-shadow inside
+     would be a software three-pass blur. Same rule as .cue-art in
+     effects.css and the map's glow layer. It is what lifts a flat bird off a
+     flat map. */
+  filter: drop-shadow(0 4px 10px rgba(18, 36, 28, 0.22));
+}

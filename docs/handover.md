@@ -92,6 +92,24 @@ $22, first month $11.
 
 ---
 
+## Rulings that should not be re-opened
+
+**The tour deliberately has no ambient bed.** The engine's ducking machinery
+(`DUCK`, `SETTLE_MS`, the settle timer) has no caller in the app and that is
+correct, not an oversight — it was raised three times during Plan 2. The Grand
+Tour is about the whole country, and every bed sourced so far is wrong for
+that: `forest` is Bourne Woods in Surrey, `ocean` is Brazil. A wrong-country
+bed under a tour of India is worse than silence. Ambience is authored per
+place (`rajasthan.json` carries `desert`) and belongs to the plan that builds
+the state screen, where the machinery is used and already tested.
+
+**Small states get generous pins at the cost of their neighbours' edges.** A
+child who deliberately taps tiny Sikkim and gets nothing is a worse failure
+than one grazing the far edge of West Bengal and getting Sikkim, because
+nobody deliberately taps a border sliver. Measured: the deepest intrusion
+reaches 58% of the victim's body radius at worst and nothing reaches an inner
+fifth.
+
 ## Parked, with rulings
 
 Real but deliberately not fixed:

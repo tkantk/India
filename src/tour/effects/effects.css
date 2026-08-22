@@ -1,0 +1,133 @@
+/* The tour art: what appears when the narrator names something.
+
+   THE ART IS NEVER A TAP TARGET. A child reaching for Kerala must not hit a
+   tiger, and beat 14's "tap any state on the map" has to be true for every
+   second of the tour, not only the seconds when nothing is being drawn.
+
+   Most of this is inside `.tour-overlay`, which is `pointer-events: none`
+   already — and that used to be the whole argument. It is not enough. Task
+   10's look-down marker answers a CAMERA verb, which the cue registry has no
+   picture for, so it is drawn by the sequencer as a child of the stage
+   instead: same classes, outside that slot, and therefore `pointer-events:
+   auto` over the whole map for the six seconds it is up. Measured in Chrome,
+   `elementFromPoint` over Delhi returned `svg.cue-map` and not the state
+   underneath it.
+
+   So the two wrappers that fill the stage are inert THEMSELVES, wherever
+   they are mounted. A rule about where a thing must live is a rule somebody
+   will break; this one cannot be. */
+
+/* The wrapper `overlays.tsx` puts round every effect. Fills the stage so a
+   figure can be centred in it and a map layer can register against it. */
+.cue {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* A drawing on a card, in the middle of the map. The grid matters: the
+   counter and the greetings card are narrower than this box, and without it
+   they sit against its left edge instead of in the middle of the map. */
+.cue-figure {
+  display: grid;
+  place-items: center;
+  width: min(46vmin, 380px);
+}
+
+.cue-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* On the <svg> ROOT, never on a child: an SVG child cannot own a compositor
+     layer in WebKit's legacy engine, so a drop-shadow inside would be a
+     software three-pass blur. See map.css for the long version. */
+  filter: drop-shadow(0 5px 14px rgba(18, 36, 28, 0.22));
+}
+
+/* Art drawn in the map's own viewBox. `.tour-overlay` and `.map` are the same
+   box, and both svgs letterbox the same viewBox the same way, so this lands
+   on the geography underneath it.
+
+   It fills the whole stage, so this is the one that swallows a tap when it is
+   mounted anywhere but the overlay. See the note at the top of this file. */
+.cue-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cue-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------- counter */
+
+/* The number is the whole point, so it is HTML text: real font fallback, real
+   scaling, and nothing else in the subtree for it to be confused with. */
+.cue-counter {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(34vmin, 260px);
+  height: min(34vmin, 260px);
+}
+
+.cue-counter__disc {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 5px 14px rgba(18, 36, 28, 0.22));
+}
+
+.cue-counter__n {
+  position: relative;
+  color: var(--ink);
+  font-size: min(18vmin, 132px);
+  font-weight: 800;
+  line-height: 1;
+  /* The digits must not shuffle sideways as 8 becomes 18 becomes 28. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------- script */
+
+.cue-script {
+  display: grid;
+  gap: 0.5em;
+  padding: 0.7em 1.1em;
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: 0 5px 14px rgba(18, 36, 28, 0.22);
+  text-align: center;
+}
+
+.cue-greeting {
+  padding: 0.15em 0.45em;
+  border-radius: 12px;
+  /* The two that are not being said fall back rather than disappear: the beat
+     is about there being MORE than one way to say hello. */
+  opacity: 0.38;
+}
+
+.cue-greeting.is-now {
+  opacity: 1;
+  background: var(--highlight);
+}
+
+.cue-greeting__native {
+  display: block;
+  font-size: min(9vmin, 62px);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.cue-greeting__roman {
+  display: block;
+  font-size: min(3.4vmin, 24px);
+  color: var(--deep);
+}

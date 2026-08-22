@@ -1,0 +1,143 @@
+/* The map's four layers. See MapStage.tsx for why there are four of them.
+   Every rule here is scoped under .map: `base`, `hit`, `glow` and `stage` are
+   the names the architecture uses, and they are far too general to be loose
+   in a global stylesheet. */
+
+.map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  /* The map's own paper-and-ink. base.css keeps the app palette; these are
+     only ever used here. */
+  --land: #d9cfae;
+  --land-edge: var(--paper);
+  --lit-state: var(--saffron);
+  --lit-ut: var(--gold);
+}
+
+/* Layer 0 — the camera. An HTML box, and the only element in the map that is
+   ever transformed. `will-change: transform` is added and removed around the
+   flight by Task 6 rather than set here: a full-screen composited layer costs
+   about 12.6 MB on a 2048x1536 iPad, and WebKit drops tiles under memory
+   pressure, which a child sees as white flashes. */
+.map .stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+}
+
+/* All three layers share the viewBox, so they line up exactly. */
+.map .stage > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Layer 1 — the visible art.
+
+   stroke-width is in USER units, so without vector-effect it scales with the
+   viewBox: the camera's 10.4x flight to Delhi renders this 1.5-unit border at
+   about 11 CSS pixels, and a map where every state is the same fill becomes a
+   beige field with cream worms on it — at exactly the moment the child is
+   meant to be looking at one state.
+
+   non-scaling-stroke keeps it 1.5 CSS pixels at any zoom. The stroke does pop
+   from 11 px to 1.5 px at the commit, but that is a single frame, and it is
+   the same frame in which the whole map re-rasterises from the composited
+   layer's soft copy to crisp: borders pulling thin reads as coming into
+   focus, not as a glitch. The fat border, by contrast, would persist for the
+   whole time the child spends looking at the place.
+
+   The cost is a scratch Path rebuild, which WebKit does only when the CTM
+   changes — and the flight is composited, so the SVG's own CTM does not move
+   during it. The rebuild lands once, in the frame already budgeted as the
+   expensive one. If Safari disagrees on the iPad pass (Task 11), deleting the
+   two vector-effect declarations in this file is the whole revert. */
+.map .base path {
+  fill: var(--land);
+  stroke: var(--land-edge);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  /* fill, and nothing else. opacity on an SVG child is not composited in
+     WebKit's legacy engine either — it is a software repaint exactly like
+     fill, so the usual "animate opacity, it's free" advice does not apply. */
+  transition: fill 220ms ease-out;
+}
+
+.map .base path.lit { fill: var(--lit-state); }
+
+/* The union territories light in a second colour, straight off the data, so
+   `highlightUnionTerritories` needs no second entry point in the API. */
+.map .base path.lit[data-type='ut'] { fill: var(--lit-ut); }
+
+/* Layer 2 — the hit targets. The layer is transparent to taps; its children
+   are the targets. In SVG, as in HTML, a child may opt back in to hit testing
+   that an ancestor has opted out of. */
+.map .hit {
+  pointer-events: none;
+  /* Removes the 350 ms tap delay at every zoom scale, and stops a
+     double-tap being read as a zoom. */
+  touch-action: manipulation;
+}
+
+.map .hit > * { pointer-events: fill; }
+
+/* Layer 3 — the glow around whichever state is lit.
+
+   The filter goes on the <svg> ROOT, not on the path inside it, and this is
+   the whole point of the layer existing. An SVG child is a
+   LegacyRenderSVGModelObject, which derives from RenderElement and can never
+   own a compositor layer — so a drop-shadow on the path would be run by
+   WebKit's software filter path: exactly the CPU three-pass box blur this
+   architecture exists to avoid. The <svg> root is a replaced element, a
+   RenderLayerModelObject, and can composite the blur instead.
+
+   The filter is attached by the `on` class rather than left in place: a
+   filter forces that composited layer into existence, and a full-screen one
+   costs about 12.6 MB on a 2048x1536 iPad. useMapNodes adds the class when a
+   state starts glowing and removes it when the glow goes away, so the layer
+   exists only while it is doing something. */
+.map .glow { pointer-events: none; }
+
+.map .glow.on {
+  /* drop-shadow must be the LAST filter operation or WebKit refuses to
+     composite it. Here it is the only one, and it must stay that way. */
+  filter: drop-shadow(0 0 7px var(--lit-state));
+}
+
+.map .glow > path {
+  fill: none;
+  stroke: var(--lit-state);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  /* Same reason as the base layer: at the flight's 10.4x this would be a
+     22-pixel band of saffron around a state, which is not a glow. */
+  vector-effect: non-scaling-stroke;
+}
+
+/* The DataMeet boundaries are CC BY 4.0, which obliges us to credit them
+   where the work is seen. Small, quiet, and never behind an interaction.
+   #3d4a41 on --paper is 8.8:1.
+
+   Whoever lays the map out must leave the bottom-left corner clear of the
+   fixed control bar — a credit hidden behind a toolbar is not a credit.
+   `--credit-floor` is how: the tour sets it to the height of the bar that
+   lies over this box (src/tour/grandTour.css). The fallback keeps the map
+   honest anywhere there is no bar at all — the contact sheets, a test. */
+.map .credit {
+  position: absolute;
+  left: 0;
+  bottom: var(--credit-floor, 0px);
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #3d4a41;
+  /* Text, not a target: it must never swallow a tap meant for Kerala. */
+  pointer-events: none;
+}

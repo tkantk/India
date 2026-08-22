@@ -1,0 +1,52 @@
+/* The fix sheet's own furniture — same idea as sheet.css, bigger cells,
+   because these two pictures are about detail rather than about whether a
+   symbol reads across the room. */
+html, body, #root { position: static; height: auto; overflow: visible; }
+
+body {
+  margin: 0;
+  padding: 20px 24px 26px;
+  background: #efe9dc;
+  font-size: 15px;
+}
+
+h1 { margin: 0 0 4px; font-size: 22px; }
+.note { margin: 0 0 16px; max-width: 92ch; font-size: 14px; color: #3d4a41; }
+code { font-size: 13px; }
+
+.grid { display: grid; gap: 20px; }
+.grid--three { grid-template-columns: repeat(3, 500px); }
+.grid--one { grid-template-columns: 720px; }
+
+.cell { margin: 0; }
+
+/* Drawn at about the size of the map on an iPad, then scaled down — so the
+   art is rendered at the size it really ships at. */
+.stage-box {
+  width: 500px;
+  height: 550px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 1px 4px rgba(18, 36, 28, 0.25);
+}
+
+.stage-box .tour-stage {
+  width: 720px;
+  height: 792px;
+  transform: scale(0.6944);
+  transform-origin: top left;
+}
+
+/* The Delhi cell is shown at full size: it is one picture, and the point of
+   it is whether the river lands on the right ground. */
+.stage-box--big { width: 720px; height: 792px; }
+.stage-box--big .tour-stage { transform: none; }
+
+figcaption {
+  padding-top: 6px;
+  font-size: 14px;
+  color: #3d4a41;
+}
+
+figcaption b { color: #12241c; }

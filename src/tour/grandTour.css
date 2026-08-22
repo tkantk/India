@@ -1,0 +1,207 @@
+/* The tour, as a child sees it: the map, the sentence being spoken, a peacock
+   standing at the edge of the country, and one enormous button.
+
+   Everything here is positioned against `.tour-stage`, which is the same box
+   as the map — so "the bottom corner" means the bottom corner of the country
+   a child is looking at, not of some outer frame. */
+
+.india {
+  /* The button is 2 x --tap, the size the plan promises: 208px of gold that a
+     six-year-old cannot miss. --tap is 2cm on a 264ppi iPad, four times the
+     adult recommendation, so twice that is a target for a hand that has not
+     learned to aim yet. */
+  --play: calc(var(--tap) * 2);
+
+  /* How much of the fixed control bar lies OVER this box.
+
+     `.controls` is fixed to the VIEWPORT and `--bar` is its full height, but
+     body carries the bottom safe-area inset as padding, so the stage already
+     stops short of the viewport by exactly that much. Subtracting it is the
+     difference between clearing the bar and clearing it plus a home
+     indicator's worth of nothing. */
+  --bar-over: calc(var(--bar) - env(safe-area-inset-bottom, 0px));
+
+  /* The corner Mor stands in, reserved so the sentence does not run under
+     him. `mor.css` puts him at `right: 8px`, `min(21vmin, 136px)` wide, and
+     he grows to 1.34x about his own feet while he talks. */
+  --mor-lane: calc(8px + 1.34 * min(21vmin, 136px));
+
+  /* Mor's floor. `mor.css` ships this knob for exactly this moment: the play
+     button did not exist when he was drawn, and now it does. Clear of the
+     bar, which is all he needs on the iPad this is built for — measured at
+     31-38px there, with the button nowhere near him. */
+  --mor-floor: calc(var(--bar-over) + 24px);
+
+  /* The CC BY credit for the boundaries, lifted off the floor for the same
+     reason. `map.css` puts it bottom-left and says out loud that whoever
+     lays the map out must keep it clear of the fixed bar: a licence credit
+     hidden behind a toolbar is not a credit. */
+  --credit-floor: calc(var(--bar-over) + 4px);
+
+  /* And the strip it occupies, which everything else has to start above.
+     One line of 13px/1.3 plus its padding; a phone wraps it to two, and the
+     play button is centred over exactly the words it wraps onto. A credit
+     with a big gold button sitting on it is no better than one behind a
+     toolbar. */
+  --credit-lane: 30px;
+
+  /* The first clear line above the bar and the credit — where the button,
+     the sentence and (on a phone) Mor all start from. */
+  --floor: calc(var(--bar-over) + var(--credit-lane));
+}
+
+/* ------------------------------------------------------------ the sentence */
+
+/* The narrated line, with the word being spoken lit (see ReadAlong). It sits
+   over the map rather than in the flow above or below it, and that is not a
+   stylistic choice: the beats run from 20 to 43 words, so a band in the flow
+   would change height between sentences, the map would rescale to fit what
+   was left, and every piece of map-registered art — the Ganga, the Himalaya,
+   the three seas — would step sideways with it, four times a minute. */
+.say {
+  position: absolute;
+  left: 0;
+  /* Clear of Mor: he is in the same corner, and the peacock must not stand on
+     the words a child is trying to read. */
+  right: calc(var(--mor-lane) + 12px);
+  bottom: calc(var(--floor) + 4px);
+
+  padding: 10px 16px;
+  border-radius: 16px;
+
+  /* SEE-THROUGH ON PURPOSE, and the number is chosen rather than picked.
+
+     The band lies over the southern end of the map, which is where beat 12's
+     three seas are drawn and where the Ganga reaches the water. At full
+     opacity, "underneath them both is the Indian Ocean" is narrated over a
+     white lid with the Indian Ocean behind it — which is exactly the thing
+     watching the tour end to end was for.
+
+     The alternative, reserving the space and shrinking the map, costs more
+     than it buys: every state and every generated pin is sized in viewBox
+     units, so a third off the map is a third off every tap target Task 5
+     measured.
+
+     At 0.72 the geography reads through and the contrast still does not
+     move. --ink on the blend, measured: 15.3:1 over bare paper, 13.9:1 over
+     the map's beige land, 12.0:1 over a lit saffron state, 14.2:1 over the
+     pale water and 10.7:1 over the Ganga's deep blue, which is the worst
+     case anywhere on this map. The word being spoken sits on --highlight at
+     13.4:1 whatever is underneath, because that one is opaque. All of them
+     are past the 7:1 AAA target the rest of the app is held to. */
+  background: rgba(253, 248, 239, 0.72);
+  box-shadow: 0 4px 14px rgba(18, 36, 28, 0.18);
+
+  /* Above the tour art, which is a `z-index: auto` sibling — a caption that
+     the tiger could cover would be no caption at all. Still below Mor (2) and
+     the play button (3). */
+  z-index: 1;
+
+  /* Text over a map, never a target: a child reaching for Kerala through the
+     words must reach Kerala. */
+  pointer-events: none;
+}
+
+/* Nothing is being spoken. The element stays in the tree — it carries
+   `data-beat`, which is how the frame-strip probe and anyone with devtools
+   open knows which of the fourteen is in the air — but it shows nothing. */
+.say[data-quiet] { display: none; }
+
+/* ----------------------------------------------------------- the front row */
+
+/* Mor and the play button, in one box the size of the map. Two reasons: it
+   gives Mor the positioned ancestor `mor.css` asks for, and it gives the pair
+   of them somewhere to carry `data-idle` — which is how his floor can rise
+   over the button while the button is there and drop back while it is not. */
+.tour-front {
+  position: absolute;
+  inset: 0;
+  /* Scenery, except for the one thing in it that is a target. */
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------- the button */
+
+/* One enormous button with a word on it. Compound selector so it beats
+   `.tap`'s `background: none` and `min-width: var(--tap)` in base.css
+   whichever order a bundler happens to concatenate the two files in. */
+.tap.play-big {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--floor) + 8px);
+  transform: translateX(-50%);
+
+  width: var(--play);
+  height: var(--play);
+  min-width: var(--play);
+  min-height: var(--play);
+  border-radius: 50%;
+
+  /* --ink on --gold is ~11.3:1, past the 7:1 AAA target. (--ink on --saffron
+     is only ~6.2:1, which is why the carry-on button in Controls.css is gold
+     too.) */
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(18, 36, 28, 0.32);
+
+  /* In front of Mor, who is scenery. */
+  z-index: 3;
+  /* .tour-front is inert so a tap can reach the map through it; this is the
+     one thing inside it that a child is meant to hit. */
+  pointer-events: auto;
+}
+
+.tap.play-big:active {
+  filter: brightness(0.94);
+}
+
+.play-big__icon {
+  display: block;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.play-big__label {
+  display: block;
+  padding: 0 10px;
+  font-size: var(--text);
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- on a phone */
+
+/* The iPad is the machine this is built for, and on it everything above sits
+   where it was drawn to sit. A 390px phone is the hard case: the control bar
+   has already wrapped to two rows (Controls.css), the play button owns what
+   is left of the middle, and the sentence has nowhere near enough room beside
+   Mor. Two things move. */
+@media (max-width: 600px) {
+  /* The credit wraps to two lines in this width. */
+  .india { --credit-lane: 56px; }
+
+  /* Mor is about 20px wider than the gap beside the 208px button, so he steps
+     up OVER it. Shrinking him instead would be shrinking the guide to fit the
+     furniture, and shrinking the button is not on the table — 2 x --tap is
+     the whole point of it.
+
+     Only while the button is there. A tour that is playing has no play button
+     in the middle of the map, and a Mor left up at the button's height would
+     put his head into the read-along instead — measured on a 375px phone,
+     86 x 21 px of it. */
+  .tour-front[data-idle] {
+    --mor-floor: calc(var(--floor) + 8px + var(--play) + 16px);
+  }
+
+  /* To the top, and full width. A 43-word beat in the 200px left beside Mor
+     would be eleven lines of text; across the top of a phone it is eight, and
+     the top of a phone is the one part of this screen with nothing else in
+     it. */
+  .say {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    border-radius: 0 0 16px 16px;
+  }
+}

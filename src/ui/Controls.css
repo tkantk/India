@@ -1,0 +1,148 @@
+/* Controls: the five things a child can always reach, and never inside a
+   menu. Fixed to the viewport (not the document flow), so it cannot be
+   scrolled away, and padded against the safe-area insets directly, since a
+   fixed element sits outside body's own padding box. */
+
+/* HOW MANY ROWS, AND THEREFORE HOW TALL.
+
+   Five 104px targets plus the 56px gutter need 592px of viewport. A 390px
+   portrait phone is 200px short of that, and measured in Chrome the bar
+   overflowed by 73px with Play and Home cut off the ends — the two most
+   important buttons on the screen, unreachable, on the device most likely to
+   be handed to a child in a car.
+
+   The targets do not shrink. 104px is 2cm on a 264ppi iPad, the Nielsen
+   Norman figure for under-nines and four times the adult recommendation; a
+   bar that fits by making it 70px has solved the wrong problem. So the bar
+   wraps, and every extra row makes it taller.
+
+   `--bar` is that height, published on :root because things laid out over the
+   bottom of the screen — Mor, the play button, the read-along, the map's
+   licence credit — all have to leave room for it, and none of them can
+   measure a fixed element from CSS. */
+:root {
+  --bar-rows: 1;
+  --bar-gap: 4px;
+  --bar: calc(
+    8px + var(--bar-rows) * var(--tap)
+        + (var(--bar-rows) - 1) * var(--bar-gap)
+        + max(8px, env(safe-area-inset-bottom))
+  );
+}
+
+/* Below about 600px the five no longer fit on one line. Three across, then
+   two: three 104px targets plus two gaps need 316px of the 334px a 390px
+   phone leaves inside the gutter, and still fit a 375px one. */
+@media (max-width: 600px) {
+  :root {
+    --bar-rows: 2;
+    --bar-gap: 2px;
+  }
+}
+
+/* Narrower than about 372px and not even three fit, so it becomes 2 + 2 + 1.
+   Nothing is cut off and nothing scrolls; the bar is simply taller again. */
+@media (max-width: 371px) {
+  :root { --bar-rows: 3; }
+}
+
+.controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--bar-gap);
+
+  background: var(--deep);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.18);
+
+  padding-top: 8px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+
+/* Compound selectors (scoped under .controls) so these always win over
+   .tap's single-class rules in base.css, regardless of which stylesheet a
+   bundler happens to concatenate first. */
+.controls .control {
+  flex: 1 1 0;
+  max-width: 160px;
+  border-radius: 18px;
+  /* --paper on --deep: ~11.5:1, comfortably past the 7:1 AAA target. */
+  color: var(--paper);
+}
+
+.controls .control:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* The wrap itself. Three bases plus two gaps make exactly one row, so where
+   the line breaks is decided here rather than by whatever the labels happen
+   to measure this week. */
+@media (max-width: 600px) {
+  .controls { flex-wrap: wrap; }
+
+  .controls .control {
+    flex: 1 0 calc((100% - 2 * var(--bar-gap)) / 3);
+    max-width: none;
+  }
+
+  /* Row one is play/pause, say-it-again and home; row two is slower and
+     sound. The DOM order is unchanged — these three lines only decide which
+     line each button falls on, and both orders read the same aloud.
+
+     Which three go on top is not arbitrary: play/pause and again are what a
+     child touches during the tour, and home is the way out, so all three stay
+     on the row nearest the thumb. Slower and sound are set once and left. */
+  .controls .control:nth-child(3) { order: 4; }  /* slower */
+  .controls .control:nth-child(4) { order: 5; }  /* sound */
+  .controls .control:nth-child(5) { order: 3; }  /* home */
+}
+
+.controls .control__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.controls .control__icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+/* The word every control carries. It is text a child reads, so it gets the
+   same 24px / AAA treatment as everywhere else, not a shrunk-down caption
+   — wrapping onto a second line is fine, an unreadably small label is not. */
+.controls .control__label {
+  font-size: var(--text);
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Stuck: the bar replaces itself with one full-width way out. It always
+   carries the .controls class alongside .controls--stuck, so it already has
+   .controls's safe-area padding — nothing stuck-specific to add here yet. */
+.controls .carry-on {
+  width: 100%;
+  min-height: var(--tap);
+  border-radius: 18px;
+  /* --ink on --gold: ~11.3:1. (--ink on --saffron is only ~6.2:1 — short of
+     the 7:1 AAA target — which is why this button is gold, not saffron.) */
+  background: var(--gold);
+  color: var(--ink);
+  font-size: var(--text);
+  font-weight: 700;
+}
+
+.controls .carry-on:active {
+  filter: brightness(0.92);
+}

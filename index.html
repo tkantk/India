@@ -2,8 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!-- user-scalable=no is deliberately absent: Safari has ignored it since
+         iOS 10. Page pinch-zoom is blocked in JS via the gesture events. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- black-translucent has no effect without web-app-capable, and requires
+         viewport-fit=cover plus env(safe-area-inset-*) or it overlaps content. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Namaste India" />
+    <meta name="theme-color" content="#0b3d2e" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <title>Namaste India</title>
   </head>
   <body>

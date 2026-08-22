@@ -1,0 +1,32 @@
+/* Provisional: gives `.map` (100% x 100% of this) a definite box to fill
+   until Task 9/10 lay `IndiaScreen` out properly, with Mor, the play button
+   and the controls. `.tour-stage` assumes it is the flex-growing child of
+   `.india` — see base.css — which is the one thing that makes this task's
+   job (the map actually visible on screen) true without anticipating a
+   layout that is not this task's to design. */
+.tour-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Where the tour art lands — the same box as the map, so a symbol can be
+   centred on it and a map-registered layer (the outline, the Ganga, the
+   Himalaya, the three seas) can share its viewBox and line up exactly. Never
+   a tap target: a child reaching for Kerala must not hit a tiger. The art's
+   own styles are in src/tour/effects/effects.css. */
+.tour-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+
+  /* The beat-boundary sweep (see `scene` in TourStage.tsx). Opacity on an
+     HTML div is compositable — this is a RenderLayerModelObject, unlike
+     anything inside the SVG below it — so the whole outgoing picture fades
+     on one layer instead of repainting every path in it. */
+  transition: opacity 350ms ease-out;
+}
+
+.tour-overlay[data-sweeping] { opacity: 0; }

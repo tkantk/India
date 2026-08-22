@@ -1,0 +1,137 @@
+:root {
+  /* 2cm on a 264ppi iPad. Nielsen Norman Group's figure for under-nines,
+     four times the adult recommendation. Apple's 44pt is 8.5mm here. */
+  --tap: 104px;
+  /* The system edge back-swipe cannot be intercepted from a web page. */
+  --gutter: 28px;
+  --text: 24px;
+
+  --ink: #12241c;
+  --paper: #fdf8ef;
+  --deep: #0b3d2e;
+  --saffron: #f0851f;
+  --gold: #ffd400;
+  /* Pale gold, for the word being spoken right now. A background box reads
+     calmly next to a page of text; recolouring the ink itself would risk
+     dropping below AAA. --ink on this is ~13.4:1, comfortably past 7:1. */
+  --highlight: #ffe8a3;
+
+  /* The illustration palette — the tour art in src/tour/effects/art.
+     Warm, flat and few, so eleven symbols drawn on eleven different days
+     still look like one set. src/tour/effects/art/palette.ts mirrors every
+     value here (an SVG presentation attribute cannot resolve var() on the
+     iPad's legacy WebKit engine, so the art has to carry literals); a test
+     fails if the two ever drift apart. */
+  --sea: #2b7ba9;         /* deep water: the Ganga, the three seas */
+  --sea-pale: #bfe0ef;    /* shallow water, a pond */
+  --leaf: #3f8f57;        /* foliage */
+  --leaf-deep: #256b3d;
+  --bark: #7a5a3c;        /* trunks, aerial roots, mud */
+  --sand: #e3c98f;        /* the desert */
+  --sand-deep: #c9a45f;
+  --sand-shade: #b08b4a;
+  --stone: #cbb894;       /* monuments, bare rock */
+  --stone-deep: #a08d68;
+  --rose: #ef8fa8;        /* the lotus */
+  --rose-pale: #f9cdd8;
+  --mango: #f7b731;
+  --peacock: #1b6ea8;     /* Mor himself */
+  --peacock-teal: #2a8f8a;
+  --snow: #ffffff;
+
+  /* The flag is the one place the palette does not get a vote: these three
+     are the colours of the Indian national flag, and nothing else. */
+  --flag-saffron: #ff9933;
+  --flag-green: #138808;
+  --flag-navy: #000080;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  /* This, not overscroll-behavior, is what stops the rubber-band bounce.
+     WebKit's overscroll-behavior has no effect on a container with no
+     scrollable overflow, which is exactly this page. */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 var(--text)/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+
+  padding:
+    max(0px, env(safe-area-inset-top))
+    max(var(--gutter), env(safe-area-inset-right))
+    max(0px, env(safe-area-inset-bottom))
+    max(var(--gutter), env(safe-area-inset-left));
+}
+
+/* Every interactive thing. The visible art may be smaller than this box. */
+.tap {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  font: inherit;
+  color: inherit;
+}
+
+/* ReadAlong: the sentence a child follows along while it is narrated. */
+.read-along {
+  margin: 0;
+  font-size: var(--text);
+}
+
+.word[data-current] {
+  background: var(--highlight);
+  border-radius: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* IndiaScreen's root. A flex column so `.tour-stage` (see
+   src/tour/tourStage.css) grows to fill it; everything the tour puts on
+   screen is positioned inside that stage. The variables the layout hangs off
+   — where Mor stands, where the credit sits, how big the play button is —
+   are in src/tour/grandTour.css, next to the reasons for them. */
+.india {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* In the accessibility tree and nowhere else. The page needs a heading; a
+   child watching a narrated map does not need to be told in 32px type what
+   they are looking at. Not `display: none`, which removes it from the
+   accessibility tree as well, and not `position: fixed`, which would keep it
+   in the layout viewport on iOS. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The tapped-state highlight stays — WCAG's "essential" clause covers
+     animation that carries the information. Camera flights and parallax go. */
+  .decorative-motion { animation: none !important; transition: none !important; }
+}
