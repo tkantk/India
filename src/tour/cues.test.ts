@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, act } from '@testing-library/react'
 import { CUES, dispatch } from './cues'
+import { FADE_MS } from './effects/Reveal'
 import timings from '../data/timings.json'
 import vocab from '../../content/vocab.json'
 import geo from '../data/geo.json'
@@ -175,6 +177,70 @@ describe('cue registry', () => {
     dispatch({ t: 0, word: 0, do: 'highlightState' }, api)
     dispatch({ t: 0, word: 0, do: 'lightNeighbour' }, api)
     expect(api.map.highlight).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * The one seam between `Cue.hold` and the screen: `dispatch` reads
+ * `cue.hold` and passes it to the handler, which — for an art verb — is
+ * `art()`, which passes it to `OVERLAYS[verb]`, which passes it to the
+ * effect. Every other test of `hold` in this codebase (`overlays.test.tsx`,
+ * `GrandTour.test.tsx`) enters one layer below this one, calling
+ * `OVERLAYS[verb](arg, hold)` directly — so none of them would notice
+ * `dispatch`/`art()` silently dropping the third argument (e.g. `art()`
+ * calling `render(arg)` instead of `render(arg, hold)`): every effect would
+ * just fall back to its own constant, which is indistinguishable from
+ * working unless something dispatches a REAL cue and watches the actual
+ * dismiss time.
+ */
+describe("dispatch carries a cue's derived hold all the way to the art on screen", () => {
+  it("keeps the art up until the cue's own hold, not the effect's fallback constant", () => {
+    vi.useFakeTimers()
+    try {
+      const api = fakeApi()
+      // Far short of HOLD.symbol (6000ms, Reveal.tsx): if `hold` were
+      // dropped anywhere between here and the effect, the art driven by the
+      // 6000ms fallback would still be up at both checks below.
+      const hold = 1000
+      dispatch({ t: 0, word: 0, do: 'revealSymbol', arg: 'tiger', hold }, api)
+
+      expect(api.setOverlay).toHaveBeenCalledOnce()
+      const node = api.setOverlay.mock.calls[0][0]
+      const { container } = render(node)
+
+      // `.cue-figure`/`.cue-layer` is `Reveal`'s own wrapper (Reveal.tsx) —
+      // present while the effect has not yet dismissed itself, gone once it
+      // has. The always-mounted `.cue` div from `overlays.tsx` cannot be the
+      // signal: it never unmounts.
+      const artUp = () => container.querySelector('.cue-figure, .cue-layer') !== null
+      expect(artUp()).toBe(true)
+
+      act(() => { vi.advanceTimersByTime(hold + FADE_MS - 100) })
+      expect(artUp()).toBe(true)
+
+      act(() => { vi.advanceTimersByTime(200) })
+      expect(artUp()).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('reaches the accumulating seas the same way, through the sea special-case in overlays.tsx', () => {
+    vi.useFakeTimers()
+    try {
+      const api = fakeApi()
+      const hold = 1000
+      dispatch({ t: 0, word: 0, do: 'revealSymbol', arg: 'arabian-sea', hold }, api)
+
+      const node = api.setOverlay.mock.calls[0][0]
+      const { container } = render(node)
+      expect(container.querySelector('.cue-layer')).toBeTruthy()
+
+      act(() => { vi.advanceTimersByTime(hold + FADE_MS + 100) })
+      expect(container.querySelector('.cue-layer')).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 

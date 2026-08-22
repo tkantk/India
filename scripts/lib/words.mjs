@@ -1,3 +1,5 @@
+import { CUE_VERBS } from '../../content/schema.ts'
+
 /** Character offsets of each whitespace-delimited word in the ORIGINAL string.
  *  Offsets matter because the speech provider aligns by character. */
 export function wordSpans(text) {
@@ -61,23 +63,83 @@ export function estimateTimings(text, duration) {
   return { words: spans.map(s => s.word), starts, ends }
 }
 
-/** Verbs that put a picture on stage and so need their own lifetime. Every
- *  other verb the content uses (playSfx, highlightAllStates,
- *  highlightUnionTerritories, highlightState, lightNeighbour) is camera or
- *  map work, not art, and gets no hold at all.
+/** Verbs that put a picture on stage and so need their own lifetime.
  *
  *  zoomTo belongs here even though it looks like pure camera work: it also
  *  raises the "look down" ring at the end of the flight (Here.tsx), and that
- *  ring's lifetime is exactly what this hold times. */
-const ART_VERBS = new Set([
+ *  ring's lifetime is exactly what this hold times.
+ *
+ *  Exported so a test can assert coverage against `CUE_VERBS` directly,
+ *  rather than trusting this list by eye. */
+export const ART_VERBS = new Set([
   'revealSymbol', 'showScript', 'countTo', 'unfurlFlag',
   'traceRiver', 'raiseMountains', 'zoomTo',
 ])
 
+/** Every verb the content uses that is camera or map work, not art, and so
+ *  gets no hold at all. Named explicitly, rather than "everything CUE_VERBS
+ *  has that ART_VERBS does not", so the classification below can catch a
+ *  verb that belongs to NEITHER set — the case an implicit complement can't
+ *  detect. Exported for the same reason as `ART_VERBS`. */
+export const NON_ART_VERBS = new Set([
+  'playSfx', 'highlightState', 'highlightAllStates',
+  'highlightUnionTerritories', 'lightNeighbour',
+])
+
+/**
+ * Where `art`/`nonArt` disagree with `cueVerbs`: a verb in `cueVerbs` that
+ * neither set claims (`missing`), or a verb either set claims that `cueVerbs`
+ * no longer declares (`stale`). Pulled out of `checkVerbCoverage` as a pure
+ * function — no throwing, no module-load side effect — purely so a test can
+ * feed it a deliberately broken input and watch it report the drift, rather
+ * than only ever being able to exercise it via the real files agreeing.
+ */
+export function verbCoverageIssues(cueVerbs, art, nonArt) {
+  const known = new Set([...art, ...nonArt])
+  const missing = cueVerbs.filter((v) => !known.has(v))
+  const stale = [...known].filter((v) => !cueVerbs.includes(v))
+  return { missing, stale }
+}
+
+/**
+ * `content/schema.ts`'s `CUE_VERBS` is the one authoritative list of verbs
+ * content is allowed to author. `ART_VERBS`/`NON_ART_VERBS` above are a
+ * hand-maintained classification of it, and hand-maintained is exactly how
+ * this drifts: add a 13th verb to the schema for the next plan's 32 state
+ * screens, forget to classify it here, and `cueTimes` silently hands it no
+ * `hold` — the effect falls back to its constant and the tiger bug is back,
+ * with nothing in the test suite able to catch it (an untested verb passes
+ * every existing assertion by simply doing nothing).
+ *
+ * So this throws, at import time, the moment the two disagree in either
+ * direction — a verb in the schema this file has never heard of, or a verb
+ * classified here that the schema no longer declares. Loud and immediate
+ * beats silent and eventual: a broken build is a build someone notices.
+ */
+function checkVerbCoverage() {
+  const { missing, stale } = verbCoverageIssues(CUE_VERBS, ART_VERBS, NON_ART_VERBS)
+  if (missing.length > 0 || stale.length > 0) {
+    throw new Error(
+      'words.mjs\'s ART_VERBS/NON_ART_VERBS have drifted from content/schema.ts\'s CUE_VERBS.' +
+      (missing.length > 0 ? ` Not classified here: ${missing.join(', ')}.` : '') +
+      (stale.length > 0 ? ` No longer a real verb: ${stale.join(', ')}.` : '') +
+      ' Classify the new verb as art or non-art in scripts/lib/words.mjs before content can use it.',
+    )
+  }
+}
+checkVerbCoverage()
+
 /** The three seas are one accumulating picture, the same way the three
  *  greetings are (see `groupOf` below): a second sea cue adds to the first
- *  rather than replacing it, so the first must not be truncated by it. */
-const ACCUMULATING_SEAS = new Set(['arabian-sea', 'bay-of-bengal', 'indian-ocean'])
+ *  rather than replacing it, so the first must not be truncated by it.
+ *
+ *  Hand-copied rather than imported from `Sea.tsx`'s `WATERS` — that file is
+ *  real JSX and this one is a plain script `scripts/tts.mjs` runs under
+ *  bare `node`, with no bundler to transform it. `words.test.mjs` imports
+ *  `WATERS` directly and asserts the two lists agree, so a fourth sea added
+ *  to the art without a matching update here fails the suite rather than
+ *  silently sharing a slot while this file truncates its siblings. */
+export const ACCUMULATING_SEAS = new Set(['arabian-sea', 'bay-of-bengal', 'indian-ocean'])
 
 const MIN_HOLD_MS = 1000
 
@@ -145,7 +207,7 @@ export function cueTimes(cues, timings, duration) {
     const next = art.find((e) => e.i > i && e.group !== group)
     const end = next ? Math.min(next.cue.t, duration) : duration
     const cap = HOLD_CAP_MS[cue.do] ?? Infinity
-    const hold = Math.min(Math.max((end - cue.t) * 1000, MIN_HOLD_MS), cap)
+    const hold = Math.round(Math.min(Math.max((end - cue.t) * 1000, MIN_HOLD_MS), cap))
     return { ...cue, hold }
   })
 }

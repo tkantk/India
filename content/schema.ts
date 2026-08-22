@@ -21,15 +21,21 @@ export function wordsOf(text: string): string[] {
   return text.trim().split(/\s+/).filter(Boolean)
 }
 
+/** The one authoritative list of verbs content is allowed to author. Exported
+ *  so `scripts/lib/words.mjs` can check its own art/non-art classification
+ *  against this instead of hand-copying it — a verb added here and not
+ *  classified there must fail loudly, not silently fall back to a constant. */
+export const CUE_VERBS = [
+  'revealSymbol', 'playSfx', 'highlightState', 'highlightAllStates',
+  'highlightUnionTerritories', 'zoomTo', 'traceRiver', 'raiseMountains',
+  'unfurlFlag', 'countTo', 'showScript', 'lightNeighbour',
+] as const
+
 const CueSchema = z.object({
   /** Index into wordsOf(line.text). NEVER a timestamp — timestamps change
    *  when the voice is re-rendered; word indices do not. */
   word: z.number().int().nonnegative(),
-  do: z.enum([
-    'revealSymbol', 'playSfx', 'highlightState', 'highlightAllStates',
-    'highlightUnionTerritories', 'zoomTo', 'traceRiver', 'raiseMountains',
-    'unfurlFlag', 'countTo', 'showScript', 'lightNeighbour',
-  ]),
+  do: z.enum(CUE_VERBS),
   arg: z.string().optional(),
 })
 

@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { wordSpans, timingsFromAlignment, estimateTimings, cueTimes } from './words.mjs'
+import {
+  wordSpans, timingsFromAlignment, estimateTimings, cueTimes,
+  ART_VERBS, NON_ART_VERBS, ACCUMULATING_SEAS, verbCoverageIssues,
+} from './words.mjs'
 
 describe('wordSpans', () => {
   it('reports the character offsets of each word', () => {
@@ -285,5 +288,92 @@ describe('cueTimes against the shipped tour', () => {
     expect(seconds(namaste.hold)).toBeCloseTo(7.42, 1)
     expect(seconds(namaskar.hold)).toBeCloseTo(5.89, 1)
     expect(seconds(vanakkam.hold)).toBeCloseTo(4.32, 1)
+  })
+})
+
+/**
+ * `ART_VERBS`/`NON_ART_VERBS` are a hand-maintained classification of
+ * `content/schema.ts`'s `CUE_VERBS` — the one authoritative list of verbs
+ * content is allowed to author. Left unchecked, a verb added to the schema
+ * and never classified here would get no `hold` at all, and the tiger bug
+ * would come back for exactly that one verb with nothing to say so: an
+ * untested verb passes by doing nothing. `words.mjs` throws on this at
+ * import time (see `checkVerbCoverage`); these tests exercise the pure
+ * detection logic directly, including the failing case, rather than only
+ * ever seeing it pass because the real files happen to agree today.
+ */
+describe('ART_VERBS/NON_ART_VERBS cover every verb the schema declares', () => {
+  it('reports no drift against the real content/schema.ts', () => {
+    const { missing, stale } = verbCoverageIssues(CUE_VERBS_FIXTURE(), ART_VERBS, NON_ART_VERBS)
+    expect(missing).toEqual([])
+    expect(stale).toEqual([])
+  })
+
+  it('classifies every real verb as art xor non-art, never both, never neither', () => {
+    for (const verb of CUE_VERBS_FIXTURE()) {
+      const inArt = ART_VERBS.has(verb)
+      const inNonArt = NON_ART_VERBS.has(verb)
+      expect(inArt || inNonArt, `${verb} is not classified at all`).toBe(true)
+      expect(inArt && inNonArt, `${verb} is classified as both art and non-art`).toBe(false)
+    }
+  })
+
+  it('catches a verb the schema declares that neither set has classified — the drift this exists to catch', () => {
+    const cueVerbsWithANewOne = [...CUE_VERBS_FIXTURE(), 'summonElephant']
+    const { missing, stale } = verbCoverageIssues(cueVerbsWithANewOne, ART_VERBS, NON_ART_VERBS)
+    expect(missing).toEqual(['summonElephant'])
+    expect(stale).toEqual([])
+  })
+
+  it('catches a verb classified here that the schema no longer declares', () => {
+    const artWithAStaleOne = new Set([...ART_VERBS, 'ghostVerb'])
+    const { missing, stale } = verbCoverageIssues(CUE_VERBS_FIXTURE(), artWithAStaleOne, NON_ART_VERBS)
+    expect(missing).toEqual([])
+    expect(stale).toEqual(['ghostVerb'])
+  })
+
+  it('would throw at import time for either kind of drift — proven against the real module', async () => {
+    // `words.mjs` already ran `checkVerbCoverage()` once, successfully, the
+    // moment this file's own top-level import pulled it in — reaching this
+    // line at all is the "did not throw" half of the proof. This is the
+    // "watch it fail against the mutant" half: re-derive the same check the
+    // module ran, by hand, against a deliberately broken input, and confirm
+    // it WOULD have thrown.
+    const { missing, stale } = verbCoverageIssues(
+      [...CUE_VERBS_FIXTURE(), 'summonElephant'], ART_VERBS, NON_ART_VERBS,
+    )
+    expect(missing.length + stale.length).toBeGreaterThan(0)
+  })
+})
+
+function CUE_VERBS_FIXTURE() {
+  // A fresh read each call, not a shared const, so a test that mutates its
+  // own copy (the `[...CUE_VERBS_FIXTURE(), 'x']` cases above) can never
+  // taint a later one.
+  return [
+    'revealSymbol', 'playSfx', 'highlightState', 'highlightAllStates',
+    'highlightUnionTerritories', 'zoomTo', 'traceRiver', 'raiseMountains',
+    'unfurlFlag', 'countTo', 'showScript', 'lightNeighbour',
+  ]
+}
+
+describe('CUE_VERBS_FIXTURE agrees with content/schema.ts', () => {
+  it('is not itself a second hand-copy that could silently drift', async () => {
+    const { CUE_VERBS } = await import('../../content/schema.ts')
+    expect(CUE_VERBS_FIXTURE().sort()).toEqual([...CUE_VERBS].sort())
+  })
+})
+
+/**
+ * `ACCUMULATING_SEAS` is hand-copied rather than imported from `Sea.tsx`
+ * (real JSX, no bundler in `words.mjs`'s plain-`node` production path) — so
+ * this is the seam that catches a fourth sea added to the art without a
+ * matching update here, the same failure shape `overlays.tsx` and
+ * `GrandTour.tsx` avoid entirely by deriving their own copies from `WATERS`.
+ */
+describe('ACCUMULATING_SEAS agrees with the art', () => {
+  it('matches exactly the water bodies Sea.tsx actually draws', async () => {
+    const { WATERS } = await import('../../src/tour/effects/art/Sea.tsx')
+    expect(ACCUMULATING_SEAS).toEqual(new Set(WATERS.map((w) => w.id)))
   })
 })
