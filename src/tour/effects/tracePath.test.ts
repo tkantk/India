@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildTracePath, nearestOnPath, resamplePath } from './tracePath'
+import { buildTracePath, nearestOnPath, resamplePath, ringDelta } from './tracePath'
 
 /**
  * A 100x100 square, traced clockwise from the top-left corner. Perimeter
@@ -110,5 +110,29 @@ describe('resamplePath', () => {
   it('returns nothing for a degenerate path rather than looping forever', () => {
     expect(resamplePath(buildTracePath(''), 40)).toEqual([])
     expect(resamplePath(buildTracePath(SQUARE), 0)).toEqual([])
+  })
+})
+
+describe('ringDelta', () => {
+  it('is the plain difference when nothing wraps', () => {
+    expect(ringDelta(0.3, 0.1)).toBeCloseTo(0.2)
+    expect(ringDelta(0.1, 0.3)).toBeCloseTo(-0.2)
+  })
+
+  it('takes the short way round the seam instead of the long way across it', () => {
+    // 0.98 -> 0.02 is a forward step of 0.04 across the wrap, not a backward
+    // step of 0.96 the long way round.
+    expect(ringDelta(0.02, 0.98)).toBeCloseTo(0.04)
+    expect(ringDelta(0.98, 0.02)).toBeCloseTo(-0.04)
+  })
+
+  it('never reports more than half the ring either way', () => {
+    for (const [a, b] of [[0, 0.5], [0.25, 0.75], [0.9, 0.1], [0.1, 0.9]]) {
+      expect(Math.abs(ringDelta(a, b))).toBeLessThanOrEqual(0.5 + 1e-9)
+    }
+  })
+
+  it('is zero for a point against itself, anywhere on the ring', () => {
+    for (const f of [0, 0.25, 0.5, 0.99]) expect(ringDelta(f, f)).toBe(0)
   })
 })

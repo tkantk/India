@@ -20,9 +20,20 @@
  * within `TOLERANCE` of the path — has no circle over it, so the browser's
  * hit test falls straight through (`.cue-layer { pointer-events: none }`,
  * effects.css) to `.map` beneath, and tap-to-pick behaves exactly as if this
- * component were not mounted. The corridor is geometry, decided once by the
- * browser, never a JS pass/fail choice this component makes about someone
- * else's event.
+ * component were not mounted.
+ *
+ * THIS IS TRUE FOR TOUCH AS WELL AS MOUSE, AND IS DELIBERATE, NOT AN
+ * OVERSIGHT. `start()` only bails on a non-touch pointer AFTER the browser
+ * has already routed the event here instead of to `.stage` — the routing
+ * itself is geometry, decided before either handler runs, and does not care
+ * what device sent the event. So for as long as this is mounted (beat 2,
+ * ~16s), a touch that lands within `TOLERANCE` of the coastline does NOT
+ * pick the state under it, where it would everywhere else in the tour. This
+ * is the accepted trade, not a mouse-only quirk: beat 2 is the one moment
+ * the child is explicitly invited to put a finger on the coast, so a touch
+ * there doing something tracing-shaped instead of picking a state is
+ * defensible — see the engagement/monotonic rules below for why it now does
+ * something tracing-SHAPED rather than something arbitrary.
  *
  * WHY CIRCLES, NOT A STROKED HIT PATH. `pointer-events: stroke` (or
  * `painted` with a stroke) makes WebKit call `CGPathCreateStrokedPath` on
@@ -33,14 +44,44 @@
  * one for, and a fingertip does not need the corridor to be exactly the
  * width of the pencil line — see `tracePath.ts`'s `resamplePath`.
  *
+ * WHY A TAP DOES NOTHING, AND WHY PROGRESS CANNOT JUMP. The first version of
+ * this component wrote `pathLength` straight to `nearestOnPath(...).fraction`
+ * on `pointerdown` — so one incidental tap anywhere on the coast drew a
+ * large, arbitrary arc from the path's own fixed start point to wherever the
+ * tap landed, instantly, and never took it back. That fails the brief's own
+ * bar ("a control that responds sometimes is worse than one that was never
+ * promised") worse than doing nothing would have. The fix: `start()` only
+ * records an ANCHOR — nothing is drawn. `move()` measures how far the finger
+ * has travelled from that anchor and does not reveal anything until it
+ * passes `ENGAGE_UNITS`, a small but real distance (satisfies "a tap with no
+ * movement must produce no visible change"). Once engaged, the revealed arc
+ * is `[anchor, anchor + sweep]` (or `[anchor - sweep, anchor]`, going the
+ * other way) — `pathOffset` pinned at the anchor, `pathLength` equal to
+ * `sweep` — and `sweep` only ever grows to its own high-water mark within
+ * one gesture (retracing shrinks the RAW sweep but never the drawn one,
+ * which is what "monotonic … never jump backwards" means here). A single
+ * pointer sample whose nearest point on the ring has moved further than
+ * `MAX_STEP_UNITS` since the last one — a narrow strait putting two
+ * far-apart fractions close in space, the exact shape `tracePath.test.ts`'s
+ * STAPLE models — is treated as noise, not a leap forward, and ignored.
+ *
+ * WHY IT RESETS ON ITS OWN. Every ref and motion value here lives inside
+ * this component's instance. `Outline`'s `Reveal` wrapper unmounts its
+ * whole subtree — this component included — `FADE_MS` after its hold
+ * expires, and `overlays.tsx` gives `revealSymbol:outline` a fresh React key
+ * every time it fires (so "say it again" animates again); there is nothing
+ * for this component to explicitly clear when the outline leaves the
+ * screen, because nothing survives it to need clearing.
+ *
  * WHY THE LIT PROGRESS IS A MOTION VALUE, NOT REACT STATE. A drag reports
  * pointermove at up to the display's own rate; routing that through
- * `useState` would re-render this tree on every one of them. `progress` is
- * written with `.set()`, which — same as `initial`/`animate` on every other
- * `pathLength` draw-on in this codebase (`Outline`, `River`, `Tiger`) —
- * touches only the path's own `pathLength` attribute. Never a `<g>`
- * transform, never the viewBox: see Reveal.tsx and this project's standing
- * rule against re-rasterising the map on every event.
+ * `useState` would re-render this tree on every one of them. `pathLength`
+ * and `pathOffset` are written with `.set()`, which resolves to the path's
+ * `stroke-dasharray`/`stroke-dashoffset` attributes (motion-dom's own
+ * `buildSVGPath`) — never a `<g>` transform, never the viewBox: see
+ * Reveal.tsx and this project's standing rule against re-rasterising the
+ * map on every event. Same single-path repaint cost class as `Outline`'s own
+ * time-based draw-on, just driven by a finger instead of a clock.
  *
  * WHY TOUCH ONLY. "Go on, trace the edge with your FINGER" — a mouse is not
  * one, and it is also the one input this project's own testing tools drive
@@ -54,7 +95,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { motion, useMotionValue, useReducedMotionConfig } from 'motion/react'
 import { isCheap } from '../../lib/cheapMode'
 import { useMapZoom } from './Reveal'
-import { buildTracePath, nearestOnPath, resamplePath } from './tracePath'
+import { buildTracePath, nearestOnPath, resamplePath, ringDelta } from './tracePath'
 import { PALETTE as C } from './art/palette'
 
 /**
@@ -74,6 +115,26 @@ const TOLERANCE = 40
  *  through (see `tracePath.test.ts`'s "leaves no gap" test). */
 const SPACING = TOLERANCE
 
+/** How far, in raw path units, a finger must travel from where it first
+ *  touched down before anything lights up. Well under `TOLERANCE`: this is
+ *  "was that a deliberate small drag", not another helping of fingertip
+ *  forgiveness — the fix for a stray, unmoving tap otherwise reading as a
+ *  sudden mark on the map. */
+const ENGAGE_UNITS = TOLERANCE / 2
+
+/** The largest distance, in raw path units, the nearest point on the ring
+ *  may plausibly move between two consecutive pointer samples. A single
+ *  jump bigger than this is a geometry ambiguity, not a drag — two
+ *  unconnected stretches of a convoluted coastline passing close in space,
+ *  the shape `tracePath.test.ts`'s STAPLE models — and is ignored rather
+ *  than lighting an arbitrary arc between two unrelated points. */
+const MAX_STEP_UNITS = TOLERANCE * 5
+
+/** Wrap a fraction back into 0..1. `ringDelta` already keeps deltas short;
+ *  this is only for turning an anchor-minus-sweep back into a valid
+ *  `pathOffset` when the arc being revealed crosses back over the seam. */
+const mod1 = (x: number) => ((x % 1) + 1) % 1
+
 /** Resolve a pointer event to the path's own coordinate space via the SVG
  *  it landed in, or null if the browser cannot answer that (no SVG
  *  geometry — every jsdom test but the ones that stub it). */
@@ -89,9 +150,10 @@ function toPathPoint(e: ReactPointerEvent<SVGCircleElement>): { x: number; y: nu
 
 export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number }) {
   // `useReducedMotionConfig`, never `useReducedMotion` — this project's
-  // standing rule (see Reveal.tsx's `useStill`). `pathLength` is an SVG
-  // attribute, not a transform, so Motion's own `reducedMotion="user"`
-  // handling (App.tsx) does not neuter it by itself; this component must.
+  // standing rule (see Reveal.tsx's `useStill`). `pathLength`/`pathOffset`
+  // are SVG attributes, not transforms, so Motion's own `reducedMotion=
+  // "user"` handling (App.tsx) does not neuter them by itself; this
+  // component must.
   const reduced = useReducedMotionConfig()
   // Same gate `Outline` uses for its own draw-on: a device already caught
   // dropping frames should not also be asked to redraw a 400-point path on
@@ -99,8 +161,24 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
   const enabled = reduced !== true && !isCheap()
 
   const zoom = useMapZoom()
-  const progress = useMotionValue(0)
+  const length = useMotionValue(0)
+  const offset = useMotionValue(0)
+
+  // One gesture's worth of bookkeeping, none of it React state: nothing
+  // here should cause a re-render, and nothing here needs to survive a
+  // pointerup. See this file's own "WHY A TAP DOES NOT MOVE ANYTHING" note.
   const tracing = useRef(false)
+  const anchor = useRef(0)
+  const last = useRef(0)
+  /** 0 = not yet engaged this gesture; +1/-1 = the direction that engaged
+   *  it, locked for the rest of the gesture. */
+  const direction = useRef<0 | 1 | -1>(0)
+  /** The raw, current sweep from the anchor — can shrink as a finger
+   *  retraces towards it. */
+  const sweep = useRef(0)
+  /** The high-water mark of `sweep` this gesture — never shrinks. This, not
+   *  `sweep`, drives what is actually drawn. */
+  const sweepHigh = useRef(0)
 
   const path = useMemo(() => buildTracePath(d), [d])
   const hits = useMemo(() => resamplePath(path, SPACING), [path])
@@ -113,7 +191,15 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
     if (!local) return
     e.currentTarget.setPointerCapture?.(e.pointerId)
     tracing.current = true
-    progress.set(nearestOnPath(path, local.x, local.y).fraction)
+    const { fraction } = nearestOnPath(path, local.x, local.y)
+    anchor.current = fraction
+    last.current = fraction
+    direction.current = 0
+    sweep.current = 0
+    sweepHigh.current = 0
+    // Deliberately nothing written to `length`/`offset` here: this is the
+    // anchor, not a reveal. Whatever a previous gesture already drew (if
+    // any) stays exactly as it was until THIS gesture actually moves.
   }
 
   const move = (e: ReactPointerEvent<SVGCircleElement>) => {
@@ -121,9 +207,33 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
     const local = toPathPoint(e)
     if (!local) return
     const { distance, fraction } = nearestOnPath(path, local.x, local.y)
-    // Off the corridor: a finger that wandered away mid-drag stops adding to
-    // the picture rather than lighting whatever happens to be nearest.
-    if (distance <= TOLERANCE * zoom) progress.set(fraction)
+
+    const step = ringDelta(fraction, last.current)
+    last.current = fraction
+
+    // Off the corridor, or a single-sample jump too large to be a real
+    // drag: this sample does not move the picture, but bookkeeping (`last`)
+    // still advances above so the NEXT sample is judged against where the
+    // finger actually is, not left comparing against a stale point forever.
+    if (distance > TOLERANCE * zoom) return
+    if (Math.abs(step) * path.total > MAX_STEP_UNITS) return
+
+    if (direction.current === 0) {
+      const fromAnchor = ringDelta(fraction, anchor.current)
+      if (Math.abs(fromAnchor) * path.total < ENGAGE_UNITS) return
+      direction.current = fromAnchor > 0 ? 1 : -1
+      sweep.current = Math.abs(fromAnchor)
+    } else if (Math.sign(step) === direction.current) {
+      sweep.current = Math.min(1, sweep.current + Math.abs(step))
+    } else {
+      sweep.current = Math.max(0, sweep.current - Math.abs(step))
+    }
+
+    if (sweep.current > sweepHigh.current) {
+      sweepHigh.current = sweep.current
+      offset.set(direction.current === 1 ? anchor.current : mod1(anchor.current - sweepHigh.current))
+      length.set(sweepHigh.current)
+    }
   }
 
   const end = (e: ReactPointerEvent<SVGCircleElement>) => {
@@ -141,7 +251,7 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
         stroke={C.gold}
         strokeWidth={strokeWidth * zoom}
         strokeLinecap="round"
-        style={{ pathLength: progress }}
+        style={{ pathLength: length, pathOffset: offset }}
         pointerEvents="none"
       />
       {/* The corridor. `fill="none"` + `pointer-events="fill"` is

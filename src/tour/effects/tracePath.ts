@@ -121,3 +121,23 @@ export function resamplePath(path: TracePath, spacing: number): Point[] {
   }
   return out
 }
+
+/**
+ * Signed shortest distance from `b` to `a`, both fractions 0..1 on a closed
+ * ring: positive means `a` sits ahead of `b` going forward round the ring,
+ * negative means behind, and the magnitude is always the SHORTER way round —
+ * never more than 0.5, since going the other way round a loop is never
+ * further than that.
+ *
+ * This is what lets `Trace.tsx` tell which direction a drag moved without
+ * caring that the ring's own parametrisation wraps from 1 back to 0 — the
+ * naive `a - b` is wrong exactly at the wrap, which for a real coastline
+ * (MAINLAND's own start/end seam sits on an ordinary stretch of it, not
+ * somewhere a finger would never go) is not a corner case worth ignoring.
+ */
+export function ringDelta(a: number, b: number): number {
+  let d = a - b
+  if (d > 0.5) d -= 1
+  else if (d < -0.5) d += 1
+  return d
+}
