@@ -79,6 +79,7 @@ are safely re-runnable.
 | `npm run build:hit` | `src/data/hit.json` — a simplified invisible hit layer, so taps stay fast on Safari |
 | `npm run build:art` | Tour art (country outline, Ganga, Himalayan summits) drawn in the map's own projection so it lines up with `geo.json` |
 | `npm run tts:draft` / `npm run tts:final` | `src/data/timings.json` and narration audio — draft uses the free macOS voice, final uses the paid ElevenLabs provider. Cues are authored as word indices, not timestamps, so switching providers never desyncs an animation |
+| `npm run voices` | Lists ElevenLabs voices to narrate with (and can add one to your account with `--add`) |
 | `npm run fetch:photos` | `src/data/photo-credits.json` and landmark photographs in `public/photos/`, sourced from Wikimedia Commons and licence-checked |
 | `npm run fetch:sounds` | `src/data/sound-credits.json` and sound effects in `public/audio/`, sourced the same way |
 | `npm run contact-sheet` / `contact-sheet:art` / `contact-sheet:mor` | Visual review sheets — the licence and schema checks are automated, but only a person can say whether a scene reads as a tiger |
@@ -88,6 +89,28 @@ are safely re-runnable.
 The two fetch scripts talk to the Wikimedia API and identify themselves with
 a descriptive User-Agent, as [Wikimedia's policy](https://meta.wikimedia.org/wiki/User-Agent_policy)
 requires (`scripts/lib/wiki.mjs`).
+
+### ElevenLabs credentials
+
+`npm run tts:final` and `npm run voices` need an ElevenLabs API key, and
+`tts:final` also needs a voice id. Copy [`.env.example`](.env.example) to
+`.env` at the repo root and fill in `ELEVENLABS_API_KEY` (and
+`ELEVENLABS_VOICE_ID`, once `npm run voices` has found one) — `.env` is
+gitignored and never committed.
+
+Both scripts load `.env` themselves via Node's `--env-file-if-exists=.env`
+flag, so running them through their npm alias (`npm run voices`, `npm run
+tts:final`) is all that's needed. If you invoke either script's file
+directly with plain `node` instead, pass the same flag yourself:
+
+```sh
+node --env-file-if-exists=.env scripts/voices.mjs
+```
+
+`--env-file-if-exists` (not `--env-file`) is deliberate: the latter throws
+if `.env` is missing, which would break `npm run voices` for exactly the
+person who needs it most — someone who hasn't created a `.env` yet and is
+running it to find out what to put in one.
 
 ## Assets and attribution
 

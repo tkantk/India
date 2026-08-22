@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { findMarkup } from '../lib/markup.mjs'
+import { envHelp } from '../lib/env-guard.mjs'
 
 export const name = 'elevenlabs'
 
@@ -37,9 +38,16 @@ let priced = 0      // ...of those, how many carried a character-cost header
  */
 export const charactersSpent = () => (priced < delivered ? null : spent)
 
+const TTS_FINAL_HELP = { npmScript: 'tts:final', directCommand: 'scripts/tts.mjs --provider=elevenlabs' }
+
 export async function synth(text, { tmpDir, id }) {
-  if (!key()) throw new Error('ELEVENLABS_API_KEY is not set')
-  if (!voiceId()) throw new Error('ELEVENLABS_VOICE_ID is not set. Run: node scripts/voices.mjs')
+  if (!key()) throw new Error(envHelp('ELEVENLABS_API_KEY', TTS_FINAL_HELP))
+  if (!voiceId()) {
+    throw new Error(
+      `${envHelp('ELEVENLABS_VOICE_ID', TTS_FINAL_HELP)} If you don't have a voice id yet, ` +
+      `find one with \`npm run voices\`.`,
+    )
+  }
 
   // Backstop only: validate-content.mjs makes this same check before a single
   // character is spent. Reaching it here means content changed since the last

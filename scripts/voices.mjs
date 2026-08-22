@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 /**
  * One-off: find a warm Indian-English narration voice and add it to the account.
- *   ELEVENLABS_API_KEY=... node scripts/voices.mjs
- *   ELEVENLABS_API_KEY=... node scripts/voices.mjs --add <public_user_id> <voice_id>
+ *   npm run voices
+ *   npm run voices -- --add <public_user_id> <voice_id>
+ *
+ * Reads ELEVENLABS_API_KEY from process.env, which `npm run voices` loads
+ * from a `.env` file at the repo root (see .env.example) via Node's
+ * --env-file-if-exists flag. Running this file directly with plain `node`
+ * skips that loading — pass the flag yourself:
+ *   node --env-file-if-exists=.env scripts/voices.mjs
  */
+import { envHelp } from './lib/env-guard.mjs'
+
 const key = process.env.ELEVENLABS_API_KEY
-if (!key) { console.error('set ELEVENLABS_API_KEY'); process.exit(1) }
+if (!key) {
+  console.error(envHelp('ELEVENLABS_API_KEY', { npmScript: 'voices', directCommand: 'scripts/voices.mjs' }))
+  process.exit(1)
+}
 const H = { 'xi-api-key': key }
 const [, , cmd, ...rest] = process.argv
 
