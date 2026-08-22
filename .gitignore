@@ -2,9 +2,20 @@ node_modules/
 dist/
 build/
 .DS_Store
-.env
-.env.local
+
+# Every local env file — .env, .env.local, .env.production.local, whatever
+# tomorrow's tool invents — except the checked-in template. A pattern that
+# names only the two files that exist today is a pattern that leaks the third.
+.env*
+!.env.example
+
 *.log
 scratch/
 .superpowers/
 review/
+
+# Agent working directory. `.claude/settings.local.json` records
+# machine-specific tool permissions and is currently kept out of this
+# repository only by the owner's GLOBAL gitignore — which does not travel
+# with a clone, so the first person to fork this would commit theirs.
+.claude/

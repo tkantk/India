@@ -121,7 +121,14 @@ Real but deliberately not fixed:
 | `--only` plus a synth failure can drop one still-good timings entry | Carry. Costs one re-render, documented in the code. |
 | Ambient beds are not Indian in origin (forest is Surrey, ocean is Brazil) | Carry. Fine for a bed; the user's call. |
 | `api()` loses the original network error cause on final failure | Carry. Diagnostics only. |
-| User-Agent still says `github.com/OWNER/REPO` | Fix when the repository exists. |
+
+~~User-Agent still says `github.com/OWNER/REPO`~~ — **done.** The repository
+exists, and `scripts/lib/wiki.mjs` now identifies itself as
+`https://github.com/tkantk/India` with the issues URL as its contact, which is
+a contact [Wikimedia's policy](https://meta.wikimedia.org/wiki/User-Agent_policy)
+explicitly accepts. `scripts/lib/wiki.test.mjs` asserts the shape (a contact is
+present and non-empty) rather than the literal string, so a future rename does
+not silently reintroduce a placeholder.
 
 ---
 

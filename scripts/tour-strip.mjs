@@ -661,6 +661,13 @@ const collides = (l) =>
   || !l.idle.creditVisible || l.idle.morInkOverPlay || l.idle.morInkOverBar
   || l.idle.creditOverPlay || l.idle.creditOverMor
   || l.talking.sayOverBar || l.talking.sayOverMor || l.talking.sayOverPlay
+  // A credit with a peacock standing on it is not a credit (mor.css says so
+  // out loud, which is why he stands in the right-hand corner and the credit
+  // in the left). That is just as true while he is talking — and it is while
+  // he is talking that he grows to 1.34x about his own feet, and on a phone
+  // that he drops back down off the play button's height. Checking only the
+  // idle frame checked the one state he is least likely to be on it in.
+  || l.talking.creditOverMor
   || l.talking.creditOverSay || l.talking.pageScrolls
   // Only the button may swallow a tap. Everything else on the stage is
   // scenery and the map has to be reachable through it.
@@ -706,6 +713,7 @@ async function measureLayouts() {
       `  Mor over play: ${idle.morInkOverPlay ? `${idle.morInkOverPlay.w}x${idle.morInkOverPlay.h}` : 'no'}` +
       `  button over credit: ${idle.creditOverPlay ? `${idle.creditOverPlay.w}x${idle.creditOverPlay.h}` : 'no'}` +
       `  words over credit: ${talking.creditOverSay ? `${talking.creditOverSay.w}x${talking.creditOverSay.h}` : 'no'}` +
+      `  Mor over credit (talking): ${talking.creditOverMor ? `${talking.creditOverMor.w}x${talking.creditOverMor.h}` : 'no'}` +
       `  words over Mor: ${talking.sayOverMor ? `${talking.sayOverMor.w}x${talking.sayOverMor.h}` : 'no'}\n` +
       `  ${' '.repeat(14)} a tap lands on: map ${talking.tapReaches.middleOfTheMap}` +
       `, through Mor ${talking.tapReaches.throughMor}` +

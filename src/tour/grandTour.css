@@ -178,8 +178,26 @@
    is left of the middle, and the sentence has nowhere near enough room beside
    Mor. Two things move. */
 @media (max-width: 600px) {
-  /* The credit wraps to two lines in this width. */
-  .india { --credit-lane: 56px; }
+  .india {
+    /* The credit wraps to two lines in this width. */
+    --credit-lane: 56px;
+
+    /* And two lines is exactly what breaks Mor's ordinary floor.
+       `--mor-floor` above is `--bar-over + 24px`: clear of the BAR, which is
+       all he needs on the iPad, where the credit is one line and ends 26px up.
+       Here the credit is 42px tall, so those same 24px stand him on it —
+       measured in Chrome at 390x844 and 375x812, 90 x 17 px of peacock on the
+       licence line while the tour talks. mor.css picks the right-hand corner
+       precisely so that cannot happen, and a credit with a peacock standing
+       on it is not a credit.
+
+       `--floor` is already defined as the first clear line above BOTH the bar
+       and the credit; standing him on that is the whole fix, and it tracks
+       the lane rather than restating a number. Only while the tour talks: the
+       rule below raises him much further when the play button is out, and it
+       is more specific than this one. */
+    --mor-floor: calc(var(--floor) + 8px);
+  }
 
   /* Mor is about 20px wider than the gap beside the 208px button, so he steps
      up OVER it. Shrinking him instead would be shrinking the guide to fit the
