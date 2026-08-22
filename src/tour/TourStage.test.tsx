@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { TourStage } from './TourStage'
 import type { Cue } from '../types'
@@ -175,5 +176,50 @@ describe('map-registered art and the camera', () => {
     const now = viewOf(container.querySelector('.cue-map'))
     expect(now).not.toBe(home)
     expect(now).toBe(viewOf(container.querySelector('svg.base')))
+  })
+})
+
+/**
+ * The framing rule in tourStage.css (`.tour-stage > .map, .tour-stage >
+ * .tour-overlay`) consumes `--map-floor` and `--map-ceiling`. Task 4
+ * originally defined both — and `--say-lane`, which they are built from —
+ * only inside grandTour.css's `.india`, a stylesheet only GrandTour.tsx
+ * imports. Plan 3's 32 state screens frame a map too, and none of them is
+ * GrandTour: without a shared definition, `--map-floor` is undefined on
+ * their `.india`, the `inset` shorthand that consumes it is invalid, and the
+ * whole declaration drops — `.map`/`.tour-overlay` fall back to `position:
+ * absolute` with no offsets at all, which is not "smaller", it is gone.
+ *
+ * jsdom does no layout and cannot compute custom properties reliably, so
+ * this is a check on the stylesheets' own text rather than on rendered
+ * boxes — the same technique MapStage.test.tsx already uses to police the
+ * "no SVG filter" rule. It still catches the real regression: written
+ * against the pre-fix tree (the variables only in grandTour.css, the
+ * `inset` line with no fallback on `--map-floor`), both of these failed.
+ */
+describe('the map-framing convention is inheritable, not tour-only', () => {
+  it('defines the frame variables where a non-tour screen can reach them', () => {
+    // Not grandTour.css: a screen that never mounts GrandTour never loads
+    // that file, so a definition living only there is invisible to it.
+    const base = readFileSync('src/styles/base.css', 'utf8')
+    for (const name of ['--map-floor', '--map-ceiling', '--say-lane']) {
+      expect(base, `${name} must be defined in base.css, not only in grandTour.css`)
+        .toMatch(new RegExp(`${name}\\s*:`))
+    }
+  })
+
+  it('gives the framing rule a fallback for every custom property it consumes', () => {
+    // Defense in depth even once the variables above are shared: a rule
+    // that still collapses the instant ONE of its inputs goes missing was
+    // exactly Task 4's original mistake (an asymmetric fallback on
+    // `--map-ceiling` but none on `--map-floor`, even though the `inset`
+    // shorthand is equally invalid either way).
+    const css = readFileSync('src/tour/tourStage.css', 'utf8')
+    const rule = /\.tour-stage > \.map,\s*\.tour-stage > \.tour-overlay\s*\{[^}]*\}/.exec(css)?.[0]
+    expect(rule, 'the framing rule for .map and .tour-overlay must exist').toBeTruthy()
+    for (const name of ['--map-ceiling', '--map-floor']) {
+      expect(rule, `var(${name}) inside the framing rule must carry a fallback value`)
+        .toMatch(new RegExp(`var\\(\\s*${name}\\s*,`))
+    }
   })
 })

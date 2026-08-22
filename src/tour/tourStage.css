@@ -13,16 +13,27 @@
 
 /* `.map` and `.tour-overlay` are framed together, not each left at `.map {
    width:100%; height:100% }` / `.tour-overlay { inset:0 }` of the full
-   stage. `--map-floor` (grandTour.css) is the first clear line above the
-   read-along, and effects.css requires the two boxes to be exactly the same
-   rect — the Ganga, the Himalaya and the three seas are drawn against the
-   map's own viewBox, so a symbol centred on a DIFFERENT box than the one the
-   camera is framing lands beside the geography, not on it.
+   stage. `--map-floor` (base.css's `.india`) is the first clear line above
+   a bottom-anchored caption, and effects.css requires the two boxes to be
+   exactly the same rect — the Ganga, the Himalaya and the three seas are
+   drawn against the map's own viewBox, so a symbol centred on a DIFFERENT
+   box than the one the camera is framing lands beside the geography, not
+   on it.
 
-   `--map-ceiling` is 0px everywhere `.say` sits at the bottom of the stage —
-   which is everywhere except a phone, where it moves to the top (below
-   600px, grandTour.css) — so this rule narrows the map from above only on
-   the one breakpoint where the words are up there instead.
+   `--map-ceiling` is 0px everywhere a caption sits at the bottom of the
+   stage — which is everywhere except the tour's own phone breakpoint, where
+   `.say` moves to the top (below 600px, grandTour.css) — so this rule
+   narrows the map from above only on the one breakpoint where the words are
+   up there instead.
+
+   BOTH custom properties carry a `, 0px` fallback, not just one. Neither is
+   tour-only any more (base.css's `.india`, not grandTour.css's — see the
+   comment there), but a screen that frames a map is not guaranteed to be a
+   descendant of THAT `.india` either, and the `inset` shorthand is exactly
+   as invalid missing either half: a `0px` fallback degrades to "fill the
+   stage", the pre-Task-4 behaviour, rather than dropping the whole
+   declaration and collapsing the box to whatever `position: absolute` with
+   no offset happens to be.
 
    The `width: auto; height: auto` are required, not decoration: `.map` sets
    `width: 100%; height: 100%` (map.css, so the non-tour India screen still
@@ -31,7 +42,7 @@
    the box instead of `100%` re-stretching it back out. */
 .tour-stage > .map, .tour-stage > .tour-overlay {
   position: absolute;
-  inset: var(--map-ceiling, 0px) 0 var(--map-floor) 0;
+  inset: var(--map-ceiling, 0px) 0 var(--map-floor, 0px) 0;
   width: auto;
   height: auto;
 }

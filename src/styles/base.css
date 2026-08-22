@@ -102,15 +102,75 @@ body {
   -webkit-box-decoration-break: clone;
 }
 
-/* IndiaScreen's root. A flex column so `.tour-stage` (see
-   src/tour/tourStage.css) grows to fill it; everything the tour puts on
-   screen is positioned inside that stage. The variables the layout hangs off
-   — where Mor stands, where the credit sits, how big the play button is —
-   are in src/tour/grandTour.css, next to the reasons for them. */
+/* IndiaScreen's root. A flex column so `.tour-stage`-shaped boxes (see
+   src/tour/tourStage.css) grow to fill it; everything the tour puts on
+   screen is positioned inside one. */
 .india {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+/* Mor's floor, the credit's own floor and the play button's size are
+   tour-specific and stay in src/tour/grandTour.css, next to the reasons for
+   them — but the variables below are the shared FRAMING convention, not a
+   tour-only one: any screen that frames a map behind the fixed control bar
+   needs the same clearance, and Plan 3's 32 state screens are not
+   GrandTour, so they never load grandTour.css. A definition living only
+   there would leave `--map-floor` undefined on their `.india`, which is
+   exactly the collapse Task 4's review caught: tourStage.css's `inset`
+   shorthand depends on it, and an invalid custom property makes the whole
+   shorthand invalid, not smaller.
+
+   `:where(.india)`, not `.india` — ZERO specificity, deliberately. Vite
+   does not bundle CSS in import order (measured: this file's rules land
+   AFTER grandTour.css's in the built stylesheet, despite `main.tsx`
+   importing it first), so a plain `.india` default here would sit later in
+   source order than grandTour.css's `@media (max-width: 600px) { .india {
+   ... } }` phone overrides and — same specificity, later position — SILENTLY
+   WIN, undoing every one of them. `:where()` makes that impossible: any
+   plain `.india` rule, in any file, in any order, beats a `:where(.india)`
+   one. The tour's OWN breakpoint overrides (how many lines `.say` wraps to,
+   where Mor stands on a phone) stay in grandTour.css, as ordinary `.india`
+   rules; only the defaults — the numbers any screen gets if it overrides
+   nothing — live here, deliberately outranked. */
+:where(.india) {
+  /* How much of the fixed control bar (Controls.css, published on :root as
+     `--bar`) lies OVER this box. body carries the bottom safe-area inset as
+     padding, so the box already stops short of the viewport by exactly that
+     much; subtracting it is the difference between clearing the bar and
+     clearing it plus a home indicator's worth of nothing. */
+  --bar-over: calc(var(--bar) - env(safe-area-inset-bottom, 0px));
+
+  /* The strip a map credit needs, which everything above it starts clear
+     of. One line of 13px/1.3 plus its padding; a narrow screen wraps it to
+     two — see grandTour.css's phone override for the value that fits it. */
+  --credit-lane: 30px;
+
+  /* The first clear line above the bar and the credit. */
+  --floor: calc(var(--bar-over) + var(--credit-lane));
+
+  /* How tall a bottom-anchored caption is allowed to get, so a map can be
+     framed to leave it room WITHOUT rescaling every time the caption's own
+     content changes height — a lane fixed per breakpoint, not per beat of
+     narration. 1.45 is body's own line-height (above); 20px is the
+     caption's top+bottom padding. `.say` is the only caption today and its
+     measured line counts/breakpoints live in grandTour.css, next to it; a
+     future caption on a different screen can override `--say-lines`
+     there the same way. */
+  --say-lines: 5;
+  --say-lane: calc(var(--say-lines) * 1.45 * var(--text) + 20px);
+
+  /* Where a map (and anything registered against its viewBox — a river, a
+     mountain range, a sea) stops at the BOTTOM, so a bottom-anchored
+     caption has somewhere to sit that is not on top of the geography. */
+  --map-floor: calc(var(--floor) + var(--say-lane));
+
+  /* And at the TOP: 0px by default, because nothing sits at the top of the
+     screen unless a screen's own caption moves up there — which only the
+     tour's phone breakpoint does today (grandTour.css), because `.say`
+     moves to the top of the screen below 600px. */
+  --map-ceiling: 0px;
 }
 
 /* In the accessibility tree and nowhere else. The page needs a heading; a

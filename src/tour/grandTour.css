@@ -5,21 +5,20 @@
    as the map — so "the bottom corner" means the bottom corner of the country
    a child is looking at, not of some outer frame. */
 
+/* `--bar-over`, `--floor`, `--credit-lane`, `--say-lines`, `--say-lane`,
+   `--map-floor` and `--map-ceiling` are NOT declared here any more — they
+   moved to base.css's `.india` after Task 4's review found them reachable
+   only from this file, which only GrandTour.tsx imports. They are still
+   read here (Mor's floor, the play button and `.say` below all consume
+   them) via ordinary inheritance; only their DEFINITIONS moved. What stays
+   here is genuinely tour-only: nothing that is not the tour has a Mor, a
+   play button, or (yet) a `.say`. */
 .india {
   /* The button is 2 x --tap, the size the plan promises: 208px of gold that a
      six-year-old cannot miss. --tap is 2cm on a 264ppi iPad, four times the
      adult recommendation, so twice that is a target for a hand that has not
      learned to aim yet. */
   --play: calc(var(--tap) * 2);
-
-  /* How much of the fixed control bar lies OVER this box.
-
-     `.controls` is fixed to the VIEWPORT and `--bar` is its full height, but
-     body carries the bottom safe-area inset as padding, so the stage already
-     stops short of the viewport by exactly that much. Subtracting it is the
-     difference between clearing the bar and clearing it plus a home
-     indicator's worth of nothing. */
-  --bar-over: calc(var(--bar) - env(safe-area-inset-bottom, 0px));
 
   /* Mor's floor. `mor.css` ships this knob for exactly this moment: the play
      button did not exist when he was drawn, and now it does. Clear of the
@@ -37,50 +36,13 @@
      lays the map out must keep it clear of the fixed bar: a licence credit
      hidden behind a toolbar is not a credit. */
   --credit-floor: calc(var(--bar-over) + 4px);
-
-  /* And the strip it occupies, which everything else has to start above.
-     One line of 13px/1.3 plus its padding; a phone wraps it to two, and the
-     play button is centred over exactly the words it wraps onto. A credit
-     with a big gold button sitting on it is no better than one behind a
-     toolbar. */
-  --credit-lane: 30px;
-
-  /* The first clear line above the bar and the credit — where the button,
-     the sentence and (on a phone) Mor all start from. */
-  --floor: calc(var(--bar-over) + var(--credit-lane));
-
-  /* How tall `.say` is allowed to get, so the map can be framed to leave
-     room for it WITHOUT rescaling every time a beat's line count changes.
-     `--say-lines` is the worst case at this breakpoint, not the current
-     beat's actual wrap — the tour's beats run 20 to 43 words, and a lane
-     that tracked the beat would resize the map, and every piece of
-     map-registered art with it, four times a minute.
-
-     1.45 is the line-height `.read-along` inherits from `body` (base.css);
-     20px is the sentence's own top+bottom padding. Measured wrap at the
-     widths a tablet-or-wider `.say` actually ships at: 601-735px of stage,
-     up to 4 lines; 736px and up, up to 3. (Below 601 is the phone media
-     query below, which measures its own — `.say` moves to the top of the
-     screen there, so it is not this number that frames the map for it.)
-     The two values below each carry one line of headroom over their band's
-     measured worst case. */
-  --say-lines: 5;
-  --say-lane: calc(var(--say-lines) * 1.45 * var(--text) + 20px);
-
-  /* Where `.map` and `.tour-overlay` stop at the BOTTOM, so the read-along
-     has somewhere to sit that is not on top of the country. See
-     tourStage.css. */
-  --map-floor: calc(var(--floor) + var(--say-lane));
-
-  /* And at the TOP: 0px everywhere `.say` sits at the bottom (everywhere but
-     a phone — see below), so this only ever narrows the map on the one
-     breakpoint that needs it. */
-  --map-ceiling: 0px;
 }
 
 /* 792px of viewport is 736px of stage once `.india`'s gutter (base.css,
    `--gutter` each side) is subtracted — the point at which a 43-word beat
-   stops needing a fourth line. */
+   stops needing a fourth line. Overrides base.css's shared default; this one
+   stays here because it is `.say`'s own measured breakpoint, not a general
+   framing default a screen with no caption would need. */
 @media (min-width: 792px) {
   .india { --say-lines: 4; }
 }
