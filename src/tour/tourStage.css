@@ -1,13 +1,39 @@
-/* Provisional: gives `.map` (100% x 100% of this) a definite box to fill
-   until Task 9/10 lay `IndiaScreen` out properly, with Mor, the play button
-   and the controls. `.tour-stage` assumes it is the flex-growing child of
-   `.india` — see base.css — which is the one thing that makes this task's
-   job (the map actually visible on screen) true without anticipating a
-   layout that is not this task's to design. */
+/* Provisional: gives `.map` a definite box to fill until Task 9/10 lay
+   `IndiaScreen` out properly, with Mor, the play button and the controls.
+   `.tour-stage` assumes it is the flex-growing child of `.india` — see
+   base.css — which is the one thing that makes this task's job (the map
+   actually visible on screen) true without anticipating a layout that is not
+   this task's to design. It is no longer `.map`'s full extent, though: see
+   the rule below, which leaves the read-along its own strip at the bottom. */
 .tour-stage {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+}
+
+/* `.map` and `.tour-overlay` are framed together, not each left at `.map {
+   width:100%; height:100% }` / `.tour-overlay { inset:0 }` of the full
+   stage. `--map-floor` (grandTour.css) is the first clear line above the
+   read-along, and effects.css requires the two boxes to be exactly the same
+   rect — the Ganga, the Himalaya and the three seas are drawn against the
+   map's own viewBox, so a symbol centred on a DIFFERENT box than the one the
+   camera is framing lands beside the geography, not on it.
+
+   `--map-ceiling` is 0px everywhere `.say` sits at the bottom of the stage —
+   which is everywhere except a phone, where it moves to the top (below
+   600px, grandTour.css) — so this rule narrows the map from above only on
+   the one breakpoint where the words are up there instead.
+
+   The `width: auto; height: auto` are required, not decoration: `.map` sets
+   `width: 100%; height: 100%` (map.css, so the non-tour India screen still
+   fills whatever it is put in) and `inset` alone does not beat that — an
+   explicit `auto` is what lets `inset`'s top/bottom offsets actually shrink
+   the box instead of `100%` re-stretching it back out. */
+.tour-stage > .map, .tour-stage > .tour-overlay {
+  position: absolute;
+  inset: var(--map-ceiling, 0px) 0 var(--map-floor) 0;
+  width: auto;
+  height: auto;
 }
 
 /* Where the tour art lands — the same box as the map, so a symbol can be
@@ -16,8 +42,6 @@
    a tap target: a child reaching for Kerala must not hit a tiger. The art's
    own styles are in src/tour/effects/effects.css. */
 .tour-overlay {
-  position: absolute;
-  inset: 0;
   display: grid;
   place-items: center;
   pointer-events: none;

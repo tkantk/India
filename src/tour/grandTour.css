@@ -21,16 +21,16 @@
      indicator's worth of nothing. */
   --bar-over: calc(var(--bar) - env(safe-area-inset-bottom, 0px));
 
-  /* The corner Mor stands in, reserved so the sentence does not run under
-     him. `mor.css` puts him at `right: 8px`, `min(21vmin, 136px)` wide, and
-     he grows to 1.34x about his own feet while he talks. */
-  --mor-lane: calc(8px + 1.34 * min(21vmin, 136px));
-
   /* Mor's floor. `mor.css` ships this knob for exactly this moment: the play
      button did not exist when he was drawn, and now it does. Clear of the
      bar, which is all he needs on the iPad this is built for — measured at
-     31-38px there, with the button nowhere near him. */
-  --mor-floor: calc(var(--bar-over) + 24px);
+     31-38px there, with the button nowhere near him.
+
+     Plus `--say-lane`: the read-along used to stop short of his corner, so
+     his feet only ever had to clear the bar. Now that `.say` runs full
+     width (below), the words run under him too, and a floor tuned only to
+     the bar would stand him on the last line of them. */
+  --mor-floor: calc(var(--bar-over) + 24px + var(--say-lane));
 
   /* The CC BY credit for the boundaries, lifted off the floor for the same
      reason. `map.css` puts it bottom-left and says out loud that whoever
@@ -48,6 +48,41 @@
   /* The first clear line above the bar and the credit — where the button,
      the sentence and (on a phone) Mor all start from. */
   --floor: calc(var(--bar-over) + var(--credit-lane));
+
+  /* How tall `.say` is allowed to get, so the map can be framed to leave
+     room for it WITHOUT rescaling every time a beat's line count changes.
+     `--say-lines` is the worst case at this breakpoint, not the current
+     beat's actual wrap — the tour's beats run 20 to 43 words, and a lane
+     that tracked the beat would resize the map, and every piece of
+     map-registered art with it, four times a minute.
+
+     1.45 is the line-height `.read-along` inherits from `body` (base.css);
+     20px is the sentence's own top+bottom padding. Measured wrap at the
+     widths a tablet-or-wider `.say` actually ships at: 601-735px of stage,
+     up to 4 lines; 736px and up, up to 3. (Below 601 is the phone media
+     query below, which measures its own — `.say` moves to the top of the
+     screen there, so it is not this number that frames the map for it.)
+     The two values below each carry one line of headroom over their band's
+     measured worst case. */
+  --say-lines: 5;
+  --say-lane: calc(var(--say-lines) * 1.45 * var(--text) + 20px);
+
+  /* Where `.map` and `.tour-overlay` stop at the BOTTOM, so the read-along
+     has somewhere to sit that is not on top of the country. See
+     tourStage.css. */
+  --map-floor: calc(var(--floor) + var(--say-lane));
+
+  /* And at the TOP: 0px everywhere `.say` sits at the bottom (everywhere but
+     a phone — see below), so this only ever narrows the map on the one
+     breakpoint that needs it. */
+  --map-ceiling: 0px;
+}
+
+/* 792px of viewport is 736px of stage once `.india`'s gutter (base.css,
+   `--gutter` each side) is subtracted — the point at which a 43-word beat
+   stops needing a fourth line. */
+@media (min-width: 792px) {
+  .india { --say-lines: 4; }
 }
 
 /* ------------------------------------------------------------ the sentence */
@@ -61,9 +96,13 @@
 .say {
   position: absolute;
   left: 0;
-  /* Clear of Mor: he is in the same corner, and the peacock must not stand on
-     the words a child is trying to read. */
-  right: calc(var(--mor-lane) + 12px);
+  /* Full width, not clear of Mor's corner. A column narrowed to leave him
+     room ran the worst beat to 5 lines/194px of the map — most of what
+     Task 4 reclaims comes from letting it run under him instead, down to 3
+     lines/124px. He still never stands ON the words: `--mor-floor` above
+     adds `--say-lane`, this box's own worst-case height, so his feet clear
+     the top of it rather than the bar alone. */
+  right: 0;
   bottom: calc(var(--floor) + 4px);
 
   padding: 10px 16px;
@@ -195,8 +234,28 @@
        and the credit; standing him on that is the whole fix, and it tracks
        the lane rather than restating a number. Only while the tour talks: the
        rule below raises him much further when the play button is out, and it
-       is more specific than this one. */
+       is more specific than this one.
+
+       NOT plus `--say-lane`, unlike the base rule above. `.say` moves to the
+       TOP of the screen a few lines down, clear across the country from
+       Mor's bottom-right corner — the one thing the base rule's `--mor-floor`
+       exists to avoid standing him on cannot reach him here at all. */
     --mor-floor: calc(var(--floor) + 8px);
+
+    /* `.say`'s own worst case at THIS width, not the tablet one: full width
+       was already true here before Task 4 (below), but the column is
+       narrower — measured (both 390px and 375px, mid beat 2, the gate's own
+       probe) at 8 lines, not the 5 a wider tablet column wraps to. Carries
+       the same one line of headroom as the base rule. */
+    --say-lines: 9;
+
+    /* `.say` sits at the TOP here (below), not the bottom, so it is the
+       CEILING that needs raising, not the floor — a floor lifted for a
+       caption on the opposite edge of the screen only pushes the map
+       further UP into it. And the floor itself goes back to plain
+       `--floor`: nothing of `.say`'s now sits down there to clear. */
+    --map-ceiling: var(--say-lane);
+    --map-floor: var(--floor);
   }
 
   /* Mor is about 20px wider than the gap beside the 208px button, so he steps
@@ -213,9 +272,9 @@
   }
 
   /* To the top, and full width. A 43-word beat in the 200px left beside Mor
-     would be eleven lines of text; across the top of a phone it is eight, and
-     the top of a phone is the one part of this screen with nothing else in
-     it. */
+     would be eleven lines of text; across the top of a phone it is eight
+     (measured — see `--say-lines` above), and the top of a phone is the one
+     part of this screen with nothing else in it. */
   .say {
     top: 0;
     right: 0;

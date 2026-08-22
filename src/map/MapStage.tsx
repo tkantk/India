@@ -143,24 +143,34 @@ export function MapStage({ onPick }: Props) {
   }
 
   return (
-    <div className="map" ref={root}>
-      <div className={PICK_ROOT} ref={stage} onPointerDown={pick}>
-        <svg className="base" viewBox={VIEW_BOX} aria-hidden="true">
-          <g pointerEvents="none" dangerouslySetInnerHTML={base} />
-        </svg>
-        <svg
-          className="hit"
-          viewBox={VIEW_BOX}
-          ref={hitSvg}
-          dangerouslySetInnerHTML={hit}
-        />
-        {glowing && (
-          <svg className="glow" viewBox={VIEW_BOX} aria-hidden="true">
-            <path />
+    <>
+      <div className="map" ref={root}>
+        <div className={PICK_ROOT} ref={stage} onPointerDown={pick}>
+          <svg className="base" viewBox={VIEW_BOX} aria-hidden="true">
+            <g pointerEvents="none" dangerouslySetInnerHTML={base} />
           </svg>
-        )}
+          <svg
+            className="hit"
+            viewBox={VIEW_BOX}
+            ref={hitSvg}
+            dangerouslySetInnerHTML={hit}
+          />
+          {glowing && (
+            <svg className="glow" viewBox={VIEW_BOX} aria-hidden="true">
+              <path />
+            </svg>
+          )}
+        </div>
       </div>
       {/* CC BY 4.0 obliges us to credit the source, in the open.
+
+          A SIBLING of `.map`, not a child — `.map + .credit` in map.css —
+          on purpose. Task 4 frames `.map` narrower than the stage it stands
+          in, to leave the read-along room at the bottom, and `.map` is
+          `overflow: hidden` besides: a child positioned against that shorter
+          box is measured from the wrong edge and dragged up into the middle
+          of the country. A sibling is measured from whatever full-height box
+          the caller wraps the two of them in — `.tour-stage`, today.
 
           And the boundaries are only one of 32 third-party assets: 20
           photographs and 11 sounds ship with this app too, 25 of them under
@@ -178,6 +188,6 @@ export function MapStage({ onPick }: Props) {
         {' · '}
         <a className="credit__more" href="#/credits">Credits</a>
       </p>
-    </div>
+    </>
   )
 }

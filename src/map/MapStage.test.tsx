@@ -136,10 +136,12 @@ describe('MapStage', () => {
     expect([...root.children].map((el) => `${el.tagName}.${el.getAttribute('class')}`))
       .toEqual(['svg.base', 'svg.hit', 'svg.glow'])
     expect(root.querySelector(':scope > svg.base > g')!.getAttribute('pointer-events')).toBe('none')
-    // The credit is inside the map but outside the stage, so the camera never
-    // scales or flies it off the screen.
-    expect(map.querySelector(':scope > p.credit')).not.toBeNull()
-    expect(root.querySelector('p.credit')).toBeNull()
+    // The credit is a SIBLING of .map, not a child of it (Task 4): .map gets
+    // framed narrower than the stage to leave the read-along room, and a
+    // credit still positioned against .map's own box would be dragged up
+    // with it. map.css's `.map + .credit` only matches if the DOM agrees.
+    expect(container.querySelector(':scope > p.credit')).not.toBeNull()
+    expect(map.querySelector('p.credit')).toBeNull()
   })
 
   it('picks from an event that arrives via a different layer', () => {

@@ -314,15 +314,21 @@ const LAYOUT = `(() => {
   /**
    * WHERE THE COUNTRY IS ACTUALLY DRAWN.
    *
-   * Not .map, and this is the whole reason the gate missed the iPad. .map
-   * is 100% x 100% of .tour-stage, so its rect is always the stage and
-   * always looks fine; the SVG inside it fits itself to that box with the
-   * default preserveAspectRatio, so the drawn country is a DIFFERENT
-   * rectangle — and it is the drawn country a child is looking at. The <g>
-   * inside svg.base gives it directly, with the camera's transform included.
+   * Not .map, and this is the whole reason the gate missed the iPad. Even
+   * since Task 4 framed .map narrower than the stage (leaving the
+   * read-along its own strip), the SVG inside it fits itself to THAT box
+   * with the default preserveAspectRatio, so the drawn country is a
+   * DIFFERENT, letterboxed rectangle — and it is the drawn country a child
+   * is looking at. The <g> inside svg.base gives it directly, with the
+   * camera's transform included.
    */
   const mapInk = el('svg.base g') && el('svg.base g').getBoundingClientRect()
-  const credit = r('.map .credit')
+  // Task 4: the credit is a SIBLING of .map, not a child — a child measured
+  // against .map's own (now shorter) box would be dragged up off the floor
+  // the tour actually built for it. '.map .credit' stopped matching
+  // anything the moment that moved; '.map + .credit' is where map.css and
+  // MapStage.tsx put it.
+  const credit = r('.map + .credit')
   const play = r('.play-big')
   const say = r('.say')
   const buttons = [...document.querySelectorAll('.controls .control')].map((b) => {

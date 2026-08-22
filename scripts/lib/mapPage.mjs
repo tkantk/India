@@ -35,6 +35,6 @@ export function mapPage({ geo, hits, script, module = false, style = '' }) {
     <svg class="base" viewBox="${viewBox}" aria-hidden="true"><g pointer-events="none">${baseMarkup(geo.places)}</g></svg>
     <svg class="hit" viewBox="${viewBox}">${hitMarkup(hits, names)}</svg>
     <svg class="glow" viewBox="${viewBox}" aria-hidden="true"><path/></svg>
-  </div><p class="credit">${geo.attribution}</p></div>
+  </div></div><p class="credit">${geo.attribution}</p>
 </div><pre id="out"></pre><script${module ? ' type="module"' : ''}>${script}</script></body></html>`
 }

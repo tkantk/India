@@ -124,12 +124,22 @@
    where the work is seen. Small, quiet, and never behind an interaction.
    #3d4a41 on --paper is 8.8:1.
 
+   A SIBLING of `.map`, not a child of it — `.map + .credit` — even though
+   MapStage renders them one after the other so it reads like a child on the
+   page. `.map` is `overflow: hidden` and framed to leave room for the
+   read-along (see `.tour-stage > .map` in tourStage.css), so a child
+   positioned `bottom: var(--credit-floor)` would be measured from THAT
+   shorter box and dragged up into the middle of the country — 148.9px of it,
+   measured at 820x1024. A sibling is measured from whatever full-height box
+   wraps the pair instead (`.tour-stage`, here), which is what
+   `--credit-floor` was written against in the first place.
+
    Whoever lays the map out must leave the bottom-left corner clear of the
    fixed control bar — a credit hidden behind a toolbar is not a credit.
    `--credit-floor` is how: the tour sets it to the height of the bar that
-   lies over this box (src/tour/grandTour.css). The fallback keeps the map
+   lies over the stage (src/tour/grandTour.css). The fallback keeps the map
    honest anywhere there is no bar at all — the contact sheets, a test. */
-.map .credit {
+.map + .credit {
   position: absolute;
   left: 0;
   bottom: var(--credit-floor, 0px);
@@ -155,7 +165,7 @@
    `npm run tour:strip` at four viewports, and a taller credit walks into the
    play button on a phone. --deep on --paper is 13.1:1; underlined, so it is
    not colour alone that marks it as a link. */
-.map .credit__more {
+.credit__more {
   pointer-events: auto;
   color: var(--deep);
   text-decoration: underline;
