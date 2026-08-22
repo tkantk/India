@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { getNarrator } from '../audio/Narrator'
 import { AudioDebugPanel } from '../audio/diagnostics'
-import { camera } from '../map/camera'
+import { camera, PLACE_PADDING } from '../map/camera'
 import { STAGGER_MS, useMapNodes } from '../map/useMapNodes'
 import type { MapApi } from '../map/useMapNodes'
 import { Controls } from '../ui/Controls'
@@ -14,6 +14,7 @@ import { WATERS } from './effects/art/Sea'
 import content from '../../content/tour.json'
 import timings from '../data/timings.json'
 import geo from '../data/geo.json'
+import hit from '../data/hit.json'
 import type { Bbox, Clip, Cue } from '../types'
 import './grandTour.css'
 
@@ -61,6 +62,9 @@ const HOME = geo.viewBox as Bbox
 
 type Place = { bbox: Bbox }
 const PLACES = geo.places as unknown as Record<string, Place>
+/** Same reason cues.ts keeps this separate from `PLACES`: `pinR` lives in
+ *  hit.json, not geo.json, and the two are kept apart on purpose. */
+const PIN_R = hit.places as unknown as Record<string, { pinR: number }>
 
 /** Every place a finger can land on. The tour says "tap any state", and the
  *  union territories are tappable too — Delhi, the one place the tour
@@ -419,7 +423,13 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     map.clear()
     map.highlight(slug, true)
     const place = PLACES[slug]
-    if (place) void camera.flyTo(place.bbox)
+    if (place) {
+      // Same reasoning as cues.ts's zoomTo: pad to this place's own pinR,
+      // not a flat worst-case constant, so tapping Rajasthan does not zoom
+      // out as far as tapping Andaman & Nicobar would need to.
+      const padding = Math.max(PLACE_PADDING, PIN_R[slug]?.pinR ?? 0)
+      void camera.flyTo(place.bbox, { padding })
+    }
     onPickState?.(slug)
   }, [clearStage, map, n, onPickState, stopShimmer])
 

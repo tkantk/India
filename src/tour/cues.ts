@@ -18,14 +18,19 @@ import type { ReactNode } from 'react'
 import type { Bbox, Cue } from '../types'
 import type { MapApi } from '../map/useMapNodes'
 import geo from '../data/geo.json'
+import hit from '../data/hit.json'
+import { PLACE_PADDING } from '../map/camera'
 import { OVERLAYS } from './overlays'
 
 export type CueApi = {
   /** From Task 5. */
   map: MapApi
   /** Wraps Task 6's `flyTo`/`home`. A handler fires the flight and moves on
-   *  — it does not await one landing. */
-  camera: { flyTo(bbox: Bbox): void; home(): void }
+   *  — it does not await one landing. `padding` lets a caller who knows a
+   *  place's own `pinR` ask for enough room to keep it fully on screen —
+   *  see `PLACE_PADDING` in `camera.ts` for why a flat default cannot do
+   *  that for every place at once. */
+  camera: { flyTo(bbox: Bbox, opts?: { padding?: number }): void; home(): void }
   /** The engine's one-shot effect. A missing file is already silence there
    *  (`sound-credits.json` is the manifest of what actually exists) — the
    *  registry passes the name through unconditionally and does not guard it
@@ -43,6 +48,10 @@ export type CueHandler = (arg: string | undefined, api: CueApi, hold?: number) =
 
 type GeoPlace = { type: 'state' | 'ut'; bbox: Bbox }
 const PLACES = geo.places as unknown as Record<string, GeoPlace>
+/** Keyed the same as `PLACES`, from the separate hit-testing data — kept
+ *  apart from `geo.places` on purpose (`hit.json`'s own header explains
+ *  why), so this is its own small lookup rather than folded into `GeoPlace`. */
+const PIN_R = hit.places as unknown as Record<string, { pinR: number }>
 
 /** Derived from geo.json's `type` field, never a hardcoded list — a place
  *  added or reclassified in Plan 1's data is picked up here for free. */
@@ -85,7 +94,10 @@ export const CUES: Record<string, CueHandler> = {
   countTo: art('countTo'),
   zoomTo: (arg, api) => {
     const place = arg ? PLACES[arg] : undefined
-    if (place) api.camera.flyTo(place.bbox)
+    if (arg && place) {
+      const padding = Math.max(PLACE_PADDING, PIN_R[arg]?.pinR ?? 0)
+      api.camera.flyTo(place.bbox, { padding })
+    }
   },
   unfurlFlag: art('unfurlFlag'),
   traceRiver: art('traceRiver'),

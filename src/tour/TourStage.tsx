@@ -119,11 +119,13 @@ export function TourStage({ onPickState, onCue, scene, children }: Props) {
     const api: CueApi = {
       map,
       camera: {
-        flyTo(bbox) {
+        flyTo(bbox, opts) {
           // A handler fires the flight and moves on; it does not await one
           // landing. Task 6's flyTo already lands cleanly if the map is torn
-          // down mid-flight, so there is nothing here to wait for.
-          void camera.flyTo(bbox)
+          // down mid-flight, so there is nothing here to wait for. `opts` is
+          // forwarded as-is — cues.ts already resolved the padding a
+          // particular place needs; this layer has no opinion of its own.
+          void camera.flyTo(bbox, opts)
         },
         home() {
           void camera.home()

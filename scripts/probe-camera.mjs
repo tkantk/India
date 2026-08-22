@@ -130,6 +130,12 @@ const TARGET = ${JSON.stringify(target)}
 const POLES = ${JSON.stringify(poles)}
 const PIN = ${JSON.stringify(pin.pin)}
 const PIN_R = ${pin.pinR}
+// Mirrors cues.ts's zoomTo / GrandTour.tsx's pick: PLACE_PADDING (from the
+// inlined camera.ts above) is a floor, not a ceiling. Flying a real state's
+// bbox with no padding override, the way this probe used to, is not what
+// the app does for any place with a pinR bigger than the floor — Andaman &
+// Nicobar and Lakshadweep both are.
+const TARGET_PADDING = Math.max(PLACE_PADDING, PIN_R)
 const SNAP_PX = ${SNAP_PX}
 const SCRUB_MS = ${SCRUB_MS}
 const PHASE = Number(new URLSearchParams(location.search).get('phase') || 0)
@@ -196,7 +202,7 @@ const polesNow = () => {
 
 /** Start the flight and hold it, paused, at a fraction of the way through. */
 const hold = (fraction) => {
-  const flight = camera.flyTo(TARGET, { duration: SCRUB_MS })
+  const flight = camera.flyTo(TARGET, { duration: SCRUB_MS, padding: TARGET_PADDING })
   const anim = stage.getAnimations()[0]
   anim.pause()
   anim.currentTime = SCRUB_MS * fraction
@@ -291,7 +297,7 @@ async function unmount() {
   const out = { place: PLACE, window: [innerWidth, innerHeight] }
   bindCamera(stage)
   let settled = false
-  camera.flyTo(TARGET, { duration: 400 }).then(() => { settled = true })
+  camera.flyTo(TARGET, { duration: 400, padding: TARGET_PADDING }).then(() => { settled = true })
 
   await new Promise((r) => setTimeout(r, 50))
   out.airborne = stage.getAnimations().length
@@ -315,7 +321,7 @@ async function unmount() {
 async function draw() {
   bindCamera(stage)
   if (PHASE <= 0) return
-  if (PHASE >= 1) { await camera.flyTo(TARGET, { duration: 0 }); return }
+  if (PHASE >= 1) { await camera.flyTo(TARGET, { duration: 0, padding: TARGET_PADDING }); return }
   hold(PHASE)
 }
 

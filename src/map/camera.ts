@@ -85,28 +85,42 @@ const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
 const MAX_SCALE = 12
 
 /**
- * The room a *place* gets when the map's own camera flies to it. The
- * primitive below takes what it is given; this is the map's house style.
+ * The floor under a *place*'s padding when the map's own camera flies to
+ * it: what a caller gets if it passes nothing more specific. The primitive
+ * below (`frame`) takes whatever padding it is given; this is the map's
+ * fallback house style, not a per-place guarantee.
  *
- * Must be at least the largest tap-target radius any place can have —
- * `build-hitlayer.mjs`'s `TARGET_PIN_R`, 112.6 viewBox units — because
- * `frame()` centres and pads the *bbox*, and a place's pin (its pole of
- * inaccessibility) is only guaranteed to fall somewhere *inside* that bbox,
- * not at its centre. A pin sitting near one edge, plus its own radius, can
- * reach up to `pinR` past that edge; padding smaller than the largest
- * possible `pinR` can crop the far side of a legitimate tap off the fitted
- * view entirely. This held at 40 while the island territories' geometry was
- * a handful of undersized triangles whose (wrong) pole happened to sit well
- * inside a (too-small) bbox; rebuilding that geometry correctly moved
- * Lakshadweep's real pole to within 0.2 units of its own bbox edge, which
- * 40 units of padding cannot cover. 113 is provably sufficient for every
- * current and future place: `build-hitlayer.test.mjs` already asserts every
- * pin sits inside its own bbox, and `TARGET_PIN_R` is the hard ceiling on
- * `pinR` — so this is not a per-place magic number, it holds by
- * construction. (Verified against the worst two cases directly: Andaman &
- * Nicobar needed 91.7, Lakshadweep 75.0.)
+ * A single global value large enough to cover every place cannot be this
+ * constant, and the reasoning is worth spelling out because it is easy to
+ * get backwards. `frame()` centres and pads the *bbox*; a place's pin (its
+ * pole of inaccessibility) is only guaranteed to fall somewhere *inside*
+ * that bbox — `build-hitlayer.test.mjs` asserts this — not at its centre.
+ * A pin sitting near one edge, plus its own radius, can reach up to `pinR`
+ * past that edge, so covering every place with one constant means covering
+ * the WORST place: `build-hitlayer.mjs`'s `TARGET_PIN_R`, 112.6, the hard
+ * ceiling every `pinR` is clamped to. But `pinR` varies enormously by
+ * design (Andaman & Nicobar's is 112.6; Delhi's is 16.1) precisely because
+ * a uniform tap-target size cannot work for a country where one place is a
+ * scattered archipelago and another sits between two neighbours' own poles
+ * — using the ceiling for every flight throws that variation away. Measured
+ * directly: a flat 113 (the ceiling, rounded up) costs Delhi 10.38x -> 4.13x
+ * zoom, and every one of the 36 places loses real zoom too (mean 1.73x
+ * smaller) — none of them are `MAX_SCALE`-capped at either value, so
+ * nothing absorbs it.
+ *
+ * So the ceiling belongs where the variation lives: each caller that knows
+ * its place's `pinR` (from `hit.json`) passes `Math.max(PLACE_PADDING,
+ * pinR)` as `flyTo`'s own `padding` — see `cues.ts`'s `zoomTo` and
+ * `GrandTour.tsx`'s `pick`. That is not a second magic number: it is the
+ * same by-construction argument (pin ⊂ bbox, `pinR` ≤ `TARGET_PIN_R`)
+ * applied per place instead of to the worst place, so 16 of the 36 places
+ * keep their full, uncapped zoom (`pinR` under 40) and every other place
+ * pays only for what its own geometry actually needs. `PLACE_PADDING`
+ * itself stays a small constant — visual breathing room for a bbox-only
+ * flight with no known pin, or for the many places whose `pinR` is smaller
+ * than it — not a safety ceiling.
  */
-const PLACE_PADDING = 113
+export const PLACE_PADDING = 40
 
 /**
  * The transform that brings `bbox` into the middle of `view`, with `padding`

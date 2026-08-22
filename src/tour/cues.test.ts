@@ -5,6 +5,8 @@ import { FADE_MS } from './effects/Reveal'
 import timings from '../data/timings.json'
 import vocab from '../../content/vocab.json'
 import geo from '../data/geo.json'
+import hit from '../data/hit.json'
+import { PLACE_PADDING } from '../map/camera'
 
 /** Every verb any content actually uses. */
 const usedVerbs = new Set(
@@ -112,11 +114,35 @@ describe('cue registry', () => {
     expect(() => dispatch({ t: 0, word: 0, do: 'highlightState', arg: 'kerala' }, api)).not.toThrow()
   })
 
-  it('routes zoomTo through the camera with the real bbox', () => {
+  it('routes zoomTo through the camera with the real bbox, padded for the place\'s own pin', () => {
     const api = fakeApi()
     dispatch({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }, api)
-    expect(api.camera.flyTo).toHaveBeenCalledWith(expect.arrayContaining([expect.any(Number)]))
-    expect(api.camera.flyTo).toHaveBeenCalledWith(geo.places.delhi.bbox)
+    // Delhi's own pinR (16.1) is smaller than PLACE_PADDING, so this is the
+    // floor, not the ceiling — the case that matters for Delhi specifically
+    // is asserted separately below.
+    expect(api.camera.flyTo)
+      .toHaveBeenCalledWith(geo.places.delhi.bbox, { padding: PLACE_PADDING })
+  })
+
+  it('pads a small-pinR place at the house-style floor, not its own tiny pinR', () => {
+    const api = fakeApi()
+    dispatch({ t: 0, word: 0, do: 'zoomTo', arg: 'delhi' }, api)
+    const [, opts] = (api.camera.flyTo as ReturnType<typeof vi.fn>).mock.calls[0]
+    expect(opts.padding).toBe(PLACE_PADDING)
+    expect(opts.padding).toBeGreaterThan(hit.places.delhi.pinR)
+  })
+
+  it('pads a place whose own pinR exceeds the house style with that pinR instead', () => {
+    // Andaman & Nicobar's pinR (112.6) is real content this task shipped —
+    // zoomTo has no cue that flies there today, but the same handler code
+    // path must still ask for the right amount of room if content ever
+    // does.
+    const api = fakeApi()
+    dispatch({ t: 0, word: 0, do: 'zoomTo', arg: 'andaman-nicobar' }, api)
+    expect(api.camera.flyTo).toHaveBeenCalledWith(
+      geo.places['andaman-nicobar'].bbox,
+      { padding: hit.places['andaman-nicobar'].pinR },
+    )
   })
 
   it('does not fly the camera for zoomTo with no argument at all', () => {
