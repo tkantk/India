@@ -132,18 +132,56 @@ describe('audioDiagnostics', () => {
 
     expect(typeof snap.state).toBe('string')
     expect(typeof snap.currentTime).toBe('number')
-    expect(typeof snap.wallDelta).toBe('number')
-    expect(typeof snap.clockAdvancing).toBe('boolean')
+    expect(snap.wallDelta === null || typeof snap.wallDelta === 'number').toBe(true)
+    expect(snap.clockAdvancing === null || typeof snap.clockAdvancing === 'boolean').toBe(true)
     expect(Array.isArray(snap.lastStateChanges)).toBe(true)
     expect(snap.lastResumeSettled === null || typeof snap.lastResumeSettled === 'boolean').toBe(true)
     expect(snap.lastResumeMs === null || typeof snap.lastResumeMs === 'number').toBe(true)
     expect(typeof snap.stuck).toBe('boolean')
     expect(typeof snap.playing).toBe('boolean')
 
-    // Nothing has happened yet: no resume attempted, no state changes seen.
+    // Nothing has happened yet: no resume attempted, no state changes seen,
+    // and — this is the one call in the whole file where it is guaranteed —
+    // no sample window has had a chance to close, so the clock reading must
+    // not default to a verdict.
     expect(snap.lastResumeSettled).toBeNull()
     expect(snap.lastResumeMs).toBeNull()
     expect(snap.lastStateChanges).toEqual([])
+    expect(snap.clockAdvancing).toBeNull()
+    expect(snap.wallDelta).toBeNull()
+  })
+
+  it('reports no verdict before the first sample window closes, then a real one after', async () => {
+    const { audioDiagnostics } = await freshDiagnostics()
+    const nowSpy = vi.spyOn(performance, 'now')
+
+    // First-ever read: no window has had a chance to close yet. Defaulting
+    // this to "advancing" would read as healthy for the entire first second
+    // after every mount — precisely the window WebKit bug 273511
+    // (interrupted at construction, resume() does nothing) presents in, so a
+    // false-healthy reading here would hide the one bug that needs this
+    // check most.
+    nowSpy.mockReturnValue(0)
+    const first = audioDiagnostics()
+    expect(first.clockAdvancing).toBeNull()
+    expect(first.wallDelta).toBeNull()
+
+    // Still inside the window: the same "no verdict yet" answer, not a
+    // stale default sitting in for it.
+    nowSpy.mockReturnValue(400)
+    const stillWaiting = audioDiagnostics()
+    expect(stillWaiting.clockAdvancing).toBeNull()
+    expect(stillWaiting.wallDelta).toBeNull()
+
+    // The window closes: now, and only now, a real verdict.
+    nowSpy.mockReturnValue(1000)
+    const settled = audioDiagnostics()
+    expect(settled.clockAdvancing).not.toBeNull()
+    expect(settled.wallDelta).not.toBeNull()
+    expect(typeof settled.clockAdvancing).toBe('boolean')
+    expect(typeof settled.wallDelta).toBe('number')
+
+    nowSpy.mockRestore()
   })
 
   it('derives clockAdvancing from currentTime versus performance.now(), never from state', async () => {

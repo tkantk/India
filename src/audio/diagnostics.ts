@@ -29,8 +29,11 @@ export type DiagnosticSnapshot = {
   /** (currentTime advance) minus (wall-clock advance, in seconds) over the
    *  last trusted sample window. Near zero on a healthy clock; a large
    *  negative number when the audio clock has stalled while real time kept
-   *  moving. */
-  wallDelta: number
+   *  moving. `null` until the first sample window has actually closed — a
+   *  measured `0` is a real, meaningfully different answer (the clock
+   *  keeping perfect pace) from "nothing has been measured yet", and the
+   *  two must not share a representation. */
+  wallDelta: number | null
   /**
    * Whether the audio clock is actually moving, judged ONLY by comparing
    * `currentTime` against `performance.now()` across a sample window.
@@ -39,8 +42,16 @@ export type DiagnosticSnapshot = {
    * that WebKit bugs 263627 and 283419 both report `state === "running"`
    * while `currentTime` sits frozen. A liveness check that trusted `state`
    * would report "fine" for the exact failure this panel exists to catch.
+   *
+   * `null` until the first sample window (~1s) has closed — see
+   * `SAMPLE_WINDOW_MS`. Defaulting this to `true` would read as healthy for
+   * the entire first second after every mount, which is exactly the window
+   * WebKit bug 273511 (context `interrupted` at construction, `resume()`
+   * does nothing) presents in: load the page, tap play, audio is dead
+   * immediately. A false "advancing" here would hide the one bug this panel
+   * needs to catch most.
    */
-  clockAdvancing: boolean
+  clockAdvancing: boolean | null
   /** The last three `statechange` events the context has fired, oldest
    *  first. An empty array after the tour has been running a while is
    *  itself a finding — bug 283419 fires none at all. */
@@ -82,8 +93,11 @@ const ADVANCING_EPS_SEC = 0.05
  * one clock being watched.
  */
 let lastSample: { ctxTime: number; wallTime: number } | null = null
-let wallDelta = 0
-let clockAdvancing = true
+/** `null` until the first sample window closes — see `clockAdvancing` and
+ *  `wallDelta` on `DiagnosticSnapshot` for why that must not default to a
+ *  healthy-looking value. */
+let wallDelta: number | null = null
+let clockAdvancing: boolean | null = null
 
 /** The one and only diagnostic read. Takes nothing, reaches the engine
  *  through `getNarrator()`, and touches none of its transport methods. */
@@ -154,6 +168,15 @@ function formatResume(s: DiagnosticSnapshot): string {
   return s.lastResumeSettled ? `settled in ${ms}ms` : `PENDING for ${ms}ms — promise has not settled`
 }
 
+/** `—`, not a default `true`/`false`: before the first sample window has
+ *  closed there is no verdict, and rendering one would read as "healthy"
+ *  for the first second after every mount — see `clockAdvancing` on
+ *  `DiagnosticSnapshot`. */
+function formatClock(s: DiagnosticSnapshot): string {
+  if (s.clockAdvancing === null || s.wallDelta === null) return '—  (no reading yet)'
+  return `${s.clockAdvancing}  (wallDelta ${s.wallDelta.toFixed(3)}s)`
+}
+
 /** Renders `DiagnosticSnapshot` as the panel's plain-text body. Exported
  *  separately from the polling loop so the formatting itself is testable
  *  without a timer. */
@@ -165,7 +188,7 @@ export function formatSnapshot(s: DiagnosticSnapshot): string {
     'audio debug  (#/?debug=audio)',
     `state         ${s.state}`,
     `currentTime   ${s.currentTime.toFixed(3)}s`,
-    `clockAdvancing ${s.clockAdvancing}  (wallDelta ${s.wallDelta.toFixed(3)}s)`,
+    `clockAdvancing ${formatClock(s)}`,
     `stuck         ${s.stuck}`,
     `playing       ${s.playing}`,
     `resume()      ${formatResume(s)}`,
