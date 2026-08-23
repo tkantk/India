@@ -39,6 +39,31 @@ const CueSchema = z.object({
   arg: z.string().optional(),
 })
 
+/**
+ * What a line's audio invites the child to do once it ends, and how long the
+ * tour should wait for them to do it before moving on — see `GrandTour.tsx`'s
+ * dwell timer.
+ *
+ * Authored per line, in content, on purpose — never a hardcoded "this beat is
+ * special" in the sequencer. Beat 2 is the first place this fires ("trace the
+ * edge with your finger"), but the next plan wants it on roughly 32 more
+ * lines, one per state screen, and none of those will share a beat index with
+ * this one to key off.
+ */
+const InviteSchema = z.object({
+  /** What the child is being asked to do. Not read by name anywhere on the
+   *  advance path — it exists so content can say what it means, and so a
+   *  later gesture ("say it back", "find the flag") is a different string
+   *  here rather than a second field. */
+  gesture: z.string().min(1),
+  /** The floor, in seconds: the shortest the tour will ever wait after this
+   *  line's audio ends, whether or not a finger ever touches anything. */
+  min: z.number().positive(),
+  /** The hard cap, in seconds: the longest the tour will ever wait, however
+   *  long a finger stays on the corridor. */
+  max: z.number().positive(),
+}).refine((i) => i.max >= i.min, { message: 'invite.max must be at least invite.min' })
+
 function lineSchema(kind: LineKind) {
   return z.object({
     id: z.string().regex(/^[a-z0-9][a-z0-9.-]*$/, 'ids are lowercase dot/dash separated'),
@@ -52,6 +77,10 @@ function lineSchema(kind: LineKind) {
     sfx: z.string().optional(),
     /** Native-script text shown on screen (the "hello" tile). Not narrated. */
     script: z.string().optional(),
+    /** Optional: this line's audio ends with an invitation, and the tour
+     *  should hold the beat open rather than advancing the instant the last
+     *  word is spoken. See `InviteSchema` above. */
+    invite: InviteSchema.optional(),
   }).superRefine((line, ctx) => {
     const n = wordsOf(line.text).length
     for (const [i, cue] of (line.cues ?? []).entries()) {
@@ -103,6 +132,15 @@ export const UiSchema = z.object({ lines: z.array(lineSchema('ui')).min(1) })
 export type Place = z.infer<typeof PlaceSchema>
 export type Landmark = z.infer<typeof LandmarkSchema>
 export type Cue = z.infer<typeof CueSchema>
-export type Line = { id: string; kind: LineKind; text: string; cues?: Cue[]; sfx?: string; script?: string }
+export type Invite = z.infer<typeof InviteSchema>
+export type Line = {
+  id: string
+  kind: LineKind
+  text: string
+  cues?: Cue[]
+  sfx?: string
+  script?: string
+  invite?: Invite
+}
 export type TourBeat = z.infer<typeof TourSchema>['beats'][number]
 export type UiLine = z.infer<typeof UiSchema>['lines'][number]

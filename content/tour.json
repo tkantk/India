@@ -10,7 +10,8 @@
       "id": "tour.02",
       "kind": "tour",
       "text": "Look at the map. That whole shape is India. It is wide across the top, and it comes down to a point at the bottom, like a giant kite dipping into the sea. Go on, trace the edge with your finger.",
-      "cues": [{ "word": 8, "do": "revealSymbol", "arg": "outline" }]
+      "cues": [{ "word": 8, "do": "revealSymbol", "arg": "outline" }],
+      "invite": { "gesture": "trace", "min": 6, "max": 25 }
     },
     {
       "id": "tour.03",

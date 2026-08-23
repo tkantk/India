@@ -69,6 +69,20 @@ describe('Controls', () => {
     expect(narrator.replay).toHaveBeenCalledOnce()
   })
 
+  it("hands replay to the screen when given one, instead of calling the engine directly", async () => {
+    // Task 3: `GrandTour` needs a chance to clear a pending invite's dwell
+    // timer BEFORE the same clip restarts — `n.replay()` would otherwise
+    // leave that timer ticking against audio that has begun again. `onReplay`
+    // is optional precisely so every caller before this one keeps working
+    // unchanged (the test just above, with no `onReplay` at all).
+    narrator.replay.mockClear()
+    const onReplay = vi.fn()
+    render(<Controls onPlayPause={onPlayPause} onHome={onHome} onReplay={onReplay} />)
+    await userEvent.click(screen.getByRole('button', { name: /again/i }))
+    expect(onReplay).toHaveBeenCalledOnce()
+    expect(narrator.replay).not.toHaveBeenCalled()
+  })
+
   it('slows down and says so in words', async () => {
     mount()
     await userEvent.click(screen.getByRole('button', { name: /slower/i }))

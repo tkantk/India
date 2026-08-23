@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { Trace } from './Trace'
+import { isTracing, setTracing } from './tracing'
 
 /** Same shape tracePath.test.ts checks the geometry against: a 100x100
  *  square, perimeter 400, numbers a human can check by hand. */
@@ -381,6 +382,98 @@ describe('Trace', () => {
   })
 })
 
+/**
+ * Plan 4 / Task 3: `GrandTour`'s dwell timer needs to know whether a finger
+ * is currently down on the corridor, and the interface it reads that
+ * through — `useSyncExternalStore(subscribeTracing, isTracing)` — is only as
+ * trustworthy as this component actually keeping it in sync with the real
+ * gesture. `isTracing()` is read directly here rather than through the hook:
+ * this file's job is "does `Trace` publish correctly", not "does
+ * `useSyncExternalStore` work".
+ */
+describe('Trace publishes whether a finger is down', () => {
+  it('is not tracing before anything has touched the corridor', () => {
+    stubReducedMotion(false)
+    render(<Trace d={SQUARE} />)
+    expect(isTracing()).toBe(false)
+  })
+
+  it('publishes true the instant a touch lands on the corridor', () => {
+    stubReducedMotion(false)
+    stubSvgGeometry()
+    const { container } = render(
+      <svg viewBox="0 0 100 100">
+        <Trace d={SQUARE} />
+      </svg>,
+    )
+    touchDown(container, 0, 0)
+    expect(isTracing()).toBe(true)
+  })
+
+  it('publishes false again once the finger lifts', () => {
+    stubReducedMotion(false)
+    stubSvgGeometry()
+    const { container } = render(
+      <svg viewBox="0 0 100 100">
+        <Trace d={SQUARE} />
+      </svg>,
+    )
+    const circle = touchDown(container, 0, 0)
+    expect(isTracing()).toBe(true)
+    circle.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 30, clientY: 0 }))
+    expect(isTracing()).toBe(false)
+  })
+
+  it('publishes false on a cancelled gesture too — a native scroll taking the pointer', () => {
+    stubReducedMotion(false)
+    stubSvgGeometry()
+    const { container } = render(
+      <svg viewBox="0 0 100 100">
+        <Trace d={SQUARE} />
+      </svg>,
+    )
+    const circle = touchDown(container, 0, 0)
+    expect(isTracing()).toBe(true)
+    circle.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, clientX: 0, clientY: 0 }))
+    expect(isTracing()).toBe(false)
+  })
+
+  it('never publishes true for a mouse — this is a finger-only gesture', () => {
+    stubReducedMotion(false)
+    stubSvgGeometry()
+    const { container } = render(
+      <svg viewBox="0 0 100 100">
+        <Trace d={SQUARE} />
+      </svg>,
+    )
+    const circle = container.querySelectorAll('[data-testid="trace-hit"]')[0]
+    circle.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, clientX: 0, clientY: 0, pointerType: 'mouse' }),
+    )
+    expect(isTracing()).toBe(false)
+  })
+
+  it('resets to not-tracing if the component unmounts mid-gesture', () => {
+    // `Outline`'s `Reveal` unmounts this whole subtree the moment its hold
+    // expires — mid-touch, if a finger is still moving when it does. No
+    // `pointerup` is coming for a pointer this component no longer has a
+    // listener on, so without an unmount guard the dwell timer's own
+    // "is a finger down" would read true forever.
+    stubReducedMotion(false)
+    stubSvgGeometry()
+    const { container, unmount } = render(
+      <svg viewBox="0 0 100 100">
+        <Trace d={SQUARE} />
+      </svg>,
+    )
+    touchDown(container, 0, 0)
+    expect(isTracing()).toBe(true)
+    unmount()
+    expect(isTracing()).toBe(false)
+  })
+})
+
 afterEach(() => {
   vi.unstubAllGlobals()
+  setTracing(false)
 })

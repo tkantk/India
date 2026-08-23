@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { GrandTour, comesHome, stageHold } from './GrandTour'
 import { parked, clearPark } from './tourPosition'
 import { HOLD, FADE_MS } from './effects/Reveal'
+import { isTracing, setTracing } from './effects/tracing'
 import tour from '../../content/tour.json'
 import timings from '../data/timings.json'
 import geo from '../data/geo.json'
@@ -162,6 +163,8 @@ beforeEach(() => {
   // it has to outlive the component it is parking for). That means it also
   // outlives any one test in this file unless something clears it here.
   clearPark()
+  // Same reasoning: `tracing.ts`'s published value is module-scoped too.
+  setTracing(false)
 })
 
 afterEach(() => { narrator.cut() })
@@ -174,11 +177,40 @@ const mount = (props: Record<string, unknown> = {}) => render(<GrandTour {...pro
 
 const whole = { timeout: 4000 }
 
+/**
+ * Plan 4 / Task 3: tour.02 (beat index 1) is now authored with an invite —
+ * the real tour holds it open for up to 25 real seconds after its audio
+ * ends, waiting for a finger that these whole-tour tests never provide.
+ * Fake timers, armed BEFORE beat 2's `onEnd` fires (so the dwell timer's own
+ * `setTimeout` calls are the ones being faked, not real ones already
+ * ticking in the background — switching timer implementations does not
+ * retroactively convert an already-scheduled real timer), let this skip
+ * straight past the wait rather than a test actually waiting up to 25
+ * seconds. `shouldAdvanceTime: true` keeps real-time-dependent work — this
+ * file's own `waitFor` polling, and `userEvent`'s internal delays — working
+ * exactly as it does under real timers.
+ *
+ * The wait itself — the floor, the extension while tracing, the hard cap,
+ * and every path that must clear it — has its own dedicated tests below
+ * ("the invitation waits"); this helper exists so every OTHER test in this
+ * file can treat beat 2 as "a beat like any other" again.
+ */
+const skipTour02Invite = async () => {
+  await waitFor(() => expect(played.length).toBeGreaterThanOrEqual(2))
+  await act(async () => { vi.advanceTimersByTime(25000) })
+}
+
 describe('GrandTour', () => {
   it('plays all fourteen beats in the authored order', async () => {
-    mount({ autoStart: true })
-    await waitFor(() => expect(played).toHaveLength(ids.length), whole)
-    expect(played.map(idOf)).toEqual(ids)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(() => expect(played).toHaveLength(ids.length), whole)
+      expect(played.map(idOf)).toEqual(ids)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('waits for the beat to END before starting the next one', async () => {
@@ -195,13 +227,19 @@ describe('GrandTour', () => {
   })
 
   it('dispatches each cue exactly once, as it fires', async () => {
-    mount({ autoStart: true })
-    await waitFor(() => expect(played).toHaveLength(ids.length), whole)
-    const authored = tour.beats.flatMap((b: { cues?: { do: string }[] }) => b.cues ?? [])
-    // tour.07 carries revealSymbol then playSfx; neither may double-fire.
-    expect(dispatched.filter((d) => d === 'playSfx'))
-      .toHaveLength(authored.filter((c) => c.do === 'playSfx').length)
-    expect(dispatched).toHaveLength(authored.length)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(() => expect(played).toHaveLength(ids.length), whole)
+      const authored = tour.beats.flatMap((b: { cues?: { do: string }[] }) => b.cues ?? [])
+      // tour.07 carries revealSymbol then playSfx; neither may double-fire.
+      expect(dispatched.filter((d) => d === 'playSfx'))
+        .toHaveLength(authored.filter((c) => c.do === 'playSfx').length)
+      expect(dispatched).toHaveLength(authored.length)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('lets a tap on a state leave the tour at once — the offer is never a cage', async () => {
@@ -321,11 +359,20 @@ describe('GrandTour', () => {
       await userEvent.click(await screen.findByTestId('state-rajasthan'))
       expect(await screen.findByRole('button', { name: /carry on/i })).toBeInTheDocument()
       autoEnd = true
-      await userEvent.click(screen.getByRole('button', { name: /carry on/i }))
-      await waitFor(
-        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
-        whole,
-      )
+      // "Carry on" resumes beat 0, so the rest of this pass runs straight
+      // through beat 2's invite — fake timers from here on, after the
+      // click, so `userEvent` itself still runs against a real clock.
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      try {
+        await userEvent.click(screen.getByRole('button', { name: /carry on/i }))
+        await skipTour02Invite()
+        await waitFor(
+          () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+          whole,
+        )
+      } finally {
+        vi.useRealTimers()
+      }
       expect(screen.queryByRole('button', { name: /carry on/i })).not.toBeInTheDocument()
       expect(parked()).toBeNull()
     }, 6000)
@@ -349,36 +396,61 @@ describe('GrandTour', () => {
   })
 
   it('evicts the beat before last, so at most a handful of clips stay decoded', async () => {
-    mount({ autoStart: true })
-    await waitFor(() => expect(played).toHaveLength(ids.length), whole)
-    // Every beat but the last one is dropped once the tour has moved past it.
-    expect(evicted.map(idOf)).toEqual(ids.slice(0, -1))
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(() => expect(played).toHaveLength(ids.length), whole)
+      // Every beat but the last one is dropped once the tour has moved past it.
+      expect(evicted.map(idOf)).toEqual(ids.slice(0, -1))
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('offers to play again when it reaches the end', async () => {
-    mount({ autoStart: true })
-    await waitFor(
-      () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
-      whole,
-    )
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+        whole,
+      )
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('shimmers the whole map once at the end, then leaves it calm', async () => {
-    const { container } = mount({ autoStart: true })
-    await waitFor(
-      () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
-      whole,
-    )
-    // The wave is staggered; its first place lands in the same tick.
-    expect(container.querySelector('.base path.lit')).toBeTruthy()
-    await waitFor(() => expect(container.querySelector('.base path.lit')).toBeNull(), { timeout: 6000 })
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    let container: HTMLElement
+    try {
+      ;({ container } = mount({ autoStart: true }))
+      await skipTour02Invite()
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+        whole,
+      )
+      // The wave is staggered; its first place lands in the same tick.
+      expect(container.querySelector('.base path.lit')).toBeTruthy()
+      await waitFor(() => expect(container.querySelector('.base path.lit')).toBeNull(), { timeout: 6000 })
+    } finally {
+      vi.useRealTimers()
+    }
   }, 12000)
 
   it('skips a beat whose audio rejects rather than stranding the child', async () => {
     failOn = ids[3]
-    mount({ autoStart: true })
-    await waitFor(() => expect(played).toHaveLength(ids.length - 1), whole)
-    expect(played.some((a) => a.includes(ids[4]))).toBe(true)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(() => expect(played).toHaveLength(ids.length - 1), whole)
+      expect(played.some((a) => a.includes(ids[4]))).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('skips a beat whose audio 404s — which the engine reports as silence, not an error', async () => {
@@ -386,9 +458,15 @@ describe('GrandTour', () => {
     // never fires onEnd. Waiting for an end that cannot come would leave the
     // child looking at a map that stopped talking.
     silentOn = ids[3]
-    mount({ autoStart: true })
-    await waitFor(() => expect(played).toHaveLength(ids.length), whole)
-    expect(played.map(idOf)).toEqual(ids)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(() => expect(played).toHaveLength(ids.length), whole)
+      expect(played.map(idOf)).toEqual(ids)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('makes the bar\'s play button start the tour when nothing is playing', async () => {
@@ -414,16 +492,22 @@ describe('GrandTour', () => {
   })
 
   it('plays it all again from the bar once the tour has finished', async () => {
-    mount({ autoStart: true })
-    await waitFor(
-      () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
-      whole,
-    )
-    const soFar = played.length
-    autoEnd = false
-    await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
-    await waitFor(() => expect(played.length).toBe(soFar + 1))
-    expect(idOf(played[played.length - 1])).toBe(ids[0])
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+        whole,
+      )
+      const soFar = played.length
+      autoEnd = false
+      await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
+      await waitFor(() => expect(played.length).toBe(soFar + 1))
+      expect(idOf(played[played.length - 1])).toBe(ids[0])
+    } finally {
+      vi.useRealTimers()
+    }
   }, 12000)
 
   it('goes home: stops the tour and puts the big button back', async () => {
@@ -476,6 +560,237 @@ describe('GrandTour', () => {
     const lit = document.querySelectorAll('.word[data-current]')
     expect(lit).toHaveLength(1)
     expect(lit[0].textContent).toBe(first.words[3])
+  })
+})
+
+/**
+ * Plan 4 / Task 3: "it did not give any time to trace which the lady
+ * mentions and switches quickly to next." tour.02 (beat index 1, `ids[1]`)
+ * is authored with `invite: { gesture: 'trace', min: 6, max: 25 }`
+ * (content/tour.json) — the tour now waits at least the floor, longer for
+ * as long as a finger is on the trace corridor, and never past the cap.
+ *
+ * Every test here runs under fake timers, armed BEFORE the invite opens —
+ * switching timer implementations does not retroactively convert an
+ * already-scheduled real timer, so `reachInvite` (which fires tour.02's
+ * `onEnd`) must run AFTER `vi.useFakeTimers()`, not before.
+ */
+describe('the invitation waits', () => {
+  /** Play tour.01 to its end, then tour.02 to its end — landing exactly on
+   *  the moment `handleEnd` (GrandTour.tsx) either advances at once (no
+   *  invite) or arms the dwell timer (tour.02 has one). Requires fake
+   *  timers already active and `autoEnd = false`, set by each test. */
+  const reachInvite = async () => {
+    mount({ autoStart: true })
+    await waitFor(() => expect(played).toHaveLength(1))
+    await act(async () => { narrator.finish() })
+    await waitFor(() => expect(played).toHaveLength(2))
+    expect(idOf(played[1])).toBe(ids[1])
+    await act(async () => { narrator.finish() }) // tour.02's own audio ends
+  }
+
+  it("does not advance the instant tour.02's audio ends — the 41ms bug this task fixes", async () => {
+    autoEnd = false
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await reachInvite()
+      await act(async () => { await Promise.resolve() })
+      expect(played).toHaveLength(2)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('holds for at least the authored floor (6s) when nobody ever touches the map', async () => {
+    autoEnd = false
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await reachInvite()
+      await act(async () => { vi.advanceTimersByTime(5900) })
+      expect(played).toHaveLength(2) // still short of the 6s floor
+      await act(async () => { vi.advanceTimersByTime(200) })
+      await waitFor(() => expect(played).toHaveLength(3))
+      expect(idOf(played[2])).toBe(ids[2])
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('extends the wait for as long as a finger stays on the corridor, past the floor', async () => {
+    autoEnd = false
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await reachInvite()
+      act(() => setTracing(true))
+      // Well past the 6s floor, finger still down: must not have advanced.
+      await act(async () => { vi.advanceTimersByTime(15000) })
+      expect(played).toHaveLength(2)
+      act(() => setTracing(false))
+      // Not settled yet — under SETTLE_MS (2.5s) since the lift.
+      await act(async () => { vi.advanceTimersByTime(2400) })
+      expect(played).toHaveLength(2)
+      await act(async () => { vi.advanceTimersByTime(200) })
+      await waitFor(() => expect(played).toHaveLength(3))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('re-arms the settle window on every new touch, not only the first lift', async () => {
+    autoEnd = false
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await reachInvite()
+      act(() => setTracing(true))
+      await act(async () => { vi.advanceTimersByTime(7000) }) // past the floor
+      act(() => setTracing(false))
+      await act(async () => { vi.advanceTimersByTime(1500) }) // partway to settling
+      // A second touch before the corridor ever went quiet for the full
+      // window: the settle must restart, not merely continue.
+      act(() => setTracing(true))
+      await act(async () => { vi.advanceTimersByTime(3000) })
+      act(() => setTracing(false))
+      await act(async () => { vi.advanceTimersByTime(2400) })
+      expect(played).toHaveLength(2) // still under 2.5s since the SECOND lift
+      await act(async () => { vi.advanceTimersByTime(200) })
+      await waitFor(() => expect(played).toHaveLength(3))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('never waits past the hard cap (25s), however long a finger stays down', async () => {
+    autoEnd = false
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await reachInvite()
+      act(() => setTracing(true))
+      await act(async () => { vi.advanceTimersByTime(24900) })
+      expect(played).toHaveLength(2) // just short of the cap
+      await act(async () => { vi.advanceTimersByTime(200) })
+      await waitFor(() => expect(played).toHaveLength(3))
+      // Cleanup: the double never fires an "up" for this synthetic gesture.
+      act(() => setTracing(false))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('disarms the map for the duration of the invite — a tap neither picks nor disturbs the wait', async () => {
+    autoEnd = false
+    const onPick = vi.fn()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true, onPickState: onPick })
+      await waitFor(() => expect(played).toHaveLength(1))
+      await act(async () => { narrator.finish() })
+      await waitFor(() => expect(played).toHaveLength(2))
+      await act(async () => { narrator.finish() })
+
+      const kerala = await screen.findByTestId('state-kerala')
+      await act(async () => {
+        kerala.dispatchEvent(
+          new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }),
+        )
+        kerala.dispatchEvent(
+          new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }),
+        )
+      })
+      expect(onPick).not.toHaveBeenCalled()
+      expect(played).toHaveLength(2) // `at` is untouched — still on tour.02
+      expect(narrator.stop).not.toHaveBeenCalled()
+
+      // The wait itself is undisturbed by the tap and still completes on
+      // its own ordinary schedule.
+      await act(async () => { vi.advanceTimersByTime(25000) })
+      await waitFor(() => expect(played).toHaveLength(3))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  /**
+   * "No pending advance timer survives pick, home, pause, replay or
+   * unmount." Each of these abandons whatever wait is open WITHOUT running
+   * its `advance` — verified by clearing fake timers well past the 25s hard
+   * cap afterward and confirming nothing further plays. `pick` itself is
+   * not exercised here: it is unreachable through the map while an invite
+   * is open (the test just above IS that guarantee), so its own
+   * `abandonInvite()` call is defence in depth rather than something a tap
+   * can currently trigger mid-wait.
+   */
+  describe('no pending timer survives an abandoned invite', () => {
+    it('via Home', async () => {
+      autoEnd = false
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      try {
+        await reachInvite()
+        await userEvent.click(screen.getByRole('button', { name: /home/i }))
+        await act(async () => { vi.advanceTimersByTime(30000) })
+        expect(played).toHaveLength(2)
+        expect(screen.getByRole('button', { name: /show me india/i })).toBeInTheDocument()
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it("via the bar's Play/Pause — which finishes the wait at once rather than leaving a dead button", async () => {
+      autoEnd = false
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      try {
+        await reachInvite()
+        await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
+        // Finishes immediately — no need to wait for the floor or the cap.
+        await waitFor(() => expect(played).toHaveLength(3))
+        await act(async () => { vi.advanceTimersByTime(30000) })
+        // And exactly once — the original floor/settle/cap must not also
+        // fire and advance a second time.
+        expect(played).toHaveLength(3)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('via Say it again — which would otherwise leave the old wait ticking against replayed audio', async () => {
+      autoEnd = false
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      try {
+        await reachInvite()
+        await userEvent.click(screen.getByRole('button', { name: /again/i }))
+        expect(narrator.replay).toHaveBeenCalledOnce()
+        await act(async () => { vi.advanceTimersByTime(30000) })
+        expect(played).toHaveLength(2) // the double's replay() plays nothing new
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('via unmount', async () => {
+      autoEnd = false
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      try {
+        const { unmount } = await (async () => {
+          const r = render(<GrandTour autoStart />)
+          await waitFor(() => expect(played).toHaveLength(1))
+          await act(async () => { narrator.finish() })
+          await waitFor(() => expect(played).toHaveLength(2))
+          await act(async () => { narrator.finish() })
+          return r
+        })()
+        unmount()
+        await act(async () => { vi.advanceTimersByTime(30000) })
+        expect(played).toHaveLength(2)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+  })
+
+  it('clears whatever the last test left tracing, so this file never leaks between tests', () => {
+    // Not a test of GrandTour at all — a guard on the guard: `beforeEach`
+    // resets `tracing.ts`'s module-scoped store, and this would be the
+    // symptom if it stopped doing that.
+    expect(isTracing()).toBe(false)
   })
 })
 

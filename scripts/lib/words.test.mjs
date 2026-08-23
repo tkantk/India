@@ -211,6 +211,69 @@ describe('cueTimes: the derived hold', () => {
 })
 
 /**
+ * Plan 4 / Task 3: a fourth argument, the line's own `invite`
+ * (`content/schema.ts`), extends the LAST independent art cue's hold past
+ * the clip's own duration by `invite.min` seconds — or the outline a child
+ * is invited to keep tracing disappears out from under their finger the
+ * instant the narration does, the same "no time to finish" defect this
+ * whole task exists to fix, wearing the art's costume instead of the
+ * sequencer's.
+ */
+describe('cueTimes: invite extends the final art cue past the clip', () => {
+  const timings = {
+    words: ['a', 'b', 'c', 'd', 'e'],
+    starts: [0, 2, 5, 8, 12],
+    ends: [1, 3, 6, 9, 13],
+  }
+
+  it('adds invite.min seconds to the clip duration for a lone reveal', () => {
+    const invite = { gesture: 'trace', min: 6, max: 25 }
+    const [cue] = cueTimes([{ word: 0, do: 'revealSymbol', arg: 'outline' }], timings, 15, invite)
+    // Without invite this would be 15000 (holds to the clip's own end);
+    // with it, duration + invite.min - t = 15 + 6 - 0 = 21 seconds.
+    expect(cue.hold).toBe(21000)
+  })
+
+  it('leaves every hold exactly as before when the line carries no invite', () => {
+    const [cue] = cueTimes([{ word: 0, do: 'revealSymbol', arg: 'outline' }], timings, 15)
+    expect(cue.hold).toBe(15000)
+    const [cueUndefined] = cueTimes([{ word: 0, do: 'revealSymbol', arg: 'outline' }], timings, 15, undefined)
+    expect(cueUndefined.hold).toBe(15000)
+  })
+
+  it('only extends the FINAL independent art cue, not one a later cue already cuts short', () => {
+    // tour.09's shape: an invite on a line with several reveals must not
+    // let the invite leak into the earlier ones, which are already correctly
+    // bounded by the cue that follows them.
+    const invite = { gesture: 'trace', min: 6, max: 25 }
+    const cues = cueTimes([
+      { word: 0, do: 'revealSymbol', arg: 'lotus' },
+      { word: 1, do: 'revealSymbol', arg: 'banyan' },
+      { word: 2, do: 'revealSymbol', arg: 'mango' },
+    ], timings, 15, invite)
+    expect(cues[0].hold).toBe(2000) // unaffected: cut short by 'banyan'
+    expect(cues[1].hold).toBe(3000) // unaffected: cut short by 'mango'
+    expect(cues[2].hold).toBe(16000) // 'mango' is word 2, t=5: (15 + 6 - 5) * 1000
+  })
+
+  it('still applies the cap for a verb that has one, even past the clip end', () => {
+    // countTo's own 5000ms cap must win over a generous invite too — this
+    // task authors no invite onto a countTo line, but the formula must not
+    // quietly grow an uncapped hold for a verb the sequencer assumes stays
+    // short (GrandTour.tsx's HIGHLIGHT_MS).
+    const invite = { gesture: 'trace', min: 6, max: 25 }
+    const [cue] = cueTimes([{ word: 0, do: 'countTo', arg: '28' }], timings, 15, invite)
+    expect(cue.hold).toBe(5000)
+  })
+
+  it('does not extend a non-art cue, which gets no hold either way', () => {
+    const invite = { gesture: 'trace', min: 6, max: 25 }
+    const [cue] = cueTimes([{ word: 0, do: 'playSfx', arg: 'growl' }], timings, 15, invite)
+    expect(cue.hold).toBeUndefined()
+  })
+})
+
+/**
  * The table in the brief was computed from the real, shipped files — not
  * from a synthetic fixture — so this is the check that actually matters:
  * run `cueTimes` against `content/tour.json` and `src/data/timings.json`
@@ -223,13 +286,19 @@ describe('cueTimes against the shipped tour', () => {
   const beat = (id) => tour.beats.find((b) => b.id === id)
   const holdsFor = (id) => {
     const clip = shipped[id]
-    return cueTimes(beat(id).cues, clip, clip.duration)
+    return cueTimes(beat(id).cues, clip, clip.duration, beat(id).invite)
   }
   const seconds = (ms) => ms / 1000
 
-  it('tour.02: the outline holds to the end of its beat (9.0 -> 15.86)', () => {
+  // Plan 4 / Task 3: beat 2 is now authored with `invite: { min: 6, max: 25
+  // }` (content/tour.json), so the outline's hold is no longer merely
+  // "to the end of the clip" — it is `duration + invite.min` past the cue's
+  // own word: (20.0098 + 6) - 4.145 =~ 21.86s. Before this task the number
+  // here was 15.86 (duration alone), and the outline vanished 41ms before
+  // the audio it was drawn under even finished — the defect this task fixes.
+  it('tour.02: the outline holds past the end of its own audio, through the invite floor (4.1 -> 21.86)', () => {
     const [outline] = holdsFor('tour.02')
-    expect(seconds(outline.hold)).toBeCloseTo(15.86, 1)
+    expect(seconds(outline.hold)).toBeCloseTo(21.86, 1)
   })
 
   it('tour.03/04: the state and UT counters are capped at 5s though derived is far more', () => {

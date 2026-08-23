@@ -181,8 +181,18 @@ function groupOf(cue, index) {
  * cue gets a `hold` at all: that is the built-time-only draft-voice pipeline
  * and the single-effect tests, where every effect falls back to its own
  * constant.
+ *
+ * A fourth argument — the line's own `invite` (`content/schema.ts`), if it
+ * has one — extends the LAST independent art cue's hold past the clip's own
+ * end by `invite.min` seconds. Without this, the picture a child is invited
+ * to keep looking at while they trace disappears the instant the narration
+ * does — Plan 4 Task 3's own bug, in the art rather than the sequencer: an
+ * outline that vanishes under a still-tracing finger is the same "no time to
+ * finish" defect wearing a different costume. Every other art cue, on every
+ * other line, is unaffected: `invite` only ever reaches here from a line
+ * that actually authored one.
  */
-export function cueTimes(cues, timings, duration) {
+export function cueTimes(cues, timings, duration, invite) {
   const resolved = (cues ?? [])
     .map(c => {
       if (c.word >= timings.starts.length) {
@@ -205,7 +215,13 @@ export function cueTimes(cues, timings, duration) {
     // an accumulating member is skipped over, exactly as if it were not
     // independent art at all.
     const next = art.find((e) => e.i > i && e.group !== group)
-    const end = next ? Math.min(next.cue.t, duration) : duration
+    // No next independent art cue: this picture would otherwise run only to
+    // the clip's own end. A line with an authored invite gets `invite.min`
+    // seconds more than that — the floor of the wait the sequencer holds the
+    // beat open for (GrandTour.tsx) — so the art a child is invited to keep
+    // looking at is still there for at least as long as the tour guarantees
+    // to wait for them.
+    const end = next ? Math.min(next.cue.t, duration) : (invite ? duration + invite.min : duration)
     const cap = HOLD_CAP_MS[cue.do] ?? Infinity
     const hold = Math.round(Math.min(Math.max((end - cue.t) * 1000, MIN_HOLD_MS), cap))
     return { ...cue, hold }

@@ -12,11 +12,12 @@ import { Mor } from './Mor'
 import { Here } from './effects/Here'
 import { FADE_MS, HOLD } from './effects/Reveal'
 import { WATERS } from './effects/art/Sea'
+import { isTracing, subscribeTracing } from './effects/tracing'
 import content from '../../content/tour.json'
 import timings from '../data/timings.json'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
-import type { Bbox, Clip, Cue } from '../types'
+import type { Bbox, Clip, Cue, Invite } from '../types'
 import './grandTour.css'
 
 /**
@@ -46,6 +47,16 @@ import './grandTour.css'
  * silence, resolved — and no `onEnd` will ever come). Either way the tour
  * skips to the next beat rather than leaving a child in front of a map that
  * stopped talking.
+ *
+ * A BEAT CAN ASK FOR MORE TIME THAN ITS OWN AUDIO. Beat 2 ends with "Go on,
+ * trace the edge with your finger" — and `onEnd` used to advance in the same
+ * tick the last word stopped sounding, 41ms before the traced outline's own
+ * hold even expired. A line authored with an `invite` (`content/schema.ts`)
+ * holds the beat open instead: at least `invite.min` seconds regardless,
+ * longer for as long as a finger is on `Trace`'s own corridor, never past
+ * `invite.max`. See `useInviteGap` below for the whole shape of the wait,
+ * and its own render usage further down for what it disarms on the map
+ * while it is open.
  *
  * NOTHING HERE THROWS. Every path a cue or a beat can take is guarded.
  */
@@ -112,6 +123,157 @@ const HIGHLIGHT_MS = ALL_SLUGS.length * STAGGER_MS + HOLD.counter
 
 /** The two verbs that light the map rather than draw on it. */
 const HIGHLIGHTS = new Set(['highlightAllStates', 'highlightUnionTerritories'])
+
+/**
+ * How long a lifted finger must stay off the trace corridor before the
+ * dwell timer below treats one gesture as over. Code, not content — the
+ * father's decision was "about 2.5s after he lifts", and it is how "quiet"
+ * reads as "done" for ANY invite, the same way `TAP_MOVE_PX`/`TAP_MAX_MS`
+ * in `hitLayer.ts` are a platform judgement call rather than an authored
+ * number. `invite.min`/`invite.max` are per-line because different
+ * gestures may warrant different floors and caps; how long "quiet" has to
+ * last is not that kind of question.
+ */
+const SETTLE_MS = 2500
+
+/**
+ * One open invite's own bookkeeping: whether the floor has elapsed, whether
+ * the corridor has been quiet for long enough, and how to tear the whole
+ * thing down. Not React state — see `useInviteGap` below for why.
+ */
+type GapSession = {
+  floorDone: boolean
+  settleDone: boolean
+  finished: boolean
+  cleanup: () => void
+}
+
+/**
+ * THE INVITATION WAITS AS LONG AS HE IS TRACING.
+ *
+ * `n.onEnd` used to be the whole of "advance": a beat's audio finished, so
+ * the tour moved on, in the same tick that word 42 stopped sounding — 41ms
+ * before the outline's own hold even expired. Beat 2 is the one beat that
+ * says "trace the edge with your finger", and the finger it asked for was
+ * never given anywhere to land.
+ *
+ * This hook owns the wait. `arm(invite, onDone)` opens it the instant a
+ * beat's `onEnd` fires with an authored `invite`: `onDone` — always the
+ * beat's own `advance` — runs once, at the EARLIEST of three things —
+ *   - `invite.max` seconds have passed regardless (the hard cap), or
+ *   - `invite.min` seconds have passed AND the corridor has been quiet
+ *     (no finger down) for `SETTLE_MS` — which is already true, with no
+ *     further wait, for a child who never touched anything at all.
+ * `abandon()` tears the same wait down WITHOUT running `onDone` — the beat
+ * effect's own cleanup, `pick`, `goHome`, `end` and `replay` all call this,
+ * because none of them mean "carry on to the next beat", and a stray timer
+ * from a beat the child has already left must never fire into whatever the
+ * tour does next. `finish()` is the third door: ends the wait right now
+ * AND runs `onDone`, which is what the bar's own Play/Pause becomes once
+ * there is no audio left to pause — see `playPause`'s own comment.
+ *
+ * WHY NOT PLAIN REACT STATE FOR THE TIMERS THEMSELVES. `tracing` — read via
+ * `useSyncExternalStore`, exactly as this file already reads `n.playing` —
+ * has to be able to re-arm a single wait, in place, every time a finger
+ * lands or lifts, without resetting the floor or the cap that are already
+ * running: an effect keyed on `[invite, tracing]` would tear its own
+ * closure down and rebuild it on every touch, restarting exactly the
+ * timers that must NOT restart. A `GapSession` in a ref survives that; only
+ * the settle timer is ever re-armed, from the `tracing` effect below, and
+ * the floor and cap are armed once, when the session itself is created.
+ *
+ * `invite` (React state) is the one thing here that DOES need to be a
+ * render-visible value: it is what `GrandTour` disarms the map with for as
+ * long as it is non-null (see this file's own `TourStage` usage) — "the
+ * duration of the invite" means the whole wait, not only the moments a
+ * finger happens to be down within it.
+ */
+function useInviteGap() {
+  const [invite, setInvite] = useState<Invite | null>(null)
+  const session = useRef<GapSession | null>(null)
+  const onDone = useRef<(() => void) | null>(null)
+  // Read exactly as this file already reads `n.playing`: a primitive
+  // selector against a store outside React, so THIS re-renders — and the
+  // settle-timer effect below re-runs — on every finger down/up on the
+  // corridor, without either file reaching into the other's internals.
+  const tracing = useSyncExternalStore(subscribeTracing, isTracing)
+
+  /** Tear the current wait down without running its `onDone`. Idempotent —
+   *  every abandon path calls this, and most of the time there is nothing
+   *  open to abandon. */
+  const abandon = useCallback(() => {
+    if (session.current) { session.current.cleanup(); session.current = null }
+    onDone.current = null
+    setInvite(null)
+  }, [])
+
+  /** End the current wait right now and run its `onDone` — the only door
+   *  that DOES carry the beat forward. Guarded by the session's own
+   *  `finished` flag so the cap timer and the floor+settle path racing
+   *  each other in the same tick can only ever run `onDone` once. */
+  const finish = useCallback(() => {
+    const g = session.current
+    if (!g || g.finished) return
+    g.finished = true
+    g.cleanup()
+    session.current = null
+    setInvite(null)
+    const run = onDone.current
+    onDone.current = null
+    run?.()
+  }, [])
+
+  /** Both halves of "may this wait end" are met: check, and only then
+   *  finish. Called from the floor timer below and from the settle effect
+   *  — never from the cap timer, which ends the wait unconditionally. */
+  const tryFinish = useCallback((g: GapSession) => {
+    if (g.floorDone && g.settleDone) finish()
+  }, [finish])
+
+  /**
+   * Open a wait: `invite.min` and `invite.max` become the floor and the
+   * hard cap, armed ONCE here and never reset for the rest of this
+   * session — see this function's own top note for why that has to be a
+   * ref, not an effect keyed on `tracing`. `settleDone` starts true when
+   * the corridor is already idle (nothing to wait out) and false when a
+   * finger is already down; either way, the settle EFFECT below is what
+   * moves it from there.
+   */
+  const arm = useCallback((invited: Invite, done: () => void) => {
+    abandon()
+    onDone.current = done
+    setInvite(invited)
+
+    const g: GapSession = { floorDone: false, settleDone: !isTracing(), finished: false, cleanup: () => {} }
+    session.current = g
+
+    const floor = setTimeout(() => { g.floorDone = true; tryFinish(g) }, invited.min * 1000)
+    const cap = setTimeout(finish, invited.max * 1000)
+    g.cleanup = () => { clearTimeout(floor); clearTimeout(cap) }
+  }, [abandon, finish, tryFinish])
+
+  /**
+   * The one piece of an open wait that has to react to a finger moving:
+   * re-arms `SETTLE_MS` from scratch every time the corridor goes quiet,
+   * and cancels it the instant a finger comes back down. A SEPARATE effect
+   * from the one that plays a beat (`GrandTour`'s own big `useEffect`), on
+   * purpose: that effect's dependency array does not include `tracing`,
+   * because putting it there would tear the beat's `onEnd`/prefetch/evict
+   * machinery down and rebuild it on every touch of the coastline. This
+   * effect only ever touches the settle timer inside whatever `GapSession`
+   * is currently open — the floor and the cap, armed once in `arm` above,
+   * are never reached from here.
+   */
+  useEffect(() => {
+    const g = session.current
+    if (!g) return
+    if (tracing) { g.settleDone = false; return }
+    const settle = setTimeout(() => { g.settleDone = true; tryFinish(g) }, SETTLE_MS)
+    return () => clearTimeout(settle)
+  }, [tracing, tryFinish])
+
+  return { invite, arm, abandon, finish }
+}
 
 /** The middle of a place, in the map's own coordinates. */
 const centreOf = (bbox: Bbox): [number, number] => [bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2]
@@ -282,6 +444,12 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    */
   const [parkedAt, setParkedAt] = useState<number | null>(() => parked())
   const { showing, here, saw, clear: clearStage } = useStageLife(map)
+  /** The invite currently open, if a beat's audio just ended carrying one
+   *  and the tour is holding it open rather than advancing at once — see
+   *  `useInviteGap`'s own top note. Non-null for the WHOLE wait, not only
+   *  the moments a finger happens to be down within it, which is exactly
+   *  what disarms the map below: "the duration of the invite" means this. */
+  const { invite, arm: armInvite, abandon: abandonInvite, finish: finishInvite } = useInviteGap()
 
   const shimmer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stopShimmer = useCallback(() => {
@@ -334,6 +502,9 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   const end = useCallback(() => {
     setAt(null)
     setFinished(true)
+    // A beat the child has already left — however this end came about —
+    // must not have a stray timer land on whatever the screen does next.
+    abandonInvite()
     // Completion is completion, not a place to carry on from — a parked beat
     // from an earlier, abandoned pass through the tour must not survive it.
     clearPark()
@@ -347,7 +518,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
       shimmer.current = null
       map.clear()
     }, SHIMMER_MS)
-  }, [clearStage, map, n, stopShimmer])
+  }, [abandonInvite, clearStage, map, n, stopShimmer])
 
   /**
    * One beat: play it, hand the engine somewhere to report its end, and get
@@ -366,10 +537,25 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
       else end()
     }
 
-    // The engine reports a natural end here and nowhere else. `stop()` does
-    // not fire it, which is exactly why abandoning the tour does not
-    // secretly queue up beat 8.
-    n.onEnd = advance
+    /**
+     * The engine reports a natural end here and nowhere else. `stop()` does
+     * not fire it, which is exactly why abandoning the tour does not
+     * secretly queue up beat 8.
+     *
+     * A beat whose line carries no `invite` advances exactly as it always
+     * has — the same tick the last word stops sounding. One that does gets
+     * held open instead: `armInvite` runs `advance` itself once the wait is
+     * over, never sooner. The 404 paths inside the async block below call
+     * `advance` directly, bypassing this entirely — a missing file is not
+     * an invitation.
+     */
+    const handleEnd = () => {
+      if (!live) return
+      const invited = current.clip.invite
+      if (!invited) { advance(); return }
+      armInvite(invited, advance)
+    }
+    n.onEnd = handleEnd
 
     // EVERY BEAT STARTS ON A CLEAN MAP, for the same reason Mor's `showing`
     // expires: a highlight is emphasis, and emphasis that is never taken away
@@ -413,9 +599,17 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
 
     return () => {
       live = false
-      if (n.onEnd === advance) n.onEnd = null
+      if (n.onEnd === handleEnd) n.onEnd = null
+      // Whichever beat this closure belongs to is being torn down —
+      // normally because it just advanced past its own invite (already
+      // abandoned by `armInvite`'s own `abandon()` call, so this is a
+      // no-op), but also on pick, home, unmount and every other path that
+      // changes `at` out from under a beat still mid-wait. A stray
+      // floor/settle/cap timer surviving this would fire into whatever
+      // beat (or nothing) comes next.
+      abandonInvite()
     }
-  }, [at, end, map, n])
+  }, [abandonInvite, armInvite, at, end, map, n])
 
   /**
    * Begin playing some beat from its first word — beat 0 for a fresh start,
@@ -447,14 +641,23 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    * parked beat if there is one to carry on from, and from the top
    * otherwise, which is the same thing the big gold button does. Two
    * targets, one meaning, and neither of them dead.
+   *
+   * A THIRD state Task 3 adds: a beat whose audio has already ended and is
+   * waiting on an invite. `n.playing` is false there — there is nothing
+   * left to pause — so without this branch the button would fall through to
+   * `n.resume()`, which the engine already no-ops with nothing loaded
+   * (Narrator.ts's own `resume()`), and the wait would carry on regardless
+   * of the tap. "Make something happen" here means finishing the wait right
+   * now, exactly as if the floor and the settle had both just elapsed.
    */
   const playPause = useCallback(() => {
     if (n.playing) { n.pause(); return }
+    if (invite) { finishInvite(); return }
     if (at !== null) { n.resume(); return }
     const p = parked()
     if (p !== null) { carryOn(p); return }
     start()
-  }, [at, carryOn, n, start])
+  }, [at, carryOn, finishInvite, invite, n, start])
 
   /**
    * Home. On a one-screen app there is nowhere to navigate TO, so home is
@@ -464,6 +667,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    */
   const goHome = useCallback(() => {
     n.stop()
+    abandonInvite()
     setAt(null)
     // Not "again": home is the beginning, and this is what the beginning
     // looks like. Documented as such, so a parked beat does not outlive it.
@@ -474,7 +678,22 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     stopShimmer()
     map.clear()
     void camera.home()
-  }, [clearStage, map, n, stopShimmer])
+  }, [abandonInvite, clearStage, map, n, stopShimmer])
+
+  /**
+   * "Say it again." Controls used to call `n.replay()` directly — there was
+   * nothing here for it to go through — but `replay()` restarts the SAME
+   * clip that just opened an invite (`Narrator.replay()` only checks that a
+   * buffer exists, and stopping is the only thing that forgets one), which
+   * would otherwise leave the ORIGINAL wait's floor/settle/cap timers
+   * ticking against audio that has started over. Clearing them first is the
+   * minimum seam this task needs; making "say it again" properly restart
+   * the invite too is Task 4's, not this one's.
+   */
+  const replay = useCallback(() => {
+    abandonInvite()
+    n.replay()
+  }, [abandonInvite, n])
 
   /**
    * A state was tapped. Whatever was happening stops, and the child goes
@@ -488,6 +707,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    */
   const pick = useCallback((slug: string) => {
     n.stop()
+    abandonInvite()
     if (at !== null) { park(at); setParkedAt(at) }
     setAt(null)
     clearStage()
@@ -503,7 +723,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
       void camera.flyTo(place.bbox, { padding })
     }
     onPickState?.(slug)
-  }, [at, clearStage, map, n, onPickState, stopShimmer])
+  }, [abandonInvite, at, clearStage, map, n, onPickState, stopShimmer])
 
   // Only meaningful while idle — `beat` is null. `parkedAt` itself is kept
   // accurate everywhere `at` goes to null (see its own declaration above);
@@ -518,7 +738,18 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
           the flag; Task 12 deletes it once the repair is verified. */}
       <AudioDebugPanel />
 
-      <TourStage onPickState={pick} onCue={saw} scene={beat?.id ?? ''}>
+      {/*
+        `onPickState` is withheld — not merely a picker that does nothing —
+        for as long as an invite is open. `TourStage` already falls back to
+        a no-op when this prop is `undefined` (its own `NOOP`), so this is
+        the whole of "disarm the map for the duration of the invite": beat
+        2 is the one moment the narration explicitly asks for a finger on
+        the coast, and without this a near-miss of `Trace`'s own corridor
+        would fall through to `MapStage`'s ordinary tap-to-pick — ending the
+        tour on exactly the touch it just invited. Every state screen this
+        same field reaches next inherits the same protection for free.
+      */}
+      <TourStage onPickState={invite ? undefined : pick} onCue={saw} scene={beat?.id ?? ''}>
         {/* "Look down." Drawn in the map's own coordinates, over the place
             the camera has just flown to. Not part of the overlay slot: that
             belongs to the cue registry, and this answers a camera verb the
@@ -555,7 +786,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
         </div>
       </TourStage>
 
-      <Controls onPlayPause={playPause} onHome={goHome} />
+      <Controls onPlayPause={playPause} onHome={goHome} onReplay={replay} />
     </>
   )
 }

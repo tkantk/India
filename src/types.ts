@@ -24,6 +24,16 @@ export type Bbox = [number, number, number, number]
  */
 export type Cue = { t: number; word: number; do: string; arg?: string; hold?: number }
 
+/**
+ * What a clip's audio invites the child to do once it ends, and how long the
+ * tour should wait for them to do it — authored once, in content
+ * (`content/schema.ts`'s `invite`), and carried straight through the build
+ * (`scripts/lib/words.mjs`) onto the clip it belongs to. `min`/`max` are in
+ * **seconds**, unlike `Cue.hold`: they describe a wait the sequencer itself
+ * times, not a picture's own lifetime.
+ */
+export type Invite = { gesture: string; min: number; max: number }
+
 /** One narrated line: its audio file, its words, and when each is spoken. */
 export type Clip = {
   audio: string
@@ -32,4 +42,7 @@ export type Clip = {
   starts: number[]
   ends: number[]
   cues: Cue[]
+  /** Present only on a beat whose line was authored with one — see
+   *  `Invite` above. */
+  invite?: Invite
 }

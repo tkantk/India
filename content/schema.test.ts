@@ -72,6 +72,52 @@ describe('PlaceSchema', () => {
   })
 })
 
+/**
+ * Plan 4 / Task 3: `invite` gains a line the shape GrandTour.tsx's dwell
+ * timer reads — `{ gesture, min, max }` — and it is optional on every line
+ * kind, not just `tour`, because the next plan wants it on roughly 32 state
+ * screen lines too. Nothing here hardcodes which beat gets one; the schema
+ * only enforces the shape.
+ */
+describe('invite', () => {
+  const withInvite = (invite: unknown) => ({ ...validLine, invite })
+
+  it('is optional — every existing line without one still validates', () => {
+    expect(PlaceSchema.safeParse(validPlace).success).toBe(true)
+    expect(lineSchemaAccepts(validLine)).toBe(true)
+  })
+
+  it('accepts a well-formed invite', () => {
+    expect(lineSchemaAccepts(withInvite({ gesture: 'trace', min: 6, max: 25 }))).toBe(true)
+  })
+
+  it('rejects an invite with no gesture', () => {
+    expect(lineSchemaAccepts(withInvite({ gesture: '', min: 6, max: 25 }))).toBe(false)
+  })
+
+  it('rejects a non-positive min or max', () => {
+    expect(lineSchemaAccepts(withInvite({ gesture: 'trace', min: 0, max: 25 }))).toBe(false)
+    expect(lineSchemaAccepts(withInvite({ gesture: 'trace', min: 6, max: 0 }))).toBe(false)
+    expect(lineSchemaAccepts(withInvite({ gesture: 'trace', min: -1, max: 25 }))).toBe(false)
+  })
+
+  it('rejects a max smaller than min — a hard cap must not fire before the floor', () => {
+    expect(lineSchemaAccepts(withInvite({ gesture: 'trace', min: 25, max: 6 }))).toBe(false)
+  })
+
+  it('accepts max equal to min — a floor with no further wait is still valid', () => {
+    expect(lineSchemaAccepts(withInvite({ gesture: 'trace', min: 6, max: 6 }))).toBe(true)
+  })
+
+  // `intro` is used here rather than a second `PlaceSchema` object purely to
+  // keep each of the above one-liners readable; `PlaceSchema` re-uses the
+  // very same per-kind schema (`lineSchema('intro')`) internally, so this is
+  // not a second, drifting definition of what a line accepts.
+  function lineSchemaAccepts(line: Record<string, unknown>): boolean {
+    return PlaceSchema.safeParse({ ...validPlace, intro: line }).success
+  }
+})
+
 describe('wordsOf', () => {
   it('splits on whitespace and keeps punctuation attached', () => {
     expect(wordsOf('Hello, big world!')).toEqual(['Hello,', 'big', 'world!'])

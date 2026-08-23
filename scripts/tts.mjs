@@ -111,9 +111,15 @@ async function renderLine(line) {
 
   if (!force && cachedFor(line)) {
     // Audio is unchanged; still recompute cue times (and holds) in case a
-    // cue moved.
+    // cue moved — and always re-carry `invite` from the content, not the
+    // cached entry, so authoring one (or editing its min/max) on an
+    // otherwise-unchanged line takes effect without re-rendering audio.
     const prev = previous[line.id]
-    timings[line.id] = { ...prev, cues: cueTimes(line.cues, prev, prev.duration) }
+    timings[line.id] = {
+      ...prev,
+      invite: line.invite,
+      cues: cueTimes(line.cues, prev, prev.duration, line.invite),
+    }
     reused++
     return
   }
@@ -137,7 +143,13 @@ async function renderLine(line) {
     ? timingsFromAlignment(line.text, alignment)
     : estimateTimings(line.text, duration)
 
-  timings[line.id] = { audio: rel, duration, ...t, cues: cueTimes(line.cues, t, duration) }
+  timings[line.id] = {
+    audio: rel,
+    duration,
+    ...t,
+    invite: line.invite,
+    cues: cueTimes(line.cues, t, duration, line.invite),
+  }
   cache[line.id] = key
   rendered++
   process.stdout.write(`\r  rendered ${rendered}, reused ${reused}   `)

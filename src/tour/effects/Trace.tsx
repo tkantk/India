@@ -90,12 +90,13 @@
  * than a real finger, rather than quietly "working" for a mouse-driven
  * check that proves nothing about a six-year-old's hand.
  */
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { motion, useMotionValue, useReducedMotionConfig } from 'motion/react'
 import { isCheap } from '../../lib/cheapMode'
 import { useMapZoom } from './Reveal'
 import { buildTracePath, nearestOnPath, resamplePath, ringDelta } from './tracePath'
+import { setTracing } from './tracing'
 import { PALETTE as C } from './art/palette'
 
 /**
@@ -183,6 +184,15 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
   const path = useMemo(() => buildTracePath(d), [d])
   const hits = useMemo(() => resamplePath(path, SPACING), [path])
 
+  // The published half of "a finger is down" must not outlive this
+  // component: `Outline`'s `Reveal` unmounts this whole subtree the moment
+  // its hold expires, mid-gesture if a finger is still moving when it does
+  // (exactly the Task 5 wall-clock interaction this file's own dwell-timer
+  // consumer has to live with). Without this, an unmount mid-touch would
+  // leave `isTracing()` stuck true forever — no `pointerup` is coming for a
+  // pointer this component no longer has a listener on.
+  useEffect(() => () => setTracing(false), [])
+
   if (!enabled) return null
 
   const start = (e: ReactPointerEvent<SVGCircleElement>) => {
@@ -191,6 +201,7 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
     if (!local) return
     e.currentTarget.setPointerCapture?.(e.pointerId)
     tracing.current = true
+    setTracing(true)
     const { fraction } = nearestOnPath(path, local.x, local.y)
     anchor.current = fraction
     last.current = fraction
@@ -238,6 +249,7 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
 
   const end = (e: ReactPointerEvent<SVGCircleElement>) => {
     tracing.current = false
+    setTracing(false)
     e.currentTarget.releasePointerCapture?.(e.pointerId)
   }
 

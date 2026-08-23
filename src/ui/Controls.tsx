@@ -23,6 +23,14 @@ type Props = {
    * playing. Plan 3's state screens will make it a real navigation.
    */
   onHome: () => void
+  /**
+   * "Say it again." Optional, and defaults to calling the engine directly —
+   * every caller before Task 3 had nothing it needed to do first. `GrandTour`
+   * now provides one: replaying a beat mid-invite restarts the same clip a
+   * dwell timer is still waiting on, and the screen is the only thing that
+   * knows to clear that wait before the audio starts over.
+   */
+  onReplay?: () => void
 }
 
 /**
@@ -41,7 +49,7 @@ type Props = {
  * engine and mean the same thing on every screen. Play and home are not, so
  * they come in as props.
  */
-export function Controls({ onPlayPause, onHome }: Props) {
+export function Controls({ onPlayPause, onHome, onReplay }: Props) {
   const n = getNarrator()
   const playing = useSyncExternalStore(n.subscribe, () => n.playing)
   const stuck = useSyncExternalStore(n.subscribe, () => n.stuck)
@@ -91,7 +99,7 @@ export function Controls({ onPlayPause, onHome }: Props) {
         </span>
       </button>
 
-      <button type="button" className="tap control" onClick={() => n.replay()}>
+      <button type="button" className="tap control" onClick={() => (onReplay ? onReplay() : n.replay())}>
         <span className="control__body">
           <span className="control__icon" aria-hidden="true">↺</span>
           <span className="control__label">Say it again</span>
