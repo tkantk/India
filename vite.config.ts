@@ -51,5 +51,26 @@ export default defineConfig({
   base: './',
   server: { host: true },
   preview: { host: true },
-  test: { environment: 'jsdom', globals: true, setupFiles: ['./src/setupTests.ts'] },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/setupTests.ts'],
+    /**
+     * Git worktrees live under `.claude/worktrees/`, and each one is a FULL
+     * checkout of this repo on another branch. Vitest's default excludes do
+     * not cover dot-directories, so without this a bare `npm test` collects
+     * every sibling branch's tests as well as our own.
+     *
+     * Measured, not theorised: with three candidate worktrees on disk the
+     * suite reported 2,848 tests across 186 files — including 2 failures and
+     * 20 skips belonging to other branches — where the real number was 727
+     * across 48. That is not merely noisy: it reports another branch's red as
+     * ours, and buries our own red in four times its volume of someone
+     * else's green. A test count you cannot trust is worse than no test count.
+     *
+     * CI is unaffected (it checks out a clean tree with no worktrees), which
+     * is exactly why this could have gone unnoticed locally for a long time.
+     */
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
+  },
 })
