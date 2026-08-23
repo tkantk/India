@@ -139,7 +139,9 @@ Every task's requirements implicitly include this section.
 - [ ] **Step 2: Run, fail, implement, pass.**
 - [ ] **Step 3: Rewrite the test that encodes the old behaviour.** `GrandTour.test.tsx:202` ("lets a tap on a state abandon the tour") and `:212` assert the stop and were correct when written; the docstring at `:29-31` says *"a tap anywhere on the map ends the tour at once. THE TOUR IS AN OFFER, NEVER A CAGE."* That intent survives — a deliberate tap still leaves. **Rewrite both tests and the docstring deliberately to say what is now true. Do not delete them.**
 - [ ] **Step 4: Fix the stale docstring at `:22`** while you are in the file: it says the tour is 2:41; summing `duration` over the 14 tour clips gives **244.58s = 4:05**. That wrong number has already been copied into one diagnosis as though measured.
-- [ ] **Step 5: Full suite, commit.**
+- [ ] **Step 5: Consider restoring the light-up the father originally asked for.** His brief for this whole project said: *"when the voice says the capital of India is New Delhi, the animation can light up that place and then bring forwards expanding Delhi."* The corrected `tour.05` now flies at word 24 (*"...a bigger place called Delhi"*), which lands well — the flight begins and *"Hold on, we are flying there now"* narrates it. But **nothing happens at word 16, where he actually hears "New Delhi"**, so the light-up half of that brief is still missing. Adding a `highlightState: delhi` cue at word 16 costs one line of content and **no re-render** — cues are resolved from timings, not baked into audio. Do it if it reads well; say so either way.
+
+- [ ] **Step 6: Full suite, commit.**
 
 ---
 
@@ -239,7 +241,9 @@ The fix is **not** "prompt whenever anything renders" — `--force` is a user ex
 - [ ] **Step 4: Settle the undocumented billing question.** It is not documented whether `previous_text`/`next_text` characters are billed. Compare the `character-cost` sum against the preflight estimate and record the answer.
 - [ ] **Step 5: Diff `timings.json`.** Word arrays must be byte-identical **except** for the 13 corrected lines, where they must match the new text. Only `duration`, `starts`, `ends` and derived `hold`s may move elsewhere. A word array changing on an untouched line means something is wrong with the text, not the audio.
 - [ ] **Step 6: Listen to the whole tour, start to finish.** The only real test for the thing being fixed. The seams between beats should be inaudible.
-- [ ] **Step 7: Commit.**
+- [ ] **Step 7: Restore the test Task 1 had to skip.** `content/schema.test.ts` skips *"tour.05: zoomTo is art and its hold matches the Delhi ring"* because it asserts hold values against the old 38-word recording, which the corrected text invalidated. It was skipped rather than deleted precisely so this task would restore it. **Recompute the hold numbers against the regenerated timings and un-skip it.** A skipped test carrying a TODO is how coverage quietly dies; do not close this task with it still skipped.
+
+- [ ] **Step 8: Commit.**
 
 ---
 
