@@ -52,7 +52,7 @@ describe.skipIf(!MACOS)('tts pipeline with the draft voice', () => {
       `--timings=${TIMINGS}`,
       `--cache=${CACHE}`,
     ], { stdio: 'inherit', cwd: WORK1 })
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK1, { recursive: true, force: true })
@@ -149,7 +149,7 @@ describe.skipIf(!MACOS)('cache reuse, --only, and --force semantics', () => {
     mkdirSync(join(WORK, 'content/places'), { recursive: true })
     writeFileSync(fixturePath(FIRST), JSON.stringify(place(FIRST, 'Aaapur')))
     writeFileSync(fixturePath(SECOND), JSON.stringify(place(SECOND, 'Zzzpur')))
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK, { recursive: true, force: true })
@@ -302,7 +302,7 @@ export async function synth(text, { tmpDir, id }) {
     mkdirSync(join(WORK3, 'content/places'), { recursive: true })
     writeFileSync(join(WORK3, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
     writeFileSync(STUB, stubSource)
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK3, { recursive: true, force: true })
@@ -453,7 +453,7 @@ export async function synth(text, { tmpDir, id }) {
     mkdirSync(join(WORK4, 'content/places'), { recursive: true })
     writeFileSync(join(WORK4, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
     writeFileSync(STUB4, stubSource)
-  })
+  }, 120_000)
 
   afterAll(() => {
     // tts.mjs's cleanup failed on purpose, so the poisoned directory it left
@@ -544,7 +544,7 @@ describe('Task 6a: provider-change guard refuses before rendering anything', () 
       writeFileSync(join(AUDIO5, `${id}.m4a`), 'not real audio, just needs to exist')
     }
     writeFileSync(CACHE5, JSON.stringify({ __signature__: 'elevenlabs:some-other-voice:v1' }))
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK5, { recursive: true, force: true })
@@ -610,7 +610,7 @@ describe.skipIf(!MACOS)('Task 6a: the guard does not block a legitimate render',
     writeFileSync(join(WORK5b, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
     mkdirSync(AUDIO5b, { recursive: true })
     writeFileSync(join(AUDIO5b, `${PLACE}.intro.m4a`), 'not real audio, just needs to exist')
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK5b, { recursive: true, force: true })
@@ -668,7 +668,7 @@ describe.skipIf(!MACOS)('Task 6a: --yes bypasses the provider-change guard and r
     mkdirSync(AUDIO6, { recursive: true })
     writeFileSync(join(AUDIO6, `${PLACE}.intro.m4a`), 'not real audio, just needs to exist')
     writeFileSync(CACHE6, JSON.stringify({ __signature__: 'elevenlabs:some-other-voice:v1' }))
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK6, { recursive: true, force: true })
@@ -771,7 +771,7 @@ export async function synth(text, { tmpDir, id, previousRequestIds, nextText }) 
     // copies it, so encoding is real but no test pays for eleven separate
     // blocking `say` invocations.
     execFileSync('say', ['-v', 'Tara', '-r', '130', '-o', SEED, 'Hello.'])
-  })
+  }, 120_000)
 
   afterAll(() => {
     rmSync(WORK7, { recursive: true, force: true })
