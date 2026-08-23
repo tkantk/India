@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { PlaceSchema, LINE_BUDGET, wordsOf } from './schema'
+import type { Cue, Landmark, Line, Place, TourBeat } from './schema'
 
 const validLine = { id: 'raj.intro', kind: 'intro' as const, text: 'Rajasthan is a big state.' }
 
@@ -89,16 +90,32 @@ describe('wordsOf', () => {
 // whose sentence grew or shrank around it silently points at the wrong word
 // unless something asserts the landing word by name, not just by number.
 describe('Plan 4 Task 1: the thirteen audited narration lines', () => {
-  const tour = JSON.parse(readFileSync('content/tour.json', 'utf8'))
-  const delhi = JSON.parse(readFileSync('content/places/delhi.json', 'utf8'))
-  const rajasthan = JSON.parse(readFileSync('content/places/rajasthan.json', 'utf8'))
-  const kerala = JSON.parse(readFileSync('content/places/kerala.json', 'utf8'))
+  // Typed as the schema's own inferred types — not re-declared inline — so a
+  // cue keeps its real shape (word, do, arg) all the way through. An earlier
+  // version of this file hand-rolled narrow parameter types on the helpers
+  // below (e.g. `{ do: string }`), which silently dropped `word` from every
+  // cue read through them; that was a bug in the test, not in the schema.
+  const tour: { beats: TourBeat[] } = JSON.parse(readFileSync('content/tour.json', 'utf8'))
+  const delhi: Place = JSON.parse(readFileSync('content/places/delhi.json', 'utf8'))
+  const rajasthan: Place = JSON.parse(readFileSync('content/places/rajasthan.json', 'utf8'))
+  const kerala: Place = JSON.parse(readFileSync('content/places/kerala.json', 'utf8'))
 
-  const beat = (id: string) => tour.beats.find((b: { id: string }) => b.id === id)
-  const landmark = (place: { landmarks: { id: string }[] }, id: string) =>
-    place.landmarks.find((l: { id: string }) => l.id === id)
-  const cueByVerb = (line: { cues?: { do: string }[] }, verb: string) =>
-    line.cues!.find((c: { do: string }) => c.do === verb)
+  // `.find()` returns `T | undefined`; a lookup that assumes its target
+  // exists should say so and fail with a clear message, rather than a
+  // "possibly undefined" compile error or an opaque runtime crash if the
+  // content ever changes underneath it.
+  function must<T>(value: T | undefined, message: string): T {
+    if (value === undefined) throw new Error(message)
+    return value
+  }
+
+  const beat = (id: string): TourBeat => must(tour.beats.find((b) => b.id === id), `no tour beat "${id}"`)
+  const landmark = (place: Place, id: string): Landmark =>
+    must(place.landmarks.find((l) => l.id === id), `no landmark "${id}" on "${place.id}"`)
+  const findCue = (line: Line, predicate: (c: Cue) => boolean, label: string): Cue =>
+    must(line.cues?.find(predicate), `no ${label} cue on "${line.id}"`)
+  const cueByVerb = (line: Line, verb: string): Cue => findCue(line, (c) => c.do === verb, `"${verb}"`)
+  const cueByArg = (line: Line, arg: string): Cue => findCue(line, (c) => c.arg === arg, `arg "${arg}"`)
 
   it('every edited place still satisfies PlaceSchema', () => {
     expect(PlaceSchema.safeParse(delhi).success).toBe(true)
@@ -161,7 +178,7 @@ describe('Plan 4 Task 1: the thirteen audited narration lines', () => {
   it("tour.14's cue word does not move (same word count)", () => {
     const b = beat('tour.14')
     const words = wordsOf(b.text)
-    expect(b.cues[0].word).toBe(10)
+    expect(cueByVerb(b, 'highlightAllStates').word).toBe(10)
     expect(words[10]).toBe('map,')
   })
 
@@ -184,8 +201,8 @@ describe('Plan 4 Task 1: the thirteen audited narration lines', () => {
 
   it("rajasthan.intro's lightNeighbour cues do not move (same word count)", () => {
     const words = wordsOf(rajasthan.intro.text)
-    const gujarat = rajasthan.intro.cues.find((c: { arg?: string }) => c.arg === 'gujarat')
-    const punjab = rajasthan.intro.cues.find((c: { arg?: string }) => c.arg === 'punjab')
+    const gujarat = cueByArg(rajasthan.intro, 'gujarat')
+    const punjab = cueByArg(rajasthan.intro, 'punjab')
     expect(gujarat.word).toBe(40)
     expect(words[40]).toBe('Gujarat')
     expect(punjab.word).toBe(45)
