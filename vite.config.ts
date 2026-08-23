@@ -2,6 +2,7 @@
 import { rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, type Plugin, type ResolvedConfig } from 'vite'
+import { configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 /**
@@ -71,6 +72,12 @@ export default defineConfig({
      * CI is unaffected (it checks out a clean tree with no worktrees), which
      * is exactly why this could have gone unnoticed locally for a long time.
      */
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
+    // EXTEND the defaults, never replace them. A hand-written array here
+    // silently dropped Vitest's own git-directory exclude — harmless today
+    // only because nothing there matches a test glob, and exactly the kind
+    // of thing that stops being harmless when the defaults grow.
+    // (Line comments, not a block: an exclude glob contains the character
+    // pair that would close a block comment early. It did, once.)
+    exclude: [...configDefaults.exclude, '**/dist/**', '**/.claude/**'],
   },
 })
