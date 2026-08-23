@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react'
 import { animate } from 'motion/react'
 import { HOLD, Reveal, useStill } from './Reveal'
-import { PALETTE as C } from './art/palette'
+import { subjectOf } from './subject'
 
 type Props = {
   to: number
@@ -49,24 +49,28 @@ export function Counter({ to, durationMs = 1300, hold = HOLD.counter }: Props) {
 
   if (!countable) return null
 
+  const { page, ink, accent } = subjectOf('countTo')
+
   return (
     <Reveal hold={hold}>
       <div className="cue-counter">
-        {/* A round page, printed like every other one: a tinted ground, the
-            app's one ink round the outside, and — because this page is a
-            NUMBER and nothing else — a saffron band inside the rule to carry
-            the counting. Both rules are `non-scaling-stroke`, so they are the
-            same weight on screen as the rule round the tiger's page rather
-            than a second number scaled out of the same constant. */}
+        {/* A round page, printed like every other one: a tinted ground (the
+            `page` of `subject.ts`'s own `countTo` row), the app's one ink
+            round the outside, and — because this page is a NUMBER and
+            nothing else — a band in the subject's own `accent` inside the
+            rule to carry the counting. Both rules are `non-scaling-stroke`,
+            so they are the same weight on screen as the rule round the
+            tiger's page rather than a second number scaled out of the same
+            constant. */}
         <svg className="cue-counter__disc" viewBox="0 0 120 120" aria-hidden="true">
-          <circle cx="60" cy="60" r="56" fill={C.matSun} />
-          <circle cx="60" cy="60" r="50" fill="none" stroke={C.saffron} strokeWidth="5" />
+          <circle cx="60" cy="60" r="56" fill={page} />
+          <circle cx="60" cy="60" r="50" fill="none" stroke={accent} strokeWidth="5" />
           <circle
             cx="60"
             cy="60"
             r="56"
             fill="none"
-            stroke={C.inkLine}
+            stroke={ink}
             strokeWidth="3"
             vectorEffect="non-scaling-stroke"
           />

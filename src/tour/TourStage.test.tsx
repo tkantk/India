@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { TourStage } from './TourStage'
+import { subjectOf } from './effects/subject'
 import type { Cue } from '../types'
 import geo from '../data/geo.json'
 
@@ -147,6 +148,42 @@ describe('TourStage', () => {
     // The wave is staggered; the first entry lands synchronously.
     const [firstSlug] = states[0]
     expect(container.querySelector(`[data-slug="${firstSlug}"]`)?.classList.contains('lit')).toBe(true)
+  })
+})
+
+/**
+ * The read-along strip's one job: paint itself in the same colour as
+ * whatever is currently on stage, so a child who cannot yet read fluently
+ * can see that the picture and the sentence about it are the same thing —
+ * daylight's one genuinely original idea, grafted onto the picture-book
+ * direction the father chose. `TourStage` is the only place `--subject-
+ * accent` is set (see its own `subjectVars`); `grandTour.css`'s `.say`
+ * reads it by inheritance, which jsdom cannot lay out or paint — so this
+ * checks the data actually reaching the DOM (the custom property's value),
+ * never the rendered appearance itself.
+ */
+describe("the read-along strip's colour", () => {
+  const accentOf = (container: HTMLElement) =>
+    (container.querySelector('.tour-stage') as HTMLElement).style.getPropertyValue('--subject-accent')
+
+  it('writes --subject-accent from the subject prop', () => {
+    const { container } = render(<TourStage subject="tiger" />)
+    expect(accentOf(container)).toBe(subjectOf('tiger').accent)
+  })
+
+  it('falls back to the default accent when nothing is showing', () => {
+    const { container } = render(<TourStage subject={null} />)
+    expect(accentOf(container)).toBe(subjectOf(null).accent)
+  })
+
+  it('updates when the subject on stage changes mid-tour', () => {
+    const { container, rerender } = render(<TourStage subject="tiger" />)
+    expect(accentOf(container)).toBe(subjectOf('tiger').accent)
+    rerender(<TourStage subject="lotus" />)
+    expect(accentOf(container)).toBe(subjectOf('lotus').accent)
+    // And the two must actually differ, or the assertions above would pass
+    // even if the value never changed at all.
+    expect(subjectOf('tiger').accent).not.toBe(subjectOf('lotus').accent)
   })
 })
 

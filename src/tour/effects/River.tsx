@@ -13,6 +13,7 @@ import { motion } from 'motion/react'
 import { HOLD, Layer, useMapZoom, useStill } from './Reveal'
 import { GANGA } from './art/geo'
 import { PALETTE as C } from './art/palette'
+import { subjectOf } from './subject'
 
 const RIVERS: Record<string, string> = { ganga: GANGA }
 const DRAW_S = 1.8
@@ -24,13 +25,19 @@ export function River({ name, hold = HOLD.river }: { name: string | undefined; h
   // 16-unit casing as a sixth of the screen.
   const zoom = useMapZoom()
   const d = name ? RIVERS[name] : undefined
-  if (!d) return null
+  if (!d || !name) return null
 
   const draw = {
     initial: still ? false : ({ pathLength: 0 } as const),
     animate: { pathLength: 1 },
     transition: { duration: DRAW_S, ease: 'linear' as const },
   }
+
+  // The water itself is the river's own accent (`subject.ts`) — the same
+  // colour the read-along strip takes while this line is narrated. The pale
+  // casing either side is incidental shading, not the subject, and stays a
+  // plain palette literal.
+  const { accent } = subjectOf(name)
 
   return (
     <Layer hold={hold}>
@@ -46,7 +53,7 @@ export function River({ name, hold = HOLD.river }: { name: string | undefined; h
       <motion.path
         d={d}
         fill="none"
-        stroke={C.sea}
+        stroke={accent}
         strokeWidth={6 * zoom}
         strokeLinecap="round"
         {...draw}

@@ -20,7 +20,7 @@
  */
 import { motion } from 'motion/react'
 import { HOLD, Layer, useMapZoom, useStill } from './Reveal'
-import { PALETTE as C } from './art/palette'
+import { subjectOf } from './subject'
 
 /**
  * Long enough to outlast the flight, short enough that the map is clear
@@ -47,6 +47,9 @@ export function Here({ at, hold = HOLD.here }: { at: [number, number]; hold?: nu
   const still = useStill()
   const [cx, cy] = at
   const r = R * zoom
+  // Mor's own peacock blue — `zoomTo`'s row in `subject.ts` — and the same
+  // colour the read-along strip takes for as long as this ring is up.
+  const { accent } = subjectOf('zoomTo')
 
   return (
     <Layer hold={hold}>
@@ -64,7 +67,7 @@ export function Here({ at, hold = HOLD.here }: { at: [number, number]; hold?: nu
         <motion.circle
           cx={cx}
           cy={cy}
-          fill={C.peacock}
+          fill={accent}
           fillOpacity={0.16}
           initial={{ r: r * 0.55 }}
           animate={{ r: still ? r : [r * 0.55, r * 1.15, r * 0.55] }}
@@ -80,11 +83,11 @@ export function Here({ at, hold = HOLD.here }: { at: [number, number]; hold?: nu
           cy={cy}
           r={r * 0.5}
           fill="none"
-          stroke={C.peacock}
+          stroke={accent}
           strokeWidth={r * 0.09}
           strokeOpacity={0.75}
         />
-        <circle cx={cx} cy={cy} r={r * 0.13} fill={C.peacock} />
+        <circle cx={cx} cy={cy} r={r * 0.13} fill={accent} />
       </motion.g>
     </Layer>
   )

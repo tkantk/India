@@ -12,6 +12,7 @@ import { park, parked, clearPark } from './tourPosition'
 import { Mor } from './Mor'
 import { Here } from './effects/Here'
 import { FADE_MS, HOLD } from './effects/Reveal'
+import { subjectKeyFor } from './effects/subject'
 import { WATERS } from './effects/art/Sea'
 import { isTracing, subscribeTracing } from './effects/tracing'
 import content from '../../content/tour.json'
@@ -409,7 +410,14 @@ function useStageLife(map: MapApi, n: ReturnType<typeof getNarrator>) {
     const hold = stageHold(cue)
     if (!hold) return
     fan.current?.()
-    setShowing(cue.arg ?? cue.do)
+    // Not simply `cue.arg ?? cue.do`: `subjectKeyFor` (see its own note)
+    // keys `countTo`/`traceRiver`/`showScript` by the verb rather than by
+    // whatever argument rides along with them, which is what lets
+    // `subject.ts` colour "counting" once rather than once per number. The
+    // `?? cue.do` fallback only matters for a cue `subjectKeyFor` was never
+    // meant to colour (defence in depth — every cue reaching here already
+    // has a nonzero `stageHold`, which today means it always resolves).
+    setShowing(subjectKeyFor(cue.do, cue.arg) ?? cue.do)
     fan.current = n.scheduleAfter((hold + FADE_MS) / 1000, () => {
       fan.current = null
       setShowing(null)
@@ -800,7 +808,25 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
         tour on exactly the touch it just invited. Every state screen this
         same field reaches next inherits the same protection for free.
       */}
-      <TourStage onPickState={invite ? undefined : pick} onCue={saw} scene={beat?.id ?? ''}>
+      {/* `showing` is already the exact key `subject.ts` colours the app by
+          (see `useStageLife.saw`, above) — handing it to the stage is the
+          whole of "the sentence is the same colour as the picture it is
+          about"; nothing new is threaded through the sequencer for it.
+
+          `here` is the one moment `showing` cannot speak for. A camera verb
+          puts no picture in the overlay slot, so `useStageLife` returns
+          before it ever sets `showing` — deliberately, because that value is
+          also Mor's pose, and he is not presenting anything mid-flight. But
+          the child IS being shown something: the look-down ring, drawn in
+          `zoomTo`'s own colour. Reading it here rather than widening
+          `showing` keeps the pose and the colour separate, which is what
+          they are. */}
+      <TourStage
+        onPickState={invite ? undefined : pick}
+        onCue={saw}
+        scene={beat?.id ?? ''}
+        subject={showing ?? (here ? 'zoomTo' : null)}
+      >
         {/* "Look down." Drawn in the map's own coordinates, over the place
             the camera has just flown to. Not part of the overlay slot: that
             belongs to the cue registry, and this answers a camera verb the

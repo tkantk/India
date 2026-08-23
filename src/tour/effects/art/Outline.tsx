@@ -18,7 +18,7 @@ import { isCheap } from '../../../lib/cheapMode'
 import { HOLD, Layer, useMapZoom, useStill } from '../Reveal'
 import { Trace } from '../Trace'
 import { INDIA_OUTLINE } from './geo'
-import { PALETTE as C } from './palette'
+import { subjectOf } from '../subject'
 
 /** Slow on purpose: a child is meant to be tracing it. */
 const DRAW_S = 2.2
@@ -40,12 +40,15 @@ export function Outline({ hold = HOLD.outline }: { hold?: number } = {}) {
   const drawn = !useStill() && !isCheap()
   // A pencil line keeps its weight while the country under it grows.
   const zoom = useMapZoom()
+  // `outline`'s own row in `subject.ts` — the same colour the read-along
+  // strip takes while this line is being traced.
+  const { accent } = subjectOf('outline')
   return (
     <Layer hold={hold}>
       <motion.path
         d={INDIA_OUTLINE}
         fill="none"
-        stroke={C.ink}
+        stroke={accent}
         strokeWidth={3.2 * zoom}
         strokeLinecap="round"
         strokeLinejoin="round"

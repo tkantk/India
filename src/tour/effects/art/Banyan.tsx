@@ -22,7 +22,7 @@ const ROPES = [
 export function Banyan({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card hold={hold} tone="sand">
+    <Card hold={hold} subject="banyan">
       {/* the ground it has stood on for two hundred years */}
       <ellipse cx="60" cy="108" rx="48" ry="6" fill={C.sand} />
 

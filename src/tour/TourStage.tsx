@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { getNarrator } from '../audio/Narrator'
 import { camera } from '../map/camera'
 import { useMapNodes } from '../map/useMapNodes'
@@ -7,6 +7,7 @@ import { MapStage } from '../map/MapStage'
 import { dispatch } from './cues'
 import type { CueApi } from './cues'
 import { MediaClockProvider } from './effects/Reveal'
+import { subjectOf } from './effects/subject'
 import type { Cue } from '../types'
 import './tourStage.css'
 
@@ -46,6 +47,22 @@ type Props = {
    */
   scene?: string
   /**
+   * WHOSE MOMENT THIS IS — the key of whatever is on stage, exactly what
+   * `GrandTour`'s `showing` already carries (see `subject.ts`'s own
+   * `subjectKeyFor`).
+   *
+   * Resolved through `subject.ts` and written onto `.tour-stage` as
+   * `--subject-accent`, where the read-along's rule (`grandTour.css`'s
+   * `.say`) picks it up by inheritance — the ONLY place that custom property
+   * is set for the tour, and the same table the SVG art paints its own page
+   * from, so the card round the tiger and the rule over the sentence about
+   * the tiger cannot end up different colours.
+   *
+   * Null, or a key nobody has coloured, is not an error: `subjectOf` answers
+   * with the app's own colours and the strip looks like itself.
+   */
+  subject?: string | null
+  /**
    * Anything that stands ON the stage — Mor, the read-along, the play button.
    *
    * Rendered as the last children of `.tour-stage`, after `.tour-overlay`, so
@@ -73,7 +90,7 @@ type Props = {
  * for the same reason: a cue arriving after this component is gone must not
  * touch a stale `setOverlay` or a map nobody is showing.
  */
-export function TourStage({ onPickState, onCue, scene, children }: Props) {
+export function TourStage({ onPickState, onCue, scene, subject, children }: Props) {
   // Hoisted out of the effect below (which used to call this itself) so it
   // is also here to hand `MediaClockProvider` the engine's real
   // `scheduleAfter` — see that seam's own note in `Reveal.tsx`. Safe to call
@@ -163,7 +180,7 @@ export function TourStage({ onPickState, onCue, scene, children }: Props) {
 
   return (
     <MediaClockProvider value={n.scheduleAfter}>
-      <div className="tour-stage">
+      <div className="tour-stage" style={subjectVars(subject)}>
         <MapStage onPick={onPickState ?? NOOP} />
         {overlay && (
           <div className="tour-overlay" data-sweeping={sweeping ? 'true' : undefined}>
@@ -174,6 +191,14 @@ export function TourStage({ onPickState, onCue, scene, children }: Props) {
       </div>
     </MediaClockProvider>
   )
+}
+
+/** `--subject-accent`, as a style object. A plain function rather than a
+ *  memo: it allocates one small object per render of a component that
+ *  renders a handful of times per beat, and `style` is diffed by value by
+ *  React anyway, so memoising it would buy nothing and cost a hook. */
+function subjectVars(key: string | null | undefined): CSSProperties {
+  return { '--subject-accent': subjectOf(key).accent } as CSSProperties
 }
 
 /** How long the outgoing picture takes to leave. Shorter than the earliest

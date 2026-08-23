@@ -24,7 +24,7 @@ import { motion, useReducedMotionConfig } from 'motion/react'
 import geo from '../../data/geo.json'
 import type { Bbox } from '../../types'
 import { useCameraView } from '../../map/useCameraView'
-import { PALETTE } from './art/palette'
+import { subjectOf } from './subject'
 import './effects.css'
 
 /**
@@ -194,51 +194,22 @@ export function Reveal({ hold, variant = 'figure', restartOn, children }: Reveal
 }
 
 /**
- * THE EIGHT PAGES a reveal can be printed on.
- *
- * The whole set used to be one cream rectangle, and that single line is why
- * the tiger, the lotus, the Ganga and the Hindi script all arrived looking
- * like the same sticker in the same slot.
- *
- * A tone is a PAGE, and there are two rules for picking one. First, it is
- * never the subject's own colour family — a pink lotus on a pink page is a
- * pink page — so the orange tiger gets pond teal, the blue-and-gold peacock
- * gets rose, the pink-and-gold lotus gets sky. Second, no two figures a
- * child sees in a row share one, which is what makes the tour feel like
- * pages being turned rather than one slot being refilled: the order through
- * the fourteen beats is sun, paper, teal, rose, sky, sand, teal. The flag
- * alone stays on plain paper, because the tricolour only reads true against
- * white.
- *
- * There is a third constraint that only exists because the map now has a
- * ground: a page must not be the colour of the water (`--ocean`) or the land
- * (`--land`) it is laid on. That is why `--mat-sky` is a shade deeper than
- * the sea, and why nothing is printed on `--mat-leaf` in the tour.
- *
- * The mapping lives HERE rather than in a table beside the art for the same
- * reason `.tap` lives in base.css: a new state screen in Plan 3 gets a page
- * by naming a tone, and can never invent a ninth colour by accident. Mirrors
- * `--mat-*` in base.css; `Symbol.test.tsx` fails if the two drift.
- */
-export const TONES = {
-  paper: PALETTE.paper,
-  sand: PALETTE.matSand,
-  rose: PALETTE.matRose,
-  leaf: PALETTE.matLeaf,
-  sun: PALETTE.matSun,
-  sky: PALETTE.matSky,
-  stone: PALETTE.matStone,
-  teal: PALETTE.matTeal,
-} as const
-
-export type Tone = keyof typeof TONES
-
-/**
  * A drawing on a page, in the middle of the map.
  *
  * Three things make it a printed page rather than a card: a tinted ground, a
  * drawn rule in the app's one ink, and a lift (`--lift`, on the <svg> ROOT in
  * effects.css — never on a child, which WebKit cannot composite).
+ *
+ * THE PAGE COMES FROM `subject.ts`, not a hand-picked prop. It used to be one
+ * cream rectangle, and that single line is why the tiger, the lotus, the
+ * Ganga and the Hindi script all arrived looking like the same sticker in the
+ * same slot; then it was a `tone` prop each art file picked by eye — which
+ * fixed the sticker but left the picking itself scattered across eight
+ * files, with no one place recording that a pink lotus must not sit on a
+ * pink page. Both rules that used to live in this comment (never the
+ * subject's own colour family; never the colour of the water or the land the
+ * map already has) are still true — they are just decisions made once, per
+ * subject, in `subject.ts`, rather than re-made by eye at every call site.
  *
  * THE RULE IS `non-scaling-stroke`, and that is load-bearing rather than
  * tidy. A `stroke-width` in user units is scaled by the viewBox, so the same
@@ -251,22 +222,26 @@ export type Tone = keyof typeof TONES
 export function Card({
   viewBox = '0 0 120 120',
   hold = HOLD.symbol,
-  tone = 'paper',
+  subject,
   children,
 }: {
   viewBox?: string
   hold?: number
-  /** Which of the eight pages this drawing is printed on. */
-  tone?: Tone
+  /** Which row of `subject.ts` this drawing is — `"tiger"`, `"unfurlFlag"`,
+   *  the key `subjectOf` looks the page and the rule up by. Omitted (a card
+   *  nobody has given an identity to yet, or a single-effect test) falls
+   *  back to the app's own colours rather than to nothing. */
+  subject?: string
   children: ReactNode
 }) {
   const [, , w, h] = viewBox.split(' ').map(Number)
   const rx = w / 12
+  const { page, ink } = subjectOf(subject)
   return (
     <Reveal hold={hold}>
       <svg className="cue-art" viewBox={viewBox} aria-hidden="true">
         {/* The page. */}
-        <rect x="0" y="0" width={w} height={h} rx={rx} fill={TONES[tone]} />
+        <rect x="0" y="0" width={w} height={h} rx={rx} fill={page} />
         {children}
         {/* The rule, drawn LAST so the art can run to the edge of its own
             page and still be contained by the line, the way a printed plate
@@ -279,7 +254,7 @@ export function Card({
           height={h - 3}
           rx={rx - 1.5}
           fill="none"
-          stroke={PALETTE.inkLine}
+          stroke={ink}
           strokeWidth="3"
           vectorEffect="non-scaling-stroke"
         />

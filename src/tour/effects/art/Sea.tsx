@@ -27,6 +27,7 @@ import { motion } from 'motion/react'
 import { isCheap } from '../../../lib/cheapMode'
 import { EASE_OUT, HOLD, Layer, useMapZoom, useStill } from '../Reveal'
 import { PALETTE as C } from './palette'
+import { subjectOf } from '../subject'
 
 export type Water = {
   id: string
@@ -75,6 +76,10 @@ function rows(w: Water) {
 
 function Body({ water, now, zoom }: { water: Water; now: boolean; zoom: number }) {
   const still = useStill()
+  // The waves are the water's own accent (`subject.ts`) — the same colour
+  // the read-along strip takes while this body is being named. The two
+  // pale fills below are incidental shading and stay plain palette literals.
+  const { accent } = subjectOf(water.id)
   /** Water that never moves is a puddle. But this is one of the few
    *  animations in the tour that runs for the whole hold rather than
    *  landing and stopping — Mor (src/tour/Mor.tsx) bobs and blinks for far
@@ -106,7 +111,7 @@ function Body({ water, now, zoom }: { water: Water; now: boolean; zoom: number }
         fill={C.seaPale}
         opacity="0.5"
       />
-      <g fill="none" stroke={C.sea} strokeLinecap="round" strokeWidth={7 * zoom}>
+      <g fill="none" stroke={accent} strokeLinecap="round" strokeWidth={7 * zoom}>
         {rows(water).map((row, i) => (
           <motion.path
             key={row.y}

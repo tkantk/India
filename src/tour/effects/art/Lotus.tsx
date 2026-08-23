@@ -34,7 +34,7 @@ export function Lotus({ hold }: { hold?: number } = {}) {
   )
 
   return (
-    <Card hold={hold} tone="sky">
+    <Card hold={hold} subject="lotus">
       {/* the sunshine it is pushing up into */}
       <circle cx="97" cy="22" r="10" fill={C.gold} />
       <g stroke={C.gold} strokeWidth="2.6" strokeLinecap="round">

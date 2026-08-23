@@ -111,8 +111,23 @@
      round it, the shared lift — instead of a translucent slab. 0.72 is
      unchanged and still the measured figure: --ink over it is 14.5:1 on the
      new water, 14.0:1 on the new land, 12.0:1 on a lit saffron state and
-     10.7:1 over the Ganga's deep blue, all past the 7:1 AAA target. */
-  box-shadow: inset 0 0 0 var(--rule) var(--ink-line), var(--lift);
+     10.7:1 over the Ganga's deep blue, all past the 7:1 AAA target.
+
+     THE TOP LAYER IS THE SUBJECT'S OWN COLOUR — the one genuinely new thing
+     here. `TourStage` writes `--subject-accent` from `subject.ts`, keyed by
+     whatever is currently on stage (`GrandTour`'s `showing`); with nothing
+     showing it falls back to the app's own --deep. A child who cannot yet
+     read fluently gets a second, wordless signal that this sentence and the
+     tiger's card on screen are the same thing — the same colour appears on
+     both. An INSET shadow, like the rule below it, for the same layout
+     reason: `inset 0 6px 0 <colour>` paints a solid 6px band inside the top
+     edge without adding a pixel to this box's own height, so `--say-lines`
+     and everything measured off it stay exactly as they were. Listed FIRST
+     so it paints on top of the ink rule rather than under it. */
+  box-shadow:
+    inset 0 6px 0 var(--subject-accent, var(--deep)),
+    inset 0 0 0 var(--rule) var(--ink-line),
+    var(--lift);
 
   /* Above the tour art, which is a `z-index: auto` sibling — a caption that
      the tiger could cover would be no caption at all. Still below Mor (2) and

@@ -40,11 +40,13 @@ const SPOKES = Array.from({ length: 24 }, (_, i) => {
  *  pipeline). */
 export function Flag({ hold = HOLD.flag }: { hold?: number } = {}) {
   // THE ONE REVEAL THAT STAYS ON PLAIN PAPER. Every other page is tinted so
-  // a drawing has a ground that is not its own family (see `TONES` in
-  // Reveal.tsx) — but the middle band of the flag IS white, and a white band
-  // on a coloured page stops being white. The tricolour outranks the set.
+  // a drawing has a ground that is not its own family (see `subject.ts`) —
+  // but the middle band of the flag IS white, and a white band on a
+  // coloured page stops being white. The tricolour outranks the set, which
+  // is why `unfurlFlag`'s own row in `subject.ts` is pinned to `paper`
+  // rather than left to pick from the usual eight.
   return (
-    <Card viewBox="0 0 180 120" hold={hold} tone="paper">
+    <Card viewBox="0 0 180 120" hold={hold} subject="unfurlFlag">
       {/* the pole. Without it this is a striped rectangle. */}
       <rect x="12" y="6" width="6" height="110" rx="3" fill={C.bark} />
 
