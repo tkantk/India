@@ -376,11 +376,30 @@ export class Narrator {
     this.tick()
   }
 
-  /** Stop and forget the clip. `replay()` will not bring it back. */
+  /** Stop the clip. Unlike `forget()` below, `replay()` WILL bring it back —
+   *  `lastClip` survives this, on purpose, for a tap and the tour's own
+   *  natural end alike. */
   stop(): void {
     this.teardown()
     this.curWord = -1
     this.unduck()
+    this.emit()
+  }
+
+  /**
+   * Forget the last clip too, so `replay()` has nothing left to answer
+   * with. NOT part of `stop()` — a tap and the tour's own end both still
+   * want `lastClip` to survive, and this is for the one caller that means
+   * something stronger than "nothing is playing right now": Home's own
+   * promise is "back to the very beginning," and a "Say it again" that
+   * quietly resurrected whatever was last said — with no beat on screen,
+   * no words lighting up, no visible cause — would contradict that promise
+   * rather than honour it. Call this alongside `stop()`, never instead of
+   * it. A no-op, without even an `emit()`, when there is nothing to forget.
+   */
+  forget(): void {
+    if (this.lastClip === null) return
+    this.lastClip = null
     this.emit()
   }
 
@@ -462,6 +481,14 @@ export class Narrator {
    *  everything else here: read it as
    *  `useSyncExternalStore(n.subscribe, () => n.loading)`, never polled. */
   get loading(): boolean { return this.loadingFlag }
+  /** Whether `replay()` has anything at all to act on — the decoded buffer
+   *  (mid-clip, paused, or ended with an invite still open) or, failing
+   *  that, `lastClip` (a stopped state `replay()` would still fall back
+   *  to). False only at rest, before anything has played, and after
+   *  `forget()` — Controls disables "Say it again" rather than leaving it
+   *  to silently no-op, the same rule `loading` already applies to
+   *  Play/Pause. */
+  get canReplay(): boolean { return this.buffer !== null || this.lastClip !== null }
 
   /** One scheduler step. Public so tests can drive it by hand; production
    *  drives it from requestAnimationFrame. */

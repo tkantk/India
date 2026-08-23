@@ -676,9 +676,20 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    * the state the screen was in when the child first saw it: nothing
    * playing, nothing lit, nothing on stage, the big button back and
    * offering the tour from the top.
+   *
+   * `n.forget()`, alongside `n.stop()`: home's own promise is "back to the
+   * very beginning," and a "Say it again" that quietly resurrected
+   * whatever was last said — audible over this exact idle screen, with no
+   * words lighting up and no visible cause — would contradict that promise
+   * rather than honour it. A tap and the tour's own natural end do NOT do
+   * this; `stop()` alone still leaves `lastClip` for `replay()` to answer
+   * with there, and Controls' `canReplay` is what makes the difference
+   * visible: disabled here, live everywhere else a control can be pressed
+   * from.
    */
   const goHome = useCallback(() => {
     n.stop()
+    n.forget()
     abandonInvite()
     setAt(null)
     // Not "again": home is the beginning, and this is what the beginning

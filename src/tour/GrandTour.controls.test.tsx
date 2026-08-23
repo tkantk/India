@@ -32,6 +32,13 @@ import userEvent from '@testing-library/user-event'
  * REAL engine's own state (`n.playing`, `n.position`, the actual gain and
  * source nodes it created) rather than a mock's call log. That is "no
  * control may be pressable and do nothing" as a single, unmockable test.
+ *
+ * The test ends at Home on purpose, not merely to exercise it: pressing
+ * "Say it again" AFTER a tap must work (the fixed bug), but pressing it
+ * AFTER Home must not — Home's own promise is "back to the very
+ * beginning," and resurrecting the last beat's audio over that exact idle
+ * screen would contradict it. The real `n.canReplay`/`disabled` are what
+ * prove the button is honestly unavailable there, not merely unclicked.
  */
 
 type FakeSource = {
@@ -204,14 +211,20 @@ describe('the transport bar answers in every state — the real engine, not a do
     await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
     await waitFor(() => expect(n.playing).toBe(true))
 
-    // Home: stops everything for real and puts the big button back.
+    // Home: stops everything for real and puts the big button back — and,
+    // per the coordinator's own catch, genuinely forgets what was playing.
+    // Home's promise is "back to the very beginning," and a "Say it again"
+    // that quietly resurrected the last beat's audio over this exact idle
+    // screen — no words lighting up, no visible cause — would contradict
+    // that promise rather than honour it. The real engine's own
+    // `canReplay` is what the button now reads instead of guessing.
     await userEvent.click(screen.getByRole('button', { name: /home/i }))
     expect(n.playing).toBe(false)
+    expect(n.canReplay).toBe(false)
     expect(screen.getByRole('button', { name: /show me india/i })).toBeInTheDocument()
-
-    // And "again" from there — nothing has torn `lastClip` down, so the
-    // last thing said is still repeatable even from the home screen.
-    await userEvent.click(screen.getByRole('button', { name: /again/i }))
-    await waitFor(() => expect(n.playing).toBe(true))
+    const again = screen.getByRole('button', { name: /^say it again$/i })
+    expect(again).toBeDisabled()
+    await userEvent.click(again)
+    expect(n.playing).toBe(false)   // disabled: the click could not fire at all
   })
 })

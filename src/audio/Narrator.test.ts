@@ -288,6 +288,41 @@ describe('Narrator', () => {
     expect(n.playing).toBe(false)
   })
 
+  it('reports canReplay honestly: false at rest, true once something has played, true through stop()', async () => {
+    expect(n.canReplay).toBe(false)   // at rest — nothing to repeat yet
+    const p = n.play(CLIP)
+    expect(n.canReplay).toBe(true)    // mid-load: lastClip is already set
+    await p
+    expect(n.canReplay).toBe(true)    // playing
+    n.stop()
+    // A tap or the tour's own end both still want replay() to answer.
+    expect(n.canReplay).toBe(true)
+  })
+
+  it('forget() makes canReplay false and replay() a true no-op — Home\'s own promise', async () => {
+    const seen = vi.fn()
+    n.subscribe(seen)
+    await n.play(CLIP)
+    n.stop()
+    expect(n.canReplay).toBe(true)
+
+    const before = seen.mock.calls.length
+    n.forget()
+    expect(n.canReplay).toBe(false)
+    expect(seen.mock.calls.length).toBeGreaterThan(before)   // reactive, not polled
+
+    const fetchCallsBefore = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length
+    await n.replay()
+    expect(n.playing).toBe(false)
+    // No new attempt at all — the same call count as before replay().
+    expect((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length).toBe(fetchCallsBefore)
+
+    // Idempotent, and does not emit a second time with nothing left to forget.
+    const afterForget = seen.mock.calls.length
+    n.forget()
+    expect(seen.mock.calls.length).toBe(afterForget)
+  })
+
   it('reports the natural end of a clip, so the tour can move to the next beat', async () => {
     const ended = vi.fn()
     n.onEnd = ended

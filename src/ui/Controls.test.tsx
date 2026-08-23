@@ -15,6 +15,10 @@ const narrator = {
   // real on beat 1, which is never prefetched. `false` at rest, like the
   // real engine before anything has ever been asked for.
   loading: false,
+  // `true` here matches `playing: true`: this double's baseline is an
+  // active session, where "Say it again" has something to act on. The
+  // dedicated test below flips it to prove the disabled case.
+  canReplay: true,
   pause: vi.fn(), resume: vi.fn(), replay: vi.fn(),
   setRate: vi.fn(), setVolume: vi.fn(),
   resumeContext: vi.fn(async () => true),
@@ -38,6 +42,7 @@ beforeEach(() => {
   onPlayPause.mockClear()
   onHome.mockClear()
   narrator.loading = false
+  narrator.canReplay = true
 })
 
 describe('Controls', () => {
@@ -117,6 +122,21 @@ describe('Controls', () => {
     expect(onPlayPause).not.toHaveBeenCalled()
     narrator.playing = true
     narrator.loading = false
+  })
+
+  it('disables "say it again" when there is genuinely nothing to repeat', async () => {
+    // The coordinator's own catch: at rest, and after Home, `lastClip` has
+    // never been set (or was just cleared by `forget()`) — replaying there
+    // would either be a true no-op or, worse, resurrect an old beat's audio
+    // over a screen that just told the child "back to the start." Disabled
+    // is the honest answer, the same rule `loading` already applies above.
+    narrator.canReplay = false
+    mount()
+    const again = screen.getByRole('button', { name: /again/i })
+    expect(again).toBeDisabled()
+    await userEvent.click(again)
+    expect(narrator.replay).not.toHaveBeenCalled()
+    narrator.canReplay = true
   })
 
   it('offers a way out when the audio context gets stuck, without a re-mount', async () => {

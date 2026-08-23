@@ -39,11 +39,21 @@ type Props = {
    *   - The action needs the ENGINE's own state to know whether there is
    *     anything to act on yet. Read it reactively, the way `playing` and
    *     `stuck` already are — never polled, always through `subscribe` —
-   *     and represent it honestly (`loading`, below) rather than rendering
-   *     a label the tap cannot make good on.
+   *     and represent it honestly (`loading`, `canReplay`, below) rather
+   *     than rendering a label the tap cannot make good on.
    * A disabled button that says what is happening is honest. An enabled one
    * that says "Play" and does nothing is not, and a child cannot tell the
    * difference between "broken" and "lying about what it does."
+   *
+   * `canReplay` is the second control this rule reached, not only the
+   * first: "Say it again" answers in every state that HAS something to
+   * repeat (mid-clip, paused, after a tap, after the tour ends) since
+   * `Narrator.replay()`'s own fix — but at rest, and after Home, there is
+   * genuinely nothing to repeat. The fix there is not to invent one — Home
+   * resurrecting an old beat's audio over its own idle screen would
+   * contradict the very thing Home just told the child happened — it is to
+   * make the button honestly unavailable, the same way `loading` already
+   * does for Play/Pause.
    */
 
   /**
@@ -86,6 +96,7 @@ export function Controls({ onPlayPause, onHome, onReplay }: Props) {
   const playing = useSyncExternalStore(n.subscribe, () => n.playing)
   const stuck = useSyncExternalStore(n.subscribe, () => n.stuck)
   const loading = useSyncExternalStore(n.subscribe, () => n.loading)
+  const canReplay = useSyncExternalStore(n.subscribe, () => n.canReplay)
 
   const [slow, setSlow] = useState(false)
   const [muted, setMuted] = useState(false)
@@ -137,7 +148,16 @@ export function Controls({ onPlayPause, onHome, onReplay }: Props) {
         </span>
       </button>
 
-      <button type="button" className="tap control" onClick={() => (onReplay ? onReplay() : void n.replay())}>
+      <button
+        type="button"
+        className="tap control"
+        onClick={() => (onReplay ? onReplay() : void n.replay())}
+        // At rest, and after Home, there is genuinely nothing to repeat —
+        // disabled rather than left to silently no-op, same as Loading
+        // above. Everywhere else a control can be pressed from (mid-clip,
+        // paused, after a tap, after the tour ends) this stays live.
+        disabled={!canReplay}
+      >
         <span className="control__body">
           <span className="control__icon" aria-hidden="true">↺</span>
           <span className="control__label">Say it again</span>

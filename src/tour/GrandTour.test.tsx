@@ -105,6 +105,22 @@ const narrator = {
    *  open counts as present: `finish()` never tears down). */
   current: null as Clip | null,
 
+  /** Faithful to `Narrator.canReplay`: true whenever there is a `current`
+   *  clip OR a `lastClip` fallback, false only at rest and after `forget()`
+   *  (Home). A getter, not a manually-synced field, so it can never drift
+   *  from `current`/`lastClip` the way a hand-copied boolean could. */
+  get canReplay() {
+    return narrator.current !== null || lastClip !== null
+  },
+
+  /** Faithful to `Narrator.forget()`: Home's own "back to the beginning"
+   *  promise, which `stop()` alone does not make — a tap and the tour's own
+   *  end both still want `lastClip` to answer `replay()` with. */
+  forget: vi.fn(() => {
+    lastClip = null
+    narrator.emit()
+  }),
+
   /**
    * "Say it again", faithful to `Narrator.replay()`'s own two paths:
    *  - `current` set: reseek in place, no new `play()` — but the clip must
@@ -579,6 +595,53 @@ describe('GrandTour', () => {
     await act(async () => { await new Promise((r) => setTimeout(r, 20)) })
     expect(played).toHaveLength(1)
   })
+
+  /**
+   * The coordinator's own catch on this task: Home's own promise is "back
+   * to the very beginning," and a "Say it again" that quietly resurrected
+   * whatever was last said — over the idle screen Home just put up, with no
+   * words lighting up and no visible cause — would contradict that promise
+   * rather than honour it. `n.forget()` (alongside `n.stop()`) is what
+   * makes the button honestly unavailable there, the same rule `loading`
+   * already applies to Play/Pause.
+   */
+  it('forgets the last clip on the way home, and disables "say it again" there', async () => {
+    autoEnd = false
+    mount({ autoStart: true })
+    await waitFor(() => expect(played).toHaveLength(1))
+    expect(screen.getByRole('button', { name: /again/i })).not.toBeDisabled()
+
+    await userEvent.click(screen.getByRole('button', { name: /home/i }))
+
+    expect(narrator.forget).toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /again/i })).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: /again/i }))
+    expect(narrator.replay).not.toHaveBeenCalled()
+  })
+
+  it('disables "say it again" at rest, before the tour has ever been started', () => {
+    mount()   // no autoStart — the very first paint, nothing has ever played
+    expect(screen.getByRole('button', { name: /again/i })).toBeDisabled()
+  })
+
+  it('keeps "say it again" live once the tour has finished, and it still works', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+        whole,
+      )
+      // Not `/again/i` alone: the big button reads "Show me again" here too.
+      const again = screen.getByRole('button', { name: /^say it again$/i })
+      expect(again).not.toBeDisabled()
+      await userEvent.click(again)
+      expect(narrator.replay).toHaveBeenCalledOnce()
+    } finally {
+      vi.useRealTimers()
+    }
+  }, 12000)
 
   it('goes quiet when the screen is left, rather than talking to nobody', async () => {
     // There is somewhere else to go now: the credits page hangs off the map's
