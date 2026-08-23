@@ -11,7 +11,7 @@ import { PALETTE as C } from './palette'
 export function Dune({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card hold={hold}>
+    <Card hold={hold} tone="rose">
       {/* the sun that beats down all day */}
       <circle cx="93" cy="26" r="11" fill={C.gold} />
 

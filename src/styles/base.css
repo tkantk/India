@@ -5,6 +5,12 @@
   /* The system edge back-swipe cannot be intercepted from a web page. */
   --gutter: 28px;
   --text: 24px;
+  /* One button a six-year-old cannot miss. Two tap targets across, which is
+     what `--play` in grandTour.css has always been; it is declared HERE
+     because the start gate needs the same button and never loads that file,
+     and because Plan 3's 32 state screens will want it too. A size, not a
+     look: the look is `.big-round` in each screen's own stylesheet. */
+  --big: calc(var(--tap) * 2);
 
   --ink: #12241c;
   --paper: #fdf8ef;
@@ -44,6 +50,91 @@
   --flag-saffron: #ff9933;
   --flag-green: #138808;
   --flag-navy: #000080;
+
+  /* ==================================================================
+     THE PRINTED PAGE
+
+     Everything above is paint. This is the press: the ground a page is
+     printed on, the one ink every drawn edge is drawn in, and the eight
+     tints a page can be. It exists because the app had eight colours
+     declared and almost nothing reading them — the whole screen was one
+     cream, so a tiger and a lotus arrived as the same sticker in the same
+     slot, and three beats running (the Ganga, the Himalaya, the three
+     seas) were thin coloured lines on beige.
+
+     The fix is not more colour in the art. It is to give the art a GROUND
+     and an EDGE, the two things a printed picture book has that a diagram
+     does not, and to make both of them tokens so the 32 state screens
+     inherit them instead of re-inventing them.
+     ================================================================== */
+
+  /* The paper the book is printed on. Warmer and a shade deeper than
+     `--paper`, which stays exactly what it was: `--paper` is now the stock
+     a PANEL is cut from (a card, the read-along, a tinted page's lightest
+     neighbour), and this is the page underneath it. Two values where there
+     was one is the whole reason a panel now reads as a panel.
+     --ink on this is 13.5:1, past the 7:1 AAA target. */
+  --page: #f6e9d3;
+
+  /* THE ONE INK. Every printed edge in the app is this colour and no
+     other: the rule round a reveal's page, the frame on the start screen,
+     the drawn glyph on a control. One ink is what makes eleven symbols
+     drawn on eleven different days look like one press run. Warm brown-
+     black rather than `--ink`, which is the TEXT colour and a green-black:
+     a line drawn in the text colour reads as a border, a line drawn in
+     this reads as a drawing. 10.3:1 on --paper, 9.1:1 on --page. */
+  --ink-line: #4b3a25;
+
+  /* How heavy that ink is, in CSS pixels, at any zoom. Panels use it as a
+     border-width; SVG rules use it as a `stroke-width` with
+     `vector-effect: non-scaling-stroke`, so a 120-unit card and a
+     180-unit flag carry the SAME line on screen instead of two different
+     ones scaled out of the same number. */
+  --rule: 3px;
+
+  /* The corner of a printed panel. One radius everywhere, so a card, a
+     caption and a cover frame are visibly the same object family. */
+  --plate-rx: 22px;
+
+  /* What lifts a panel off the page. On an <svg> ROOT it is a
+     `drop-shadow()`; on an HTML box a `box-shadow`. Never on an SVG child
+     — see effects.css and map.css for the reason, which is that WebKit's
+     legacy engine cannot composite one and runs it as a CPU blur. */
+  --lift: 0 6px 16px rgba(18, 36, 28, 0.20);
+
+  /* ------------------------------------------------------------- water
+     The map used to be a beige country on a cream page, which is a
+     diagram. Land on water is a map, and it is what makes the three
+     blandest beats in the tour — the Ganga, the Himalaya, the three seas
+     — land on something instead of floating. Deliberately PALE: beat 12
+     draws the named seas in `--sea-pale` at half opacity over this, and
+     they have to read as deeper patches of the same water.
+
+     It is declared HERE and not in map.css — unlike `--land` and
+     `--land-edge`, which stay next to the rules that paint them — because
+     it is not only a map's colour. It is the colour of WATER in this book,
+     and the next thing that wants it (a state screen with a coastline, a
+     legend, a page about the three seas) will not be inside a `.map`. */
+  --ocean: #d3edfb;
+
+  /* THE EIGHT PAGES. Every reveal is printed on one of these, chosen so
+     the drawing is never the same family as its ground — a pink lotus on
+     a pink page is a pink page. `Reveal.tsx`'s `Card` owns the mapping
+     from a tone's NAME to its colour, and each piece of art asks for the
+     page it belongs on; nothing hand-picks a hex. --ink is 11.2:1 or
+     better on all eight and --ink-line 7.5:1 or better, so a tinted page
+     can carry text and always carries its rule.
+
+     They are mirrored in src/tour/effects/art/palette.ts, like every
+     other colour the art can paint with, and `Symbol.test.tsx` fails if
+     the two drift apart. */
+  --mat-sand: #f3d79b;
+  --mat-rose: #f8ccd8;
+  --mat-leaf: #d2e7b2;
+  --mat-sun: #ffe19a;
+  --mat-sky: #b8dcf3;
+  --mat-stone: #e6d8bd;
+  --mat-teal: #b6e0d8;
 }
 
 * { box-sizing: border-box; }
@@ -58,7 +149,11 @@ body {
   inset: 0;
   overflow: hidden;
 
-  background: var(--paper);
+  /* --page, not --paper: the body is the page the book is printed on, and
+     a panel cut from --paper only reads as a panel if the ground behind it
+     is a different stock. Every text contrast on it is re-measured in the
+     token block above. */
+  background: var(--page);
   color: var(--ink);
   font: 400 var(--text)/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
 

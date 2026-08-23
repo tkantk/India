@@ -11,7 +11,7 @@ import { PALETTE as C } from './palette'
 export function Mango({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card hold={hold}>
+    <Card hold={hold} tone="teal">
       {/* stalk and leaves */}
       <path d="M60,30 C60,22 59,17 57,12" fill="none" stroke={C.bark} strokeWidth="3" strokeLinecap="round" />
       <motion.g

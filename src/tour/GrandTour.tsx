@@ -5,6 +5,7 @@ import { camera, PLACE_PADDING } from '../map/camera'
 import { STAGGER_MS, useMapNodes } from '../map/useMapNodes'
 import type { MapApi } from '../map/useMapNodes'
 import { Controls } from '../ui/Controls'
+import { Glyph } from '../ui/Glyph'
 import { ReadAlong } from '../ui/ReadAlong'
 import { TourStage } from './TourStage'
 import { park, parked, clearPark } from './tourPosition'
@@ -827,7 +828,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
               className="tap play-big"
               onClick={() => (parkedBeat !== null ? carryOn(parkedBeat) : start())}
             >
-              <span className="play-big__icon" aria-hidden="true">▶</span>
+              <span className="play-big__icon"><Glyph name="play" /></span>
               <span className="play-big__label">
                 {parkedBeat !== null ? 'Carry on' : finished ? 'Show me again' : 'Show me India'}
               </span>

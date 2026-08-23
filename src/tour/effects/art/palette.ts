@@ -39,4 +39,23 @@ export const PALETTE = {
   flagSaffron: '#ff9933',
   flagGreen: '#138808',
   flagNavy: '#000080',
+
+  /**
+   * THE PRINTED PAGE — see the block of the same name in base.css for what
+   * these are for. `inkLine` is the one ink every drawn edge is drawn in;
+   * the eight `mat*` values are the grounds a reveal can be printed on.
+   *
+   * They live here as well as in base.css for the usual reason: they are
+   * painted as SVG presentation attributes (`Card`'s mat and rule), and
+   * WebKit's legacy engine will not resolve `var()` in one.
+   */
+  inkLine: '#4b3a25',
+
+  matSand: '#f3d79b',
+  matRose: '#f8ccd8',
+  matLeaf: '#d2e7b2',
+  matSun: '#ffe19a',
+  matSky: '#b8dcf3',
+  matStone: '#e6d8bd',
+  matTeal: '#b6e0d8',
 } as const

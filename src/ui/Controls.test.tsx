@@ -139,6 +139,39 @@ describe('Controls', () => {
     narrator.canReplay = true
   })
 
+  /**
+   * THE DRAWN GLYPHS, one per control, each beside its own word.
+   *
+   * `Glyph.tsx` replaced the bar's literal emoji (`▶ ⏸ ⏳ ↺ 🐢 🔊 🔇 🏠`) with
+   * marks drawn in the app's own hand — see that file's own note on why the
+   * platform ones had to go. Nothing about that swap is allowed to have
+   * quietly dropped a label along the way: a glyph is `aria-hidden` on
+   * purpose (Glyph.tsx), so if a `control__label` span ever went missing the
+   * accessible name would be silently blank, and the "labels every control
+   * with a word" test above — which matches on accessible name, computed
+   * FROM that very label text — would go on passing for the wrong reason
+   * (an empty name still fails `getByRole`'s regex match, so it actually
+   * would catch a fully-blank name; what it would NOT catch is a glyph
+   * rendered with nothing drawn in it, since aria-hidden art contributes
+   * nothing to the accessible name either way). This test looks at the icon
+   * slot directly instead of only the label.
+   */
+  it('draws a glyph in every control, next to its word, not instead of it', () => {
+    mount()
+    for (const b of screen.getAllByRole('button')) {
+      const icon = b.querySelector('.control__icon')
+      expect(icon, `${b.textContent} has no icon slot`).toBeTruthy()
+      const svg = icon!.querySelector('svg.glyph')
+      expect(svg, `${b.textContent} drew no glyph`).toBeTruthy()
+      expect(svg!.querySelectorAll('path, circle, rect, ellipse, polygon, line').length,
+        `${b.textContent}'s glyph is an empty frame`).toBeGreaterThan(0)
+
+      const label = b.querySelector('.control__label')
+      expect(label, `${b.textContent} has no label slot`).toBeTruthy()
+      expect(label!.textContent?.trim(), `${b.textContent}'s label is empty`).not.toBe('')
+    }
+  })
+
   it('offers a way out when the audio context gets stuck, without a re-mount', async () => {
     // The engine's visibilitychange handler can flip `stuck` with no user
     // action at all, so the bar must react to the subscription — not to being

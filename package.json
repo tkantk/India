@@ -23,7 +23,8 @@
     "build:art": "node scripts/build-geo-art.mjs",
     "contact-sheet:art": "node scripts/contact-sheet-art.mjs",
     "contact-sheet:mor": "node scripts/contact-sheet-mor.mjs",
-    "tour:strip": "node scripts/tour-strip.mjs"
+    "tour:strip": "node scripts/tour-strip.mjs",
+    "shot": "node scripts/shot.mjs"
   },
   "dependencies": {
     "motion": "^13.1.1",

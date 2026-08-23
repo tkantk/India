@@ -17,8 +17,12 @@
   /* The button is 2 x --tap, the size the plan promises: 208px of gold that a
      six-year-old cannot miss. --tap is 2cm on a 264ppi iPad, four times the
      adult recommendation, so twice that is a target for a hand that has not
-     learned to aim yet. */
-  --play: calc(var(--tap) * 2);
+     learned to aim yet.
+
+     The number moved to `--big` on :root (base.css) when the start gate
+     needed the same button and could not reach a definition that lived
+     here. This stays as the tour's own NAME for it. */
+  --play: var(--big);
 
   /* Mor's floor. `mor.css` ships this knob for exactly this moment: the play
      button did not exist when he was drawn, and now it does. Clear of the
@@ -91,7 +95,24 @@
      13.4:1 whatever is underneath, because that one is opaque. All of them
      are past the 7:1 AAA target the rest of the app is held to. */
   background: rgba(253, 248, 239, 0.72);
-  box-shadow: 0 4px 14px rgba(18, 36, 28, 0.18);
+
+  /* THE RULE IS AN INSET SHADOW, NOT A BORDER, and that is a layout
+     decision rather than a stylistic one. `.say` is the one box in the app
+     whose exact wrapping is arithmetic somebody else depends on:
+     `--say-lines` is a MEASURED constant (5, 4 above 792px, 9 below 600px)
+     that feeds `--say-lane`, which feeds `--map-floor`, which is what the
+     map is framed against and what `npm run tour:strip` checks at twelve
+     viewports. `* { box-sizing: border-box }` means a 3px border would take
+     6px out of the content width, re-wrap the longest beat, and silently
+     falsify all of it. An inset box-shadow paints the same line, follows
+     the same `border-radius`, and occupies no layout at all.
+
+     The caption is now a printed caption strip — paper, the app's one ink
+     round it, the shared lift — instead of a translucent slab. 0.72 is
+     unchanged and still the measured figure: --ink over it is 14.5:1 on the
+     new water, 14.0:1 on the new land, 12.0:1 on a lit saffron state and
+     10.7:1 over the Ganga's deep blue, all past the 7:1 AAA target. */
+  box-shadow: inset 0 0 0 var(--rule) var(--ink-line), var(--lift);
 
   /* Above the tour art, which is a `z-index: auto` sibling — a caption that
      the tiger could cover would be no caption at all. Still below Mor (2) and
@@ -140,10 +161,17 @@
 
   /* --ink on --gold is ~11.3:1, past the 7:1 AAA target. (--ink on --saffron
      is only ~6.2:1, which is why the carry-on button in Controls.css is gold
-     too.) */
+     too.)
+
+     Inked, like everything else that is printed on this page — and this is
+     the shape the start screen's own begin button copies, so a child meets
+     the big round gold thing on the cover and meets it again here. A border
+     is safe on this one (unlike `.say`): the button is a fixed
+     `--play` square and nothing measures its text. */
   background: var(--gold);
   color: var(--ink);
-  box-shadow: 0 6px 18px rgba(18, 36, 28, 0.32);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
 
   /* In front of Mor, who is scenery. */
   z-index: 3;
@@ -157,8 +185,10 @@
 }
 
 .play-big__icon {
-  display: block;
-  font-size: 46px;
+  display: grid;
+  place-items: center;
+  /* `Glyph` measures itself in `em`, so this is its size. */
+  font-size: 54px;
   line-height: 1;
 }
 

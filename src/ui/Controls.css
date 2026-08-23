@@ -59,7 +59,22 @@
   gap: var(--bar-gap);
 
   background: var(--deep);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.18);
+
+  /* A PRINTED EDGE, NOT A BLUR. The bar used to fade into the page under a
+     soft black shadow; on a picture-book page the band at the foot of the
+     plate has a line on it. Gold, because gold is already this app's "this
+     is a thing you press" colour (the play button, the carry-on button),
+     and it ties the darkest object on screen to the brightest.
+
+     `inset`, and this is the load-bearing part: `--bar`'s height formula
+     (above) hard-codes this rule's own `padding-top: 8px`, so a real
+     `border-top` would make the bar 4px taller than every element laid out
+     against it believes. An inset shadow paints inside the padding and
+     occupies no layout at all. The outer shadow stays, dropped to the same
+     ink the rest of the book is printed in. */
+  box-shadow:
+    inset 0 4px 0 var(--gold),
+    0 -3px 12px rgba(75, 58, 37, 0.22);
 
   padding-top: 8px;
   padding-bottom: max(8px, env(safe-area-inset-bottom));
@@ -76,10 +91,19 @@
   border-radius: 18px;
   /* --paper on --deep: ~11.5:1, comfortably past the 7:1 AAA target. */
   color: var(--paper);
+
+  /* Each control is a TILE, not a word floating on a green band. A six-
+     year-old aiming at a 104px target needs to see where the target starts
+     and stops; five labels on one continuous field give them no edge to aim
+     at, and the only feedback was on `:active`, which is after they have
+     already committed. 8% paper over --deep puts the label at 9.2:1, still
+     past the 7:1 AAA target. */
+  background: rgba(253, 248, 239, 0.08);
+  transition: background 120ms ease-out;
 }
 
 .controls .control:active {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(253, 248, 239, 0.26);
 }
 
 /* Loading: the play/pause button while a clip is in flight with nothing
@@ -91,8 +115,12 @@
   opacity: 0.55;
 }
 
+/* Pressing a disabled control must not light it up — but it must not put the
+   tile OUT either, which `background: none` did the moment the tiles above
+   existed: a target that vanishes under the finger reads as broken rather
+   than as unavailable. It stays exactly where it was, dimmed. */
 .controls .control:disabled:active {
-  background: none;
+  background: rgba(253, 248, 239, 0.08);
 }
 
 /* The wrap itself. Three bases plus two gaps make exactly one row, so where
@@ -125,7 +153,13 @@
   gap: 2px;
 }
 
+/* The drawn mark. `font-size` rather than a width, because `Glyph` sizes
+   itself in `em` and paints in `currentColor` — so the mark scales with the
+   type and can never fall out of colour with the word under it. It used to
+   be a platform emoji here, which could do neither. */
 .controls .control__icon {
+  display: grid;
+  place-items: center;
   font-size: 28px;
   line-height: 1;
 }
@@ -152,6 +186,7 @@
      the 7:1 AAA target — which is why this button is gold, not saffron.) */
   background: var(--gold);
   color: var(--ink);
+  border: var(--rule) solid var(--ink-line);
   font-size: var(--text);
   font-weight: 700;
 }

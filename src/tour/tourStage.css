@@ -9,6 +9,15 @@
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+
+  /* THE PAGE, EXPLICITLY — not `body`'s by inheritance.
+     `.map` is framed INSIDE this box (`--map-ceiling` above, `--map-floor`
+     below, the rule further down), so the stage is two zones: the picture,
+     and the strip underneath it where the caption, the credit and the play
+     button live. Stating the ground here rather than letting body's show
+     through is what lets the two be different — and different is the point.
+     This is the page a picture book prints a caption on. */
+  background: var(--page);
 }
 
 /* `.map` and `.tour-overlay` are framed together, not each left at `.map {
@@ -45,6 +54,40 @@
   inset: var(--map-ceiling, 0px) 0 var(--map-floor, 0px) 0;
   width: auto;
   height: auto;
+}
+
+/* THE ILLUSTRATION PLATE. The map is the picture on the page, so it gets an
+   edge — the same ink, weight and corner as a reveal's page, the caption
+   under it and the cover before it. Without one, the water inside it and
+   the paper outside it meet on a raw horizontal line halfway down the
+   screen, which reads as a rendering accident rather than as a layout.
+   `.map` is already `overflow: hidden`, so the country clips to the corner.
+
+   It goes on `.map` here and not in map.css because the border is part of
+   how THIS screen frames a map, not part of what a map is: `mapPage.mjs`'s
+   probes and `build-map.test.mjs` render a bare `.map` and measure real
+   coordinates in it.
+
+   No measured rectangle moves. `box-sizing: border-box` is global, the box
+   is `inset`-positioned, and `--map-floor` is unchanged — the drawn country
+   inside simply starts 3px in, which `tour:strip` sees as the map being
+   slightly further from the furniture, never closer. Confirmed: the gate
+   passes with zero collisions at all twelve viewports.
+
+   THE ONE THING ON THIS RULE TO WATCH ON A REAL IPAD. `.map` is already
+   `overflow: hidden` (map.css), and `border-radius` turns that rectangular
+   clip into a ROUNDED one — over `.map .stage`, the single composited layer
+   the camera flies. A uniform radius maps to a CALayer `cornerRadius` +
+   `masksToBounds`, which WebKit clips on the compositor for free, so this
+   should cost nothing; but "should" is doing work in that sentence, and
+   this codebase has been bitten before by exactly this class of thing (see
+   map.css on SVG filters and on `vector-effect`). If a flight stutters on
+   the device, DELETING THE `border-radius` LINE IS THE WHOLE REVERT — the
+   frame stays, it just has square corners, which is what a printed plate
+   usually has anyway. */
+.tour-stage > .map {
+  border: var(--rule) solid var(--ink-line);
+  border-radius: var(--plate-rx);
 }
 
 /* Where the tour art lands — the same box as the map, so a symbol can be

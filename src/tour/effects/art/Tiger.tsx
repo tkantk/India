@@ -24,7 +24,7 @@ const STRIPES = [
 export function Tiger({ hold }: { hold?: number } = {}) {
   const still = useStill()
   return (
-    <Card hold={hold}>
+    <Card hold={hold} tone="teal">
       {/* ears */}
       <circle cx="30" cy="36" r="14" fill={C.saffron} />
       <circle cx="90" cy="36" r="14" fill={C.saffron} />

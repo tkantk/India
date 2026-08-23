@@ -9,10 +9,47 @@
   height: 100%;
   overflow: hidden;
 
+  /* A MAP IS LAND ON WATER. It used to be a beige country on a cream page,
+     which is a diagram: the single largest colour on screen was #d9cfae and
+     the second largest was the same cream as the body, so the country had no
+     edge except a hairline in the page's own colour. Three whole beats —
+     the Ganga, the Himalaya, the three seas — are drawn ON that surround,
+     and all three measured under 1% saturated pixels because there was
+     nothing under them.
+
+     `--ocean` is deliberately pale: beat 12 paints the named seas in
+     `--sea-pale` at half opacity over this, and they have to read as deeper
+     patches of the same water rather than vanish into it.
+
+     The water stops where the map's box stops — it is not painted across
+     the whole screen. `tourStage.css` frames this box as the illustration
+     plate and leaves the strip below it as `--page`, so the picture and the
+     caption under it are two different grounds, which is what a page in a
+     picture book is. */
+  background: var(--ocean);
+
   /* The map's own paper-and-ink. base.css keeps the app palette; these are
-     only ever used here. */
-  --land: #d9cfae;
-  --land-edge: var(--paper);
+     only ever used here — and `scripts/build-map.test.mjs` reads `--land`
+     out of THIS file by name to derive its pixel threshold, so it stays a
+     literal here rather than becoming a reference to a root token.
+
+     GREEN, NOT BEIGE, and the reason is measured rather than a preference:
+     the tour's biggest moment is 28 states lighting saffron, and --saffron
+     on this is 1.78:1 where --saffron on the old #d9cfae was 1.49:1. A
+     stronger signal, and the flag's own two colours while it is at it.
+     --ink on it is 11.1:1, so the read-along lying over it stays AAA. */
+  --land: #c7dc9b;
+
+  /* THE COASTLINE AND EVERY STATE BORDER, DRAWN RATHER THAN CUT OUT. This
+     used to be `var(--paper)` — the page's own colour — which made the
+     country a beige field with cream worms on it and gave India no outline
+     at all against the page it sat on. A warm brown line at the same 1.5px
+     is 3.8:1 against the land and 4.3:1 against the water, past WCAG's 3:1
+     floor for a meaningful non-text boundary. The geometry is untouched:
+     this is a colour, and the official depiction the build gate enforces
+     is a shape. */
+  --land-edge: #7d6440;
+
   --lit-state: var(--saffron);
   --lit-ut: var(--gold);
 }
@@ -173,6 +210,8 @@
   padding: 4px 8px;
   font-size: 13px;
   line-height: 1.3;
+  /* 7.2:1 on the water it now sits over, 7.8:1 on the page, 8.8:1 on paper
+     — re-measured when the ground under it stopped being cream. */
   color: #3d4a41;
   /* Text, not a target: it must never swallow a tap meant for Kerala. */
   pointer-events: none;

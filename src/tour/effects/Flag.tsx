@@ -39,8 +39,12 @@ const SPOKES = Array.from({ length: 24 }, (_, i) => {
  *  when none reached this cue (a single-effect test, or the draft-voice
  *  pipeline). */
 export function Flag({ hold = HOLD.flag }: { hold?: number } = {}) {
+  // THE ONE REVEAL THAT STAYS ON PLAIN PAPER. Every other page is tinted so
+  // a drawing has a ground that is not its own family (see `TONES` in
+  // Reveal.tsx) — but the middle band of the flag IS white, and a white band
+  // on a coloured page stops being white. The tricolour outranks the set.
   return (
-    <Card viewBox="0 0 180 120" hold={hold}>
+    <Card viewBox="0 0 180 120" hold={hold} tone="paper">
       {/* the pole. Without it this is a striped rectangle. */}
       <rect x="12" y="6" width="6" height="110" rx="3" fill={C.bark} />
 

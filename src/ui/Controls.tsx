@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import { getNarrator } from '../audio/Narrator'
+import { Glyph } from './Glyph'
 import './Controls.css'
 
 type Props = {
@@ -143,7 +144,9 @@ export function Controls({ onPlayPause, onHome, onReplay }: Props) {
         disabled={loading}
       >
         <span className="control__body">
-          <span className="control__icon" aria-hidden="true">{loading ? '⏳' : playing ? '⏸' : '▶'}</span>
+          <span className="control__icon">
+            <Glyph name={loading ? 'loading' : playing ? 'pause' : 'play'} />
+          </span>
           <span className="control__label">{loading ? 'Loading' : playing ? 'Pause' : 'Play'}</span>
         </span>
       </button>
@@ -159,28 +162,28 @@ export function Controls({ onPlayPause, onHome, onReplay }: Props) {
         disabled={!canReplay}
       >
         <span className="control__body">
-          <span className="control__icon" aria-hidden="true">↺</span>
+          <span className="control__icon"><Glyph name="again" /></span>
           <span className="control__label">Say it again</span>
         </span>
       </button>
 
       <button type="button" className="tap control" onClick={toggleSlow}>
         <span className="control__body">
-          <span className="control__icon" aria-hidden="true">🐢</span>
+          <span className="control__icon"><Glyph name={slow ? 'normal' : 'slower'} /></span>
           <span className="control__label">{slow ? 'Normal speed' : 'Slower'}</span>
         </span>
       </button>
 
       <button type="button" className="tap control" onClick={toggleMuted}>
         <span className="control__body">
-          <span className="control__icon" aria-hidden="true">{muted ? '🔇' : '🔊'}</span>
+          <span className="control__icon"><Glyph name={muted ? 'sound-off' : 'sound-on'} /></span>
           <span className="control__label">{muted ? 'Sound off' : 'Sound on'}</span>
         </span>
       </button>
 
       <button type="button" className="tap control" onClick={onHome}>
         <span className="control__body">
-          <span className="control__icon" aria-hidden="true">🏠</span>
+          <span className="control__icon"><Glyph name="home" /></span>
           <span className="control__label">Home</span>
         </span>
       </button>

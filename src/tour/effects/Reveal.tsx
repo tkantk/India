@@ -170,11 +170,21 @@ export function Reveal({ hold, variant = 'figure', restartOn, children }: Reveal
   return (
     <motion.div
       className={scaled ? 'cue-figure' : 'cue-layer'}
-      initial={{ opacity: 0, ...(scaled ? { scale: 0.88 } : null) }}
+      // A PAGE BEING TURNED TO, not a notification arriving. The rise and
+      // the small tilt off square are what a printed page does when it
+      // settles: still no overshoot (see ENTER_S), still 500ms, and still
+      // opacity-only for a LAYER, which is registered to the geography
+      // underneath it to the tenth of a viewBox unit and must never move.
+      //
+      // Both extra channels are transforms on an HTML div, so they are
+      // composited, and `MotionConfig reducedMotion="user"` (App.tsx) drops
+      // them by themselves — a child who asked for less motion still gets
+      // the picture, and gets it square.
+      initial={{ opacity: 0, ...(scaled ? { scale: 0.9, y: 16, rotate: -2.5 } : null) }}
       animate={
         leaving
-          ? { opacity: 0, ...(scaled ? { scale: 0.97 } : null) }
-          : { opacity: 1, ...(scaled ? { scale: 1 } : null) }
+          ? { opacity: 0, ...(scaled ? { scale: 0.97, y: -8, rotate: 1.5 } : null) }
+          : { opacity: 1, ...(scaled ? { scale: 1, y: 0, rotate: 0 } : null) }
       }
       transition={{ duration: leaving ? FADE_MS / 1000 : ENTER_S, ease: EASE_OUT }}
     >
@@ -183,24 +193,96 @@ export function Reveal({ hold, variant = 'figure', restartOn, children }: Reveal
   )
 }
 
-/** A drawing on a card, in the middle of the map. */
+/**
+ * THE EIGHT PAGES a reveal can be printed on.
+ *
+ * The whole set used to be one cream rectangle, and that single line is why
+ * the tiger, the lotus, the Ganga and the Hindi script all arrived looking
+ * like the same sticker in the same slot.
+ *
+ * A tone is a PAGE, and there are two rules for picking one. First, it is
+ * never the subject's own colour family — a pink lotus on a pink page is a
+ * pink page — so the orange tiger gets pond teal, the blue-and-gold peacock
+ * gets rose, the pink-and-gold lotus gets sky. Second, no two figures a
+ * child sees in a row share one, which is what makes the tour feel like
+ * pages being turned rather than one slot being refilled: the order through
+ * the fourteen beats is sun, paper, teal, rose, sky, sand, teal. The flag
+ * alone stays on plain paper, because the tricolour only reads true against
+ * white.
+ *
+ * There is a third constraint that only exists because the map now has a
+ * ground: a page must not be the colour of the water (`--ocean`) or the land
+ * (`--land`) it is laid on. That is why `--mat-sky` is a shade deeper than
+ * the sea, and why nothing is printed on `--mat-leaf` in the tour.
+ *
+ * The mapping lives HERE rather than in a table beside the art for the same
+ * reason `.tap` lives in base.css: a new state screen in Plan 3 gets a page
+ * by naming a tone, and can never invent a ninth colour by accident. Mirrors
+ * `--mat-*` in base.css; `Symbol.test.tsx` fails if the two drift.
+ */
+export const TONES = {
+  paper: PALETTE.paper,
+  sand: PALETTE.matSand,
+  rose: PALETTE.matRose,
+  leaf: PALETTE.matLeaf,
+  sun: PALETTE.matSun,
+  sky: PALETTE.matSky,
+  stone: PALETTE.matStone,
+  teal: PALETTE.matTeal,
+} as const
+
+export type Tone = keyof typeof TONES
+
+/**
+ * A drawing on a page, in the middle of the map.
+ *
+ * Three things make it a printed page rather than a card: a tinted ground, a
+ * drawn rule in the app's one ink, and a lift (`--lift`, on the <svg> ROOT in
+ * effects.css — never on a child, which WebKit cannot composite).
+ *
+ * THE RULE IS `non-scaling-stroke`, and that is load-bearing rather than
+ * tidy. A `stroke-width` in user units is scaled by the viewBox, so the same
+ * number would draw a 4.7px line round a 120-unit symbol and a 3.3px line
+ * round the 180-unit flag — two different frames from one constant, at the
+ * one moment the set is meant to look like one set. Non-scaling makes
+ * `--rule`'s 3 mean 3 CSS pixels on every page. The rect is inset by 1.5
+ * units so the outer half of that stroke is not clipped by the viewport.
+ */
 export function Card({
   viewBox = '0 0 120 120',
   hold = HOLD.symbol,
+  tone = 'paper',
   children,
 }: {
   viewBox?: string
   hold?: number
+  /** Which of the eight pages this drawing is printed on. */
+  tone?: Tone
   children: ReactNode
 }) {
   const [, , w, h] = viewBox.split(' ').map(Number)
+  const rx = w / 12
   return (
     <Reveal hold={hold}>
       <svg className="cue-art" viewBox={viewBox} aria-hidden="true">
-        {/* The card. Cream on the map's beige, so a flat drawing has
-            something to be flat against. */}
-        <rect x="0" y="0" width={w} height={h} rx={w / 12} fill={PALETTE.paper} />
+        {/* The page. */}
+        <rect x="0" y="0" width={w} height={h} rx={rx} fill={TONES[tone]} />
         {children}
+        {/* The rule, drawn LAST so the art can run to the edge of its own
+            page and still be contained by the line, the way a printed plate
+            is. Two rects, not one with a fill: a filled-and-stroked rect
+            would paint the ground over the art. */}
+        <rect
+          x="1.5"
+          y="1.5"
+          width={w - 3}
+          height={h - 3}
+          rx={rx - 1.5}
+          fill="none"
+          stroke={PALETTE.inkLine}
+          strokeWidth="3"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
     </Reveal>
   )

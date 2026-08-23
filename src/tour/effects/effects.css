@@ -27,13 +27,22 @@
   pointer-events: none;
 }
 
-/* A drawing on a card, in the middle of the map. The grid matters: the
+/* A drawing on a page, in the middle of the map. The grid matters: the
    counter and the greetings card are narrower than this box, and without it
-   they sit against its left edge instead of in the middle of the map. */
+   they sit against its left edge instead of in the middle of the map.
+
+   50vmin/400px, not 46/380. A reveal is a PAGE now — a tinted ground with a
+   drawn rule round it (see `Card` in Reveal.tsx) — and a page that measures
+   the same as a sticker still reads as a sticker. It stops at 400: measured
+   at 820x1024 the map box is 764 x 714.8, and a page much wider than half
+   of that stops being a page laid on the country and becomes a lid over it.
+   Nothing in `tour:strip`'s collision set measures `.cue-figure` — every
+   layer over the map is `pointer-events: none` and a figure is never a
+   target — so this is a judgement about the picture, not about the layout. */
 .cue-figure {
   display: grid;
   place-items: center;
-  width: min(46vmin, 380px);
+  width: min(50vmin, 400px);
 }
 
 .cue-art {
@@ -42,8 +51,10 @@
   height: auto;
   /* On the <svg> ROOT, never on a child: an SVG child cannot own a compositor
      layer in WebKit's legacy engine, so a drop-shadow inside would be a
-     software three-pass blur. See map.css for the long version. */
-  filter: drop-shadow(0 5px 14px rgba(18, 36, 28, 0.22));
+     software three-pass blur. See map.css for the long version.
+     `--lift` is the shared one, so a page, a caption and the start screen's
+     cover all sit the same distance off the paper. */
+  filter: drop-shadow(var(--lift));
 }
 
 /* Art drawn in the map's own viewBox. `.tour-overlay` and `.map` are the same
@@ -81,7 +92,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 5px 14px rgba(18, 36, 28, 0.22));
+  filter: drop-shadow(var(--lift));
 }
 
 .cue-counter__n {
@@ -96,13 +107,19 @@
 
 /* ----------------------------------------------------------------- script */
 
+/* The one reveal that is an HTML box rather than an svg, so its page is
+   painted in CSS — but it is the SAME page: plain paper (three scripts have
+   to be read, and a tint under Devanagari, Bengali and Tamil at once is a
+   tint fighting three typefaces), the app's one ink round the outside at
+   `--rule`, the shared corner and the shared lift. */
 .cue-script {
   display: grid;
   gap: 0.5em;
   padding: 0.7em 1.1em;
-  border-radius: 18px;
+  border-radius: var(--plate-rx);
   background: var(--paper);
-  box-shadow: 0 5px 14px rgba(18, 36, 28, 0.22);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
   text-align: center;
 }
 

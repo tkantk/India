@@ -1,0 +1,294 @@
+/* THE COVER.
+ *
+ * This file did not exist. `.gate`, `.begin`, `.row` and `.help` had no rule
+ * in any stylesheet in the repo, so the first thing a six-year-old saw was
+ * unstyled markup: browser-default type in the top quarter of the screen and
+ * 774 empty pixels under it, 98% of the frame one colour and not one
+ * saturated pixel anywhere. It is the cheapest win in the project and it is
+ * also the only screen with room to state the whole design language at once,
+ * so it does: the page, the plate, the one ink, the eight tints, the big
+ * round gold button, the drawn glyph, and the bird.
+ *
+ * EVERY SELECTOR HERE IS COMPOUND (`.tap.begin`, never `.begin`), and that is
+ * not style. Vite does not bundle CSS in import order: measured, `base.css`
+ * lands LAST in the production stylesheet and FIRST in dev. `.tap` in
+ * base.css sets `background: none` and `min-width: var(--tap)`, so a plain
+ * `.begin { background: ... }` here would win in `npm run shot` and lose on
+ * the iPad. Two classes beat one in either order.
+ */
+
+.gate {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  /* The plate is sized to fit inside the shortest device this ships to; if a
+     future translation makes it taller than the viewport anyway, it scrolls
+     rather than being clipped by body's `overflow: hidden`. */
+  overflow: auto;
+  padding: 16px 0;
+
+  /* Printed paper, not a flat fill. A halftone dot at 7% ink on 26px centres
+     is invisible as a pattern and unmistakable as a texture — it is the one
+     thing that stops a large empty warm rectangle reading as "unfinished".
+     A background-image is a single paint with no filter, no layer and no
+     animation, which is the only kind of texture this platform can afford
+     (see map.css on what WebKit does with an SVG filter). */
+  background-image: radial-gradient(circle, rgba(75, 58, 37, 0.07) 1.6px, transparent 1.7px);
+  background-size: 26px 26px;
+}
+
+/* The plate the cover is printed on: paper stock, the app's one ink round
+   the outside at the shared weight, the shared corner and the shared lift —
+   the same four properties as a reveal's page in the tour and the caption
+   under it. A child meets the object here and meets it again all through the
+   tour. */
+.gate__plate {
+  position: relative;
+  width: min(100%, 620px);
+  padding: clamp(22px, 4vmin, 40px) clamp(18px, 4vmin, 36px) clamp(26px, 4.5vmin, 44px);
+
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  border-radius: calc(var(--plate-rx) * 1.5);
+  box-shadow: var(--lift);
+
+  display: grid;
+  justify-items: center;
+  gap: clamp(10px, 1.8vmin, 20px);
+  text-align: center;
+}
+
+/* The inner rule. A printed cover has two lines, not one, and the second one
+   is thinner and set in — it is the single cheapest mark that says "somebody
+   laid this out" rather than "this is a div with a border". Inert, and a
+   pseudo-element so it costs no markup. */
+.gate__plate::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border: 1.5px solid var(--ink-line);
+  border-radius: calc(var(--plate-rx) * 1.2);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* नमस्ते, in Devanagari, above the roman. The tour's own beat 13 is about
+   there being more than one way to say hello; the cover says the first one
+   in its own script before the child has tapped anything. `lang="hi"` is on
+   the element, so the browser picks a Devanagari face instead of guessing. */
+.gate__hello {
+  margin: 0;
+  font-size: clamp(30px, 6vmin, 46px);
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--deep);
+}
+
+.gate__title {
+  margin: 0;
+  font-size: clamp(40px, 9.5vmin, 76px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+/* One saffron bar under the title. Colour, boldly, on the paper — which is
+   the whole direction in one declaration. */
+.gate__title::after {
+  content: '';
+  display: block;
+  width: clamp(88px, 18vmin, 148px);
+  height: 8px;
+  margin: clamp(10px, 1.6vmin, 18px) auto 0;
+  border-radius: 4px;
+  background: var(--saffron);
+}
+
+.gate__sub {
+  margin: 0;
+  font-size: clamp(20px, 3.4vmin, 27px);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+/* The page the bird is printed on — the ninth instance of the same object,
+   and stated in exactly the tokens the other eight use.
+
+   `--mat-leaf`, not the `--mat-sun` his own reveal uses in beat 8, and the
+   reason is the button under him: the begin button is `--gold`, and a gold
+   page directly above a gold circle made the whole lower half of the cover
+   one yellow mass. Green does two things instead — a blue-and-gold bird
+   reads hardest against it, and it is the colour of the country he is
+   about to stand on. */
+.gate__page {
+  display: grid;
+  place-items: center;
+  padding: 10px 18px 4px;
+  background: var(--mat-leaf);
+  border: var(--rule) solid var(--ink-line);
+  border-radius: var(--plate-rx);
+  box-shadow: var(--lift);
+}
+
+/* Mor, fan open, waiting on the cover of his own book. The viewBox is
+   cropped to the bird and his tail (the art's own box has empty margins he
+   does not need here). No lift of his own: he is ON the page above, and a
+   drawing with its own shadow inside a panel with a shadow reads as two
+   objects. */
+.gate__bird {
+  display: block;
+  width: min(52vmin, 268px);
+  max-height: 30vh;
+  height: auto;
+}
+
+/* ------------------------------------------------------- the begin button */
+
+/* The same object as the tour's play button — `--big` across, gold, inked,
+   round — because it is the same promise, and a child who has learned the
+   big round gold thing starts something should be right about that twice.
+   The look is stated in both files rather than shared through a class
+   because `grandTour.css` is only loaded by the tour; the SIZE is the token
+   they actually share (`--big`, base.css). */
+.tap.begin {
+  width: var(--big);
+  height: var(--big);
+  min-width: var(--big);
+  min-height: var(--big);
+  border-radius: 50%;
+
+  /* --ink on --gold is ~11.3:1, past the 7:1 AAA target — the same reason
+     the play button and the carry-on button are gold and not saffron. */
+  background: var(--gold);
+  color: var(--ink);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+}
+
+.tap.begin:active {
+  filter: brightness(0.94);
+}
+
+.big-round__icon {
+  display: grid;
+  place-items: center;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.big-round__label {
+  display: block;
+  padding: 0 12px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* ------------------------------------------------- did you hear that? */
+
+.gate__title--ask {
+  font-size: clamp(34px, 7.5vmin, 60px);
+}
+
+/* `width: 100%` is load-bearing, not tidying: `.gate__plate` is a grid with
+   `justify-items: center`, so a grid item sizes to its CONTENT rather than
+   stretching — and a flex row that is only as wide as its content wraps
+   immediately. The two answers belong side by side on a tablet. */
+.row {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(12px, 2.4vmin, 24px);
+}
+
+/* Two of the eight pages from the tour's own set (`--mat-leaf`,
+   `--mat-sand`), inked and lifted exactly like a reveal. The first choice a
+   child makes in this app teaches them what a page looks like, so it may as
+   well be the same page.
+   --ink on either is 13.0:1 and 12.5:1. */
+.tap.answer {
+  flex: 0 1 250px;
+  min-width: 0;
+  min-height: 148px;
+  padding: 16px 14px;
+
+  border: var(--rule) solid var(--ink-line);
+  border-radius: var(--plate-rx);
+  box-shadow: var(--lift);
+  color: var(--ink);
+
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+}
+
+.tap.answer--yes { background: var(--mat-leaf); }
+.tap.answer--no { background: var(--mat-sand); }
+
+.tap.answer:active {
+  filter: brightness(0.95);
+}
+
+.answer__icon {
+  display: grid;
+  place-items: center;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--ink-line);
+}
+
+.answer__label {
+  font-size: clamp(19px, 2.8vmin, 24px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* No web API can read the iPad's mute switch, so this paragraph is the whole
+   cure and it is written for the ADULT in the room — bigger than a caption,
+   smaller than the question above it, and never the only thing on screen. */
+.help {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(18px, 2.6vmin, 22px);
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.tap.retry {
+  min-width: 0;
+  padding: 0 30px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+  font-size: var(--text);
+  font-weight: 700;
+}
+
+.tap.retry:active {
+  filter: brightness(0.94);
+}
+
+/* On a phone the two answers stack, and the bird gives up its height first —
+   he is the one thing on this screen that is not a word or a target. */
+@media (max-width: 600px) {
+  .gate__bird { width: min(52vmin, 220px); max-height: 26vh; }
+  .tap.answer { flex: 1 1 100%; min-height: 128px; }
+}
+
+/* And on a short landscape phone the cover has to fit in 390px of height,
+   so the bird goes entirely rather than pushing the button off the screen.
+   `display: none` is right here and wrong almost everywhere else: he is
+   `aria-hidden` decoration with no information in him. */
+@media (max-height: 560px) {
+  .gate__bird { display: none; }
+}
