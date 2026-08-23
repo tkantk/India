@@ -14,6 +14,7 @@
     "build:hit": "node scripts/build-hitlayer.mjs",
     "probe:map": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/probe-map-hits.mjs",
     "probe:camera": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/probe-camera.mjs",
+    "colour:check": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/colour-check.mjs",
     "tts:draft": "node scripts/tts.mjs --provider=say",
     "tts:final": "node --env-file-if-exists=.env scripts/tts.mjs --provider=elevenlabs",
     "voices": "node --env-file-if-exists=.env scripts/voices.mjs",

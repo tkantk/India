@@ -59,3 +59,22 @@ export const PALETTE = {
   matStone: '#e6d8bd',
   matTeal: '#b6e0d8',
 } as const
+
+/**
+ * Every `PALETTE` entry base.css does NOT declare, `"name (hex)"` per miss —
+ * empty when the two are in step.
+ *
+ * Pure and side-effect free (a string in, a list of strings out) so it can be
+ * called from wherever a copy of base.css's text has already been read,
+ * rather than each caller re-deriving its own version of the same
+ * lowercase-and-search: `Symbol.test.tsx`'s "keeps the art palette and
+ * base.css in step" calls this from vitest, and `scripts/colour-check.mjs`
+ * calls the SAME function from plain Node — one drift check, not two that
+ * could quietly stop agreeing with each other.
+ */
+export function paletteDrift(baseCss: string): string[] {
+  const lower = baseCss.toLowerCase()
+  return Object.entries(PALETTE)
+    .filter(([, hex]) => !lower.includes(hex.toLowerCase()))
+    .map(([name, hex]) => `${name} (${hex})`)
+}

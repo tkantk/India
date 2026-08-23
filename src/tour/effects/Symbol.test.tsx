@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { act, render } from '@testing-library/react'
 import { Symbol } from './Symbol'
-import { PALETTE } from './art/palette'
+import { PALETTE, paletteDrift } from './art/palette'
 import { readFileSync } from 'node:fs'
 import vocab from '../../../content/vocab.json'
 
@@ -59,11 +59,11 @@ describe('Symbol', () => {
   it('keeps the art palette and base.css in step', () => {
     // PALETTE cannot read a CSS custom property — an SVG presentation
     // attribute on WebKit's legacy engine will not resolve var(). So the two
-    // are mirrors, and this is what stops them drifting apart.
-    for (const [name, hex] of Object.entries(PALETTE)) {
-      expect(baseCss.toLowerCase(), `${name} (${hex}) is not declared in base.css`)
-        .toContain(hex.toLowerCase())
-    }
+    // are mirrors, and this is what stops them drifting apart. The check
+    // itself lives in palette.ts (`paletteDrift`), not here, so
+    // scripts/colour-check.mjs can call the exact same function rather than
+    // grow a second copy of it.
+    expect(paletteDrift(baseCss), 'not declared in base.css').toEqual([])
   })
 
   it('takes itself off stage rather than sitting on the map for ever', () => {

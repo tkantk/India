@@ -41,7 +41,7 @@
  * verb that is its own subject, to `VERB_SUBJECT_KEYS` below) — `SUBJECTS`
  * has no entry `checkSubjectCoverage` will not notice missing.
  */
-import { PALETTE as C } from './art/palette'
+import { PALETTE as C } from './art/palette.ts'
 import { CUE_VERBS } from '../../../content/schema.ts'
 import vocab from '../../../content/vocab.json'
 
@@ -92,7 +92,14 @@ export const SUBJECTS: Record<string, Subject> = {
   mango: { page: C.matTeal, ink: C.inkLine, accent: C.mango },
   banyan: { page: C.matSand, ink: C.inkLine, accent: C.leaf },
   dune: { page: C.matRose, ink: C.inkLine, accent: C.sandDeep },
-  'india-gate': { page: C.matSun, ink: C.inkLine, accent: C.stoneDeep },
+  // matLeaf, not matSun: beat 5 (india-gate) is bracketed by beat 4's and
+  // beat 6's counting discs, which are always matSun (countTo is keyed by
+  // the verb, not the number — see this file's own note on VERB_SUBJECT_KEYS
+  // — so every count in the tour is the same page). `scripts/colour-check.mjs`
+  // caught the india-gate/countTo pair sharing matSun back to back: two
+  // different subjects on the same page, which is exactly the "beige smear"
+  // the no-two-consecutive-beats rule exists to stop.
+  'india-gate': { page: C.matLeaf, ink: C.inkLine, accent: C.stoneDeep },
   outline: { page: C.paper, ink: C.inkLine, accent: C.ink },
   'arabian-sea': { page: C.matSky, ink: C.inkLine, accent: C.sea },
   'bay-of-bengal': { page: C.matSky, ink: C.inkLine, accent: C.sea },

@@ -164,6 +164,20 @@
   color: var(--gate-on-night-dim);
 }
 
+/* THE 4b DECISION. Hidden above 600px — the iPad this app is built for sees
+   nothing here at all. Below it: a short, honest line for the adult setting
+   the phone down in front of a child, same voice and same colour as
+   `.gate__sub` above it, one size down so it reads as a footnote to the
+   question rather than a second answer to it. See StartGate.tsx's own note
+   for why this is the fix rather than shrinking the map screen's button. */
+.gate__phone-note {
+  display: none;
+  margin: 0;
+  font-size: clamp(14px, 2.4vmin, 17px);
+  line-height: 1.4;
+  color: var(--gate-on-night-dim);
+}
+
 /* The page the bird is printed on — still `--mat-leaf`, for the same reason
    as ever (a blue-and-gold bird reads hardest against green, and it keeps
    him off the same yellow the lamp below him is), now lit rather than
@@ -407,6 +421,7 @@
 @media (max-width: 600px) {
   .gate__bird { width: min(52vmin, 220px); max-height: 26vh; }
   .tap.answer { flex: 1 1 100%; min-height: 128px; }
+  .gate__phone-note { display: block; }
 }
 
 /* And on a short landscape phone the cover has to fit in 390px of height, so

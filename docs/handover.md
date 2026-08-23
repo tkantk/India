@@ -127,6 +127,28 @@ nobody deliberately taps a border sliver. Measured: the deepest intrusion
 reaches 58% of the victim's body radius at worst and nothing reaches an inner
 fifth.
 
+**The app is iPad-only. A phone gets an honest warning, not a fixed layout.**
+Plan 5 Task 4's colour gate made a pre-existing problem visible rather than
+new: at `390x844` the map screen's gold "Show me India" button (`--big`,
+208px — deliberately, "shrinking the button is not on the table" per
+grandTour.css) sits over almost the whole drawn country, because the map
+itself has barely more than a button's worth of height left once a phone's
+control bar and read-along caption take their share. Beige hid this; colour
+did not. Two ways to close it were on the table: shrink or reposition the
+button (off the table — it is the tap target for a hand that has not learned
+to aim, and the map's own framing is a web of other measured constants this
+task could not re-verify without the very tour:strip run it was told to run
+at most once), or accept the phone was never the target device and say so.
+**Ruling: iPad-only**, matching how the father actually tests this app.
+`src/screens/StartGate.tsx`/`startGate.css` now show a short, honest line —
+"Namaste India is built for a tablet..." — on the cover screen below 600px,
+CSS-only (`display: none` above it), so the iPad experience is byte-for-byte
+unchanged. The map screen itself (`grandTour.css`) was deliberately left
+alone: the button still fully works on a phone, it is just visually snug, and
+that is now a documented choice rather than an accident. Revisit only if a
+future plan actually commits to a phone-first layout for the map screen —
+that is a real redesign, not a CSS tweak.
+
 ## Parked, with rulings
 
 Real but deliberately not fixed:
