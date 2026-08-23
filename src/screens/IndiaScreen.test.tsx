@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
 import { IndiaScreen } from './IndiaScreen'
 import geo from '../data/geo.json'
@@ -47,6 +48,50 @@ describe('IndiaScreen', () => {
   it('shows the CC BY credit the boundary data legally requires', () => {
     mount()
     expect(screen.getByText(geo.attribution)).toBeVisible()
+  })
+
+  /**
+   * PLAN 5 TASK 3: THE NIGHT STAYS ON THE GATE.
+   *
+   * This is the map's OWN idle screen — "Show me India", the big button back,
+   * nothing playing — the same rest state `end()` returns to once the tour
+   * finishes (GrandTour.test.tsx's own lit-gate suite covers that path,
+   * mid-beat and finished). Neither of festival's lit-cover pieces is wired
+   * to this component at all, so their absence in the DOM is true by
+   * construction; asserting it anyway is what stops a future change that
+   * imports `startGate.css` here — or copies `.gate__toran` onto this
+   * screen "because it looked nice" — from landing unnoticed.
+   */
+  it('is never lit: no garland, no diyas, on the map\'s own rest screen', () => {
+    const { container } = mount()
+    expect(container.querySelector('.gate__toran')).toBeNull()
+    expect(container.querySelector('.gate__diyas')).toBeNull()
+  })
+
+  /**
+   * THE MECHANISM, NOT JUST THE SYMPTOM. Task 3's failure mode is the night
+   * leaking through a TOKEN or an INHERITED RULE rather than through a
+   * misplaced component — the kind of regression that would not show up as
+   * a missing `.gate__toran` anywhere, only as `--gate-night` suddenly
+   * resolving somewhere it should not. Every `--gate-*` custom property is
+   * declared once, inside `.gate {}` in startGate.css (see that file's own
+   * banner and StartGate.test.tsx's matching test); this is the other half
+   * of the same guarantee — that nothing the tour actually loads ever
+   * references one. `grandTour.css` and `tourStage.css` are read directly
+   * because a source check is the only one that CAN catch this: jsdom does
+   * not resolve cascaded custom-property values the way a real browser
+   * does, so a render-level assertion here would prove nothing.
+   */
+  it('never references a --gate- token from any stylesheet the tour actually loads', () => {
+    for (const path of ['src/tour/grandTour.css', 'src/tour/tourStage.css', 'src/map/map.css']) {
+      const css = readFileSync(path, 'utf8')
+      expect(css, `${path} must not reference a --gate- token`).not.toMatch(/--gate-/)
+    }
+    // And base.css — :root and body — must be exactly what it was before
+    // this task: no new token, no repainted body.
+    const base = readFileSync('src/styles/base.css', 'utf8')
+    expect(base, 'base.css must not declare a --gate- token').not.toMatch(/--gate-/)
+    expect(base).toMatch(/body\s*\{[^}]*background:\s*var\(--page\)/s)
   })
 })
 

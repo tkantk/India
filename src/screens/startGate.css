@@ -1,23 +1,44 @@
 /* THE COVER.
  *
- * This file did not exist. `.gate`, `.begin`, `.row` and `.help` had no rule
- * in any stylesheet in the repo, so the first thing a six-year-old saw was
- * unstyled markup: browser-default type in the top quarter of the screen and
- * 774 empty pixels under it, 98% of the frame one colour and not one
- * saturated pixel anywhere. It is the cheapest win in the project and it is
- * also the only screen with room to state the whole design language at once,
- * so it does: the page, the plate, the one ink, the eight tints, the big
- * round gold button, the drawn glyph, and the bird.
+ * Until Plan 5 Task 1 this file did not exist. `.gate`, `.begin`, `.row` and
+ * `.help` had no rule in any stylesheet in the repo, so the first thing a
+ * six-year-old saw was unstyled markup: browser-default type in the top
+ * quarter of the screen and 774 empty pixels under it, 98% of the frame one
+ * colour and not one saturated pixel anywhere. Task 1 gave it the picture
+ * book's own paper-and-ink language.
  *
- * EVERY SELECTOR HERE IS COMPOUND (`.tap.begin`, never `.begin`), and that is
- * not style. Vite does not bundle CSS in import order: measured, `base.css`
- * lands LAST in the production stylesheet and FIRST in dev. `.tap` in
- * base.css sets `background: none` and `min-width: var(--tap)`, so a plain
- * `.begin { background: ... }` here would win in `npm run shot` and lose on
- * the iPad. Two classes beat one in either order.
+ * TASK 3 GRAFTS FESTIVAL'S NIGHT ONTO THIS ONE FILE, AND NOWHERE ELSE.
+ * Festival's opening — a marigold garland, three lit diyas, a glowing gold
+ * lamp on deep indigo — was judged the single most beautiful image any
+ * direction produced. It also lost: applied everywhere, the same night
+ * turned the map into a cutout floating in purple with no sea, and the
+ * Delhi screen back into today's app with a purple edge. So the graft has a
+ * hard boundary, and this file IS that boundary:
+ *
+ *   - every night colour below is a custom property declared inside
+ *     `.gate`'s OWN selector — never `:root` in base.css, never `body`.
+ *     Outside `.gate`'s subtree the property simply does not exist; a rule
+ *     elsewhere that tried to read it would get nothing, not purple.
+ *   - the night itself, the garland and the diyas are painted by
+ *     `position: fixed` layers that exist in the DOM only for as long as
+ *     `<StartGate>` is mounted (see StartGate.tsx) — App.tsx swaps this
+ *     screen out for `<IndiaScreen>` the moment the gate is answered, and
+ *     every one of these three layers is removed with it.
+ *   - `src/styles/base.css` and every other stylesheet in this plan
+ *     (`map.css`, `grandTour.css`, `tourStage.css`) are untouched by this
+ *     task. Nothing here can leak through an inherited rule because nothing
+ *     here was added to a rule anything else inherits from.
+ *
+ * EVERY SELECTOR HERE IS STILL COMPOUND (`.tap.begin`, never `.begin`), and
+ * that is not style. Vite does not bundle CSS in import order: measured,
+ * `base.css` lands LAST in the production stylesheet and FIRST in dev.
+ * `.tap` in base.css sets `background: none` and `min-width: var(--tap)`,
+ * so a plain `.begin { background: ... }` here would win in `npm run shot`
+ * and lose on the iPad. Two classes beat one in either order.
  */
 
 .gate {
+  position: relative;
   height: 100%;
   display: grid;
   place-items: center;
@@ -27,49 +48,77 @@
   overflow: auto;
   padding: 16px 0;
 
-  /* Printed paper, not a flat fill. A halftone dot at 7% ink on 26px centres
-     is invisible as a pattern and unmistakable as a texture — it is the one
-     thing that stops a large empty warm rectangle reading as "unfinished".
-     A background-image is a single paint with no filter, no layer and no
-     animation, which is the only kind of texture this platform can afford
-     (see map.css on what WebKit does with an SVG filter). */
-  background-image: radial-gradient(circle, rgba(75, 58, 37, 0.07) 1.6px, transparent 1.7px);
-  background-size: 26px 26px;
+  /* `isolation: isolate` — not decoration, load-bearing. It gives `.gate` its
+     own stacking context WITHOUT needing a `z-index` of its own, which is
+     what lets `.gate::before` below sit at `z-index: -1` and still land
+     ABOVE body's own background instead of underneath it. Without this, a
+     negative-z-index descendant with no closer stacking context stacks
+     against the ROOT one, where body's `--page` fill — ordinary in-flow
+     content from the root's point of view — paints AFTER it, hiding the
+     night completely. Measured by rendering without this line: solid cream,
+     night gone. */
+  isolation: isolate;
+
+  /* THE NIGHT'S OWN TOKENS. Declared here and nowhere else — see this
+     file's own banner. Names are prefixed `--gate-` on purpose, so a grep
+     for the prefix is a grep for the graft's entire footprint. */
+  --gate-night: #170e3a;
+  --gate-lamp: #ffe6ae;
+  --gate-on-night: var(--paper);
+  --gate-on-night-dim: #dcc9ae;
+  --gate-gold-line: rgba(255, 212, 0, 0.55);
+  /* Depth on a dark ground: a shadow the colour of the night reads as
+     distance, where the app's ordinary `--lift` (ink-tinted, built for
+     paper) would read as a pale smear on indigo. For panels only — the
+     lamp button gets `--gate-bloom` instead, because what a light throws is
+     not what covers an object standing in its way. */
+  --gate-lift: 0 10px 26px rgba(4, 2, 14, 0.5);
+  --gate-bloom:
+    0 0 0 10px rgba(255, 176, 72, 0.14),
+    0 0 40px 6px rgba(255, 176, 72, 0.32),
+    0 0 96px 22px rgba(255, 140, 26, 0.16);
+
+  color: var(--gate-on-night);
 }
 
-/* The plate the cover is printed on: paper stock, the app's one ink round
-   the outside at the shared weight, the shared corner and the shared lift —
-   the same four properties as a reveal's page in the tour and the caption
-   under it. A child meets the object here and meets it again all through the
-   tour. */
-.gate__plate {
-  position: relative;
-  width: min(100%, 620px);
-  padding: clamp(22px, 4vmin, 40px) clamp(18px, 4vmin, 36px) clamp(26px, 4.5vmin, 44px);
+/* The night itself. `position: fixed`, not part of `.gate`'s own box: it
+   paints against the true viewport regardless of body's own `--gutter`
+   padding (reserved for the iOS edge back-swipe, not for colour — this
+   layer is `pointer-events: none`, so bleeding under that reserved strip
+   never reopens the gesture conflict it exists to avoid) and regardless of
+   `.gate`'s own `overflow: auto` (a fixed element is clipped by the
+   viewport, never by an ancestor's overflow, unless that ancestor sets a
+   transform/filter/etc. — `.gate` sets none). Two soft radial glows over a
+   flat base, painted once: no image, no filter, no animation. */
+.gate::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(150% 62% at 50% -8%, #35186f 0%, rgba(53, 24, 111, 0) 66%),
+    radial-gradient(120% 46% at 50% 108%, #4d1450 0%, rgba(77, 20, 80, 0) 62%),
+    var(--gate-night);
+}
 
-  background: var(--paper);
-  border: var(--rule) solid var(--ink-line);
-  border-radius: calc(var(--plate-rx) * 1.5);
-  box-shadow: var(--lift);
+/* The plate is gone: festival's own judged screenshot has no card at all —
+   the title, Mor's page and the lamp float directly on the night. What is
+   left of `.gate__plate` is layout only, none of it paint. */
+.gate__plate {
+  width: min(100%, 620px);
+  /* The bottom figure is bigger than the top one, and deliberately: this
+     button is the picture book's ROUND `--big` (208px), not festival's own
+     shorter pill, so it needs more clearance above the diyas than festival's
+     own composition did. Measured against `.gate__diyas`' own footprint
+     below (bottom offset + rendered height) so the two never touch at any
+     height this app supports. */
+  padding: clamp(72px, 12vh, 130px) clamp(18px, 4vmin, 36px) clamp(150px, 20vh, 230px);
 
   display: grid;
   justify-items: center;
   gap: clamp(10px, 1.8vmin, 20px);
   text-align: center;
-}
-
-/* The inner rule. A printed cover has two lines, not one, and the second one
-   is thinner and set in — it is the single cheapest mark that says "somebody
-   laid this out" rather than "this is a div with a border". Inert, and a
-   pseudo-element so it costs no markup. */
-.gate__plate::before {
-  content: '';
-  position: absolute;
-  inset: 9px;
-  border: 1.5px solid var(--ink-line);
-  border-radius: calc(var(--plate-rx) * 1.2);
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 /* नमस्ते, in Devanagari, above the roman. The tour's own beat 13 is about
@@ -81,7 +130,7 @@
   font-size: clamp(30px, 6vmin, 46px);
   line-height: 1.3;
   font-weight: 600;
-  color: var(--deep);
+  color: var(--gate-lamp);
 }
 
 .gate__title {
@@ -90,45 +139,46 @@
   line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.015em;
-  color: var(--ink);
+  color: var(--gate-lamp);
+  /* The warmth a lit word has in a dark room. Painted once on a screen that
+     never animates its type. */
+  text-shadow: 0 0 24px rgba(255, 176, 72, 0.45);
 }
 
-/* One saffron bar under the title. Colour, boldly, on the paper — which is
-   the whole direction in one declaration. */
+/* One gold bar under the title, fading at both ends rather than the picture
+   book's flat saffron block — a hairline of light, not a stripe of ink. */
 .gate__title::after {
   content: '';
   display: block;
   width: clamp(88px, 18vmin, 148px);
-  height: 8px;
+  height: 4px;
   margin: clamp(10px, 1.6vmin, 18px) auto 0;
-  border-radius: 4px;
-  background: var(--saffron);
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 212, 0, 0) 0%, var(--gold) 50%, rgba(255, 212, 0, 0) 100%);
 }
 
 .gate__sub {
   margin: 0;
   font-size: clamp(20px, 3.4vmin, 27px);
   line-height: 1.35;
-  color: var(--ink);
+  color: var(--gate-on-night-dim);
 }
 
-/* The page the bird is printed on — the ninth instance of the same object,
-   and stated in exactly the tokens the other eight use.
-
-   `--mat-leaf`, not the `--mat-sun` his own reveal uses in beat 8, and the
-   reason is the button under him: the begin button is `--gold`, and a gold
-   page directly above a gold circle made the whole lower half of the cover
-   one yellow mass. Green does two things instead — a blue-and-gold bird
-   reads hardest against it, and it is the colour of the country he is
-   about to stand on. */
+/* The page the bird is printed on — still `--mat-leaf`, for the same reason
+   as ever (a blue-and-gold bird reads hardest against green, and it keeps
+   him off the same yellow the lamp below him is), now lit rather than
+   inked: a gold hairline in place of the picture book's `--ink-line`
+   border, and the bloom that hairline throws onto the night behind it. */
 .gate__page {
   display: grid;
   place-items: center;
   padding: 10px 18px 4px;
   background: var(--mat-leaf);
-  border: var(--rule) solid var(--ink-line);
   border-radius: var(--plate-rx);
-  box-shadow: var(--lift);
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 0 44px -8px rgba(255, 176, 72, 0.55),
+    var(--gate-lift);
 }
 
 /* Mor, fan open, waiting on the cover of his own book. The viewBox is
@@ -145,30 +195,61 @@
 
 /* ------------------------------------------------------- the begin button */
 
-/* The same object as the tour's play button — `--big` across, gold, inked,
-   round — because it is the same promise, and a child who has learned the
-   big round gold thing starts something should be right about that twice.
-   The look is stated in both files rather than shared through a class
-   because `grandTour.css` is only loaded by the tour; the SIZE is the token
-   they actually share (`--big`, base.css). */
+/* THE LAMP. Same object, same `--big` footprint as the tour's play button —
+   a child who learns the big round warm thing starts something should be
+   right about that twice — now lit rather than flat: a radial gradient
+   standing in for the picture book's flat `--gold`, and `--gate-bloom`
+   standing in for its `--lift`. A lamp on the night casts light, not shade;
+   a dark ink shadow under a glowing button reads as a ring of dirt between
+   the lamp and its own glow, because a shadow is the absence of light and
+   there is none down here for it to be the absence of. */
 .tap.begin {
+  position: relative;
   width: var(--big);
   height: var(--big);
   min-width: var(--big);
   min-height: var(--big);
   border-radius: 50%;
 
-  /* --ink on --gold is ~11.3:1, past the 7:1 AAA target — the same reason
-     the play button and the carry-on button are gold and not saffron. */
-  background: var(--gold);
+  /* --ink on --gold is 11.3:1 (base.css); on this gradient's darkest ring,
+     at the very rim, still past 7:1 AAA. */
+  background: radial-gradient(120% 150% at 50% 24%, var(--gate-lamp) 0%, var(--gold) 55%, #f0a500 100%);
   color: var(--ink);
-  border: var(--rule) solid var(--ink-line);
-  box-shadow: var(--lift);
+  box-shadow: var(--gate-bloom);
 
   display: grid;
   place-items: center;
   align-content: center;
   gap: 4px;
+}
+
+/* The light it throws, breathing. A positioned pseudo-element with an
+   OPACITY animation, not an animated box-shadow: opacity on an HTML element
+   is compositable, and a box-shadow keyframe would repaint the button and
+   its whole halo sixty times a second on the first screen a child sees. */
+.tap.begin::after {
+  content: '';
+  position: absolute;
+  inset: -30px;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, rgba(255, 186, 74, 0.5), rgba(255, 186, 74, 0));
+  pointer-events: none;
+  animation: gate-breathe 4.6s ease-in-out infinite;
+}
+
+/* Slow enough to be breathing rather than blinking. */
+@keyframes gate-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* A GLOWING BUTTON IS EXACTLY THE SORT OF THING THAT MUST STOP GLOWING
+   UNDER REDUCED MOTION. Still lit — the glow carries no information, only
+   marks which button to press, so it may stop moving — just no longer
+   pulsing. Same pattern base.css already uses for `.decorative-motion`. */
+@media (prefers-reduced-motion: reduce) {
+  .tap.begin::after { animation: none; opacity: 0.85; }
 }
 
 .tap.begin:active {
@@ -190,7 +271,7 @@
   line-height: 1.15;
 }
 
-/* ------------------------------------------------- did you hear that? */
+/* ------------------------------------------------------- did you hear that? */
 
 .gate__title--ask {
   font-size: clamp(34px, 7.5vmin, 60px);
@@ -209,19 +290,20 @@
 }
 
 /* Two of the eight pages from the tour's own set (`--mat-leaf`,
-   `--mat-sand`), inked and lifted exactly like a reveal. The first choice a
-   child makes in this app teaches them what a page looks like, so it may as
-   well be the same page.
-   --ink on either is 13.0:1 and 12.5:1. */
+   `--mat-sand`), lit exactly like Mor's page above: a gold hairline and its
+   own bloom in place of the picture book's ink border.
+   --ink on either is 13.0:1 and 12.5:1, untouched by any of this. */
 .tap.answer {
   flex: 0 1 250px;
   min-width: 0;
   min-height: 148px;
   padding: 16px 14px;
 
-  border: var(--rule) solid var(--ink-line);
   border-radius: var(--plate-rx);
-  box-shadow: var(--lift);
+  box-shadow:
+    0 0 0 2px var(--gate-gold-line),
+    0 0 34px -10px rgba(255, 176, 72, 0.5),
+    var(--gate-lift);
   color: var(--ink);
 
   display: grid;
@@ -253,13 +335,24 @@
 
 /* No web API can read the iPad's mute switch, so this paragraph is the whole
    cure and it is written for the ADULT in the room — bigger than a caption,
-   smaller than the question above it, and never the only thing on screen. */
+   smaller than the question above it, and never the only thing on screen.
+   IT IS A LIT PANEL NOW, NOT OPTIONALLY: with the plate gone this text sits
+   directly on the night, and `--ink` (built for paper) on indigo is close
+   to unreadable. `--paper` behind it restores exactly the contrast the
+   picture book already measured this text at. --ink on --paper is 15.6:1. */
 .help {
   margin: 0;
   max-width: 34ch;
+  padding: 16px 20px;
   font-size: clamp(18px, 2.6vmin, 22px);
   line-height: 1.4;
   color: var(--ink);
+  background: var(--paper);
+  border-radius: var(--plate-rx);
+  box-shadow:
+    0 0 0 2px var(--saffron),
+    0 0 40px -10px rgba(240, 133, 31, 0.5),
+    var(--gate-lift);
 }
 
 .tap.retry {
@@ -268,14 +361,45 @@
   border-radius: 999px;
   background: var(--gold);
   color: var(--ink);
-  border: var(--rule) solid var(--ink-line);
-  box-shadow: var(--lift);
+  box-shadow:
+    0 0 0 2px var(--gate-gold-line),
+    0 0 30px -8px rgba(255, 176, 72, 0.5),
+    var(--gate-lift);
   font-size: var(--text);
   font-weight: 700;
 }
 
 .tap.retry:active {
   filter: brightness(0.94);
+}
+
+/* ---------------------------------------------------- the toran and diyas */
+
+/* Both are inert scenery and both are `aria-hidden` in the markup: there is
+   nothing here for a screen reader, and nothing here a tap should ever land
+   on instead of a real control. `position: fixed`, exactly like `.gate`'s
+   own night above and for the same three reasons: edge to edge regardless
+   of body's gutter, unclipped by `.gate`'s own `overflow: auto`, and gone
+   from the DOM the moment this screen is. */
+.gate__toran,
+.gate__diyas {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+.gate__toran {
+  top: 0;
+  width: 100vw;
+  height: auto;
+}
+
+.gate__diyas {
+  bottom: calc(clamp(10px, 3.5vh, 44px) + env(safe-area-inset-bottom, 0px));
+  width: min(92vw, 620px);
+  height: auto;
 }
 
 /* On a phone the two answers stack, and the bird gives up its height first —
@@ -285,10 +409,12 @@
   .tap.answer { flex: 1 1 100%; min-height: 128px; }
 }
 
-/* And on a short landscape phone the cover has to fit in 390px of height,
-   so the bird goes entirely rather than pushing the button off the screen.
-   `display: none` is right here and wrong almost everywhere else: he is
-   `aria-hidden` decoration with no information in him. */
+/* And on a short landscape phone the cover has to fit in 390px of height, so
+   the bird and the diyas go entirely rather than pushing the button off the
+   screen — both are `aria-hidden` decoration with no information in them.
+   The garland stays: it is a thin strip at the very top and never competes
+   with the button for room. */
 @media (max-height: 560px) {
   .gate__bird { display: none; }
+  .gate__diyas { display: none; }
 }

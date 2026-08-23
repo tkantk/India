@@ -318,6 +318,48 @@ describe('MapStage', () => {
     expect(link.textContent).toMatch(/credits/i)
   })
 
+  /**
+   * PLAN 5 TASK 3: THE CREDIT PILL.
+   *
+   * A licence obligation, not a decoration — this text is legible whatever
+   * colour the map happens to be showing underneath it. Task 1 put the map
+   * on green land in a pale blue sea, so "whatever colour happens to be
+   * there" is no longer one colour a person could eyeball once; a state
+   * mid-tour lights saffron or gold too. The fix is a background on the
+   * credit itself, so the credit carries its own ground rather than
+   * borrowing whatever the camera is currently over.
+   *
+   * Read from source, like the sizing test above it (`sizes the begin
+   * button...` in StartGate.test.tsx is the same pattern) — jsdom applies
+   * neither this component's imported stylesheet nor computed style, so a
+   * render-level assertion could not tell a background from its absence.
+   *
+   * The sibling structure this pill sits on is proven separately, above
+   * ("keeps the shape the headless probe rebuilds") and is NOT re-asserted
+   * here — this test is only about the pill being legible, not about where
+   * `.credit` sits in the tree.
+   */
+  it('gives the credit its own dark pill, so it reads over land and over sea alike', () => {
+    const css = readFileSync('src/map/map.css', 'utf8')
+    const rule = css.match(/\.map \+ \.credit\s*\{[^}]*\}/s)?.[0] ?? ''
+    expect(rule, 'no .map + .credit rule found').not.toBe('')
+    // A real background, not transparent and not merely a colour that
+    // happened to work over --paper — the whole point is that this no
+    // longer depends on what the map underneath is doing.
+    expect(rule).toMatch(/background:\s*rgba?\(/)
+    expect(rule).toMatch(/border-radius:/)
+    // No extra padding: the credit lane the tour measures (--credit-lane in
+    // base.css) must stay the same height with or without the pill.
+    expect(rule).toMatch(/padding:\s*4px 8px/)
+
+    // The link inside it has to survive the same swap: --deep, chosen when
+    // the ground was always pale --paper, is close to unreadable on a dark
+    // pill.
+    const linkRule = css.match(/\.credit__more\s*\{[^}]*\}/s)?.[0] ?? ''
+    expect(linkRule, 'no .credit__more rule found').not.toBe('')
+    expect(linkRule).not.toMatch(/color:\s*var\(--deep\)/)
+  })
+
   it('keeps the very same path elements across a re-render', () => {
     // The whole architecture rests on this. `useMapNodes` caches the 36
     // visible paths once, on mount, and highlights a state by toggling a

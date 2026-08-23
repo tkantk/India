@@ -138,4 +138,61 @@ describe('StartGate', () => {
     // else.
     expect(baseCss).toMatch(/--big:\s*calc\(var\(--tap\)\s*\*\s*2\)/)
   })
+
+  /**
+   * THE LIT COVER (Plan 5 Task 3).
+   *
+   * Festival's garland and diyas are present on every phase of the gate —
+   * this is "the first screen" the plan grafts them onto, all three of its
+   * phases, because none of them has a map to read or anything to navigate.
+   * The absence half of this graft — that neither of these ever reaches a
+   * screen that DOES have a map — is proven in IndiaScreen.lit.test.tsx,
+   * next to the map they must stay away from, not here.
+   */
+  it('is lit: the garland and the diyas are on the cover', () => {
+    const { container } = render(
+      <StartGate onReady={vi.fn()} unlock={async () => {}} playTestSound={async () => {}} />
+    )
+    expect(container.querySelector('.gate__toran')).toBeTruthy()
+    expect(container.querySelector('.gate__diyas')).toBeTruthy()
+  })
+
+  it('is lit: the garland and the diyas survive into "did you hear that?"', async () => {
+    const { container } = render(
+      <StartGate onReady={vi.fn()} unlock={async () => {}} playTestSound={async () => {}} />
+    )
+    await userEvent.click(screen.getByRole('button', { name: /begin/i }))
+    expect(container.querySelector('.gate__toran')).toBeTruthy()
+    expect(container.querySelector('.gate__diyas')).toBeTruthy()
+  })
+
+  it('is lit: the garland and the diyas survive into the silent-phone help', async () => {
+    const { container } = render(
+      <StartGate onReady={vi.fn()} unlock={async () => {}} playTestSound={async () => {}} />
+    )
+    await userEvent.click(screen.getByRole('button', { name: /begin/i }))
+    await userEvent.click(screen.getByRole('button', { name: /no, it was quiet/i }))
+    expect(container.querySelector('.gate__toran')).toBeTruthy()
+    expect(container.querySelector('.gate__diyas')).toBeTruthy()
+  })
+
+  /**
+   * THE NIGHT'S TOKENS ARE SCOPED TO `.gate` AND NOWHERE ELSE — the actual
+   * mechanism that stops it leaking (see startGate.css's own banner). A
+   * custom property declared under `:root` or on `body` is inherited by
+   * every screen in the app; one declared only inside `.gate {}` simply does
+   * not exist outside `.gate`'s own subtree. This reads the stylesheet
+   * itself rather than a render, because jsdom does not compute cascaded
+   * custom-property values the way a real browser does — the source is the
+   * only place this claim can actually be checked.
+   */
+  it('declares every night token inside .gate, never at :root', () => {
+    const css = readFileSync('src/screens/startGate.css', 'utf8')
+    const rootBlock = css.match(/:root\s*\{[^}]*\}/s)
+    expect(rootBlock, 'startGate.css must not declare a :root block at all').toBeNull()
+    const gateBlock = css.match(/\.gate\s*\{[^}]*\}/s)?.[0] ?? ''
+    for (const token of ['--gate-night', '--gate-lamp', '--gate-on-night', '--gate-bloom']) {
+      expect(gateBlock, `${token} must be declared inside .gate`).toContain(`${token}:`)
+    }
+  })
 })

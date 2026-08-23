@@ -33,6 +33,18 @@ type Props = {
  * peacock, waiting on the cover of his own book. He is static here (no
  * Motion, no timers, no `Reveal`, nothing that needs a clock) because this
  * screen exists to collect one tap and get out of the way.
+ *
+ * THE ONE PLACE THIS APP GOES DARK. Plan 5 Task 3 grafts festival's opening
+ * — a marigold garland, three lit diyas, a glowing gold button on a deep
+ * night — because it was judged the single most beautiful image any
+ * direction produced. Festival lost anyway: applied everywhere, the same
+ * night turned India into a cutout floating in purple with no sea, and the
+ * Delhi screen back into today's app with a purple edge. So the graft stops
+ * at this file's own boundary. `<Toran>` and `<Diyas>` exist ONLY here, the
+ * night's colours live ONLY inside `.gate`'s own selector in startGate.css
+ * (never `:root`, never `body`), and every one of them is removed from the
+ * DOM the instant this component unmounts — see that file's own banner for
+ * the mechanism and why it cannot leak.
  */
 export function StartGate({ onReady, unlock, playTestSound }: Props) {
   const [phase, setPhase] = useState<'idle' | 'checking' | 'silent'>('idle')
@@ -48,6 +60,7 @@ export function StartGate({ onReady, unlock, playTestSound }: Props) {
   if (phase === 'idle') {
     return (
       <main className="gate">
+        <Toran />
         <div className="gate__plate">
           <p className="gate__hello" lang="hi">नमस्ते</p>
           <h1 className="gate__title">Namaste!</h1>
@@ -67,12 +80,14 @@ export function StartGate({ onReady, unlock, playTestSound }: Props) {
             <span className="big-round__label">Tap here to begin</span>
           </button>
         </div>
+        <Diyas />
       </main>
     )
   }
 
   return (
     <main className="gate">
+      <Toran />
       <div className="gate__plate">
         <h1 className="gate__title gate__title--ask">Did you hear that?</h1>
 
@@ -108,6 +123,7 @@ export function StartGate({ onReady, unlock, playTestSound }: Props) {
           </>
         )}
       </div>
+      <Diyas />
     </main>
   )
 }
@@ -130,6 +146,155 @@ function CoverPeacock() {
         </g>
       ))}
       <PeacockBody />
+    </svg>
+  )
+}
+
+/* ------------------------------------------------------------- the toran */
+
+/**
+ * The garland strung across the top of the doorway. Festival's own art,
+ * ported whole: marigolds, mango leaves and a rose-pink flower threaded on
+ * one string that droops five times across the frame, every position
+ * computed off a quadratic curve per swag rather than hand-placed, so it
+ * re-drapes correctly at any width with no list of coordinates to keep in
+ * step with anything.
+ *
+ * Colours are literals, not `var()` — the same rule as every other piece of
+ * SVG art in this app (see `art/palette.ts`'s own note: WebKit's legacy
+ * engine will not resolve a custom property in a presentation attribute).
+ * Unlike the tour's illustration palette, this is not mirrored anywhere:
+ * nothing outside this one gate re-draws a garland, so there is nothing for
+ * a second file to drift out of step with. The four values are copies of
+ * `--saffron`, `--gold`, `--leaf` and `--rose` — no new colour was added to
+ * the shared palette for five beads nobody else will ever draw.
+ */
+const SWAGS = 5
+const SPAN = 1200 / SWAGS
+const TOP = 16
+const DROOP = 62
+/** Beads per swag. Dense enough to read as a garland, few enough that the
+ *  whole thing is under 50 shapes rather than two hundred. */
+const PER_SWAG = 9
+
+/** The string itself, one quadratic per swag. */
+const TORAN_STRING = Array.from({ length: SWAGS }, (_, s) => {
+  const x0 = s * SPAN
+  return `${s === 0 ? `M${x0},${TOP}` : ''}Q${x0 + SPAN / 2},${TOP + 2 * DROOP} ${x0 + SPAN},${TOP}`
+}).join('')
+
+/** Where every bead sits, along those same curves. */
+const TORAN_BEADS = (() => {
+  const out: { x: number; y: number; kind: number }[] = []
+  let i = 0
+  for (let s = 0; s < SWAGS; s++) {
+    const x0 = s * SPAN
+    for (let k = 0; k < PER_SWAG; k++) {
+      const t = k / PER_SWAG
+      const m = 1 - t
+      out.push({
+        x: m * m * x0 + 2 * m * t * (x0 + SPAN / 2) + t * t * (x0 + SPAN),
+        y: m * m * TOP + 2 * m * t * (TOP + 2 * DROOP) + t * t * TOP,
+        kind: i++ % 3,
+      })
+    }
+  }
+  out.push({ x: 1200, y: TOP, kind: 0 })
+  return out
+})()
+
+function Toran() {
+  return (
+    <svg
+      className="gate__toran"
+      viewBox="0 0 1200 104"
+      preserveAspectRatio="xMidYMin meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={TORAN_STRING} fill="none" stroke="#256b3d" strokeWidth="3.4" strokeLinecap="round" />
+      {TORAN_BEADS.map((b) => {
+        if (b.kind === 1) {
+          // a mango leaf — literal copy of --leaf
+          return <ellipse key={`${b.x},${b.y}`} cx={b.x} cy={b.y + 6} rx="6.5" ry="13" fill="#3f8f57" />
+        }
+        if (b.kind === 2) {
+          // a small blossom — literal copy of --rose, gold centre
+          return (
+            <g key={`${b.x},${b.y}`}>
+              <circle cx={b.x} cy={b.y} r="10" fill="#ef8fa8" />
+              <circle cx={b.x} cy={b.y} r="4" fill="#ffe6ae" />
+            </g>
+          )
+        }
+        // a marigold — literal copy of --saffron and --gold
+        return (
+          <g key={`${b.x},${b.y}`}>
+            <circle cx={b.x} cy={b.y} r="13.5" fill="#f0851f" />
+            <circle cx={b.x} cy={b.y} r="6" fill="#ffd400" />
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+/* ------------------------------------------------------------- the diyas */
+
+/**
+ * Three oil lamps along the floor.
+ *
+ * The glow is a RADIAL GRADIENT, not a `<filter>`: a filter is a CPU
+ * three-pass box blur on WebKit's legacy SVG engine and this app does not
+ * ship one anywhere. A gradient is a paint server, which that engine
+ * rasterises once and is happy with.
+ */
+function Diya({ cx }: { cx: number }) {
+  return (
+    <g>
+      <circle cx={cx} cy="28" r="40" fill="url(#diya-glow)" />
+      {/* the flame */}
+      <path
+        d={`M${cx},8 C${cx + 8},24 ${cx + 7},36 ${cx},41 C${cx - 7},36 ${cx - 8},24 ${cx},8 Z`}
+        fill="#ffd400"
+      />
+      <path
+        d={`M${cx},20 C${cx + 4},29 ${cx + 3.5},35 ${cx},38 C${cx - 3.5},35 ${cx - 4},29 ${cx},20 Z`}
+        fill="#ffe6ae"
+      />
+      {/* the bowl: fired clay, with the lip catching the flame above it */}
+      <path
+        d={`M${cx - 27},46 C${cx - 27},63 ${cx - 15},71 ${cx},71 C${cx + 15},71 ${cx + 27},63 ${cx + 27},46 Z`}
+        fill="#b5602c"
+      />
+      <path
+        d={`M${cx - 20},62 C${cx - 14},69 ${cx - 7},71 ${cx},71 C${cx + 7},71 ${cx + 14},69 ${cx + 20},62 Z`}
+        fill="#7a5a3c"
+      />
+      <path d={`M${cx - 28},46 h56`} stroke="#e3c98f" strokeWidth="5" strokeLinecap="round" fill="none" />
+    </g>
+  )
+}
+
+function Diyas() {
+  return (
+    <svg
+      className="gate__diyas"
+      viewBox="0 -6 300 82"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <radialGradient id="diya-glow">
+          <stop offset="0%" stopColor="#ffe6ae" stopOpacity="0.42" />
+          <stop offset="34%" stopColor="#ffb548" stopOpacity="0.24" />
+          <stop offset="100%" stopColor="#ffb548" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <Diya cx={54} />
+      <Diya cx={150} />
+      <Diya cx={246} />
     </svg>
   )
 }

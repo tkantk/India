@@ -1141,3 +1141,61 @@ describe('comesHome', () => {
     expect(comesHome(clip('tour.06'), null)).toBe(false)
   })
 })
+
+/**
+ * PLAN 5 TASK 3: THE LIT COVER STAYS ON THE COVER.
+ *
+ * Festival's night — the garland, the diyas, the glowing button — is grafted
+ * onto `StartGate.tsx` only. `GrandTour` never imports `startGate.css` and
+ * never renders `.gate__toran`/`.gate__diyas`, so their absence here is true
+ * by construction — but that is exactly why it is worth asserting: the
+ * failure mode this task warns about is the night leaking back in through a
+ * token or an inherited rule, silently, which is precisely the kind of
+ * regression a passing test today and a copy-pasted class tomorrow would not
+ * otherwise catch. A test proving the gate is lit is nearly worthless next to
+ * one proving the map never is.
+ *
+ * THE TOUR'S FINISHED STATE IS DELIBERATELY INCLUDED, and it is the harder of
+ * the two. The plan brief calls this "the ending" and says the lit treatment
+ * belongs there too, on the theory that it has "no map to read and nothing
+ * to navigate" — the same test the gate passes. It does not: `end()` in
+ * GrandTour.tsx homes the camera, runs a shimmer over all 36 places on the
+ * SAME `<TourStage>`/`<MapStage>` the tour and the idle screen use, and hands
+ * `onPickState` straight back to `pick` (see `invite ? undefined : pick`
+ * above) — a tap on any state flies there immediately. That is a map, fully
+ * legible and fully live, not an empty stage. Lighting it up would reproduce
+ * festival's own documented failure — "India became a cream cutout floating
+ * in purple with no sea" — on the exact screen that failure was measured on,
+ * since `end` and `home` render the same map. So this suite treats the
+ * finished state as "everywhere else" and asserts absence there too.
+ */
+describe('the lit gate never leaks onto the map (Plan 5 Task 3)', () => {
+  it('never shows the garland or the diyas while a beat is in the air', async () => {
+    autoEnd = false
+    const { container } = mount({ autoStart: true })
+    await waitFor(() => expect(played).toHaveLength(1))
+    expect(container.querySelector('.gate__toran')).toBeNull()
+    expect(container.querySelector('.gate__diyas')).toBeNull()
+    expect(container.querySelector('.map')).toBeTruthy()
+  })
+
+  it('never shows the garland or the diyas once the tour has finished — the map is still there to read', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const { container } = mount({ autoStart: true })
+      await skipTour02Invite()
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+        whole,
+      )
+      expect(container.querySelector('.gate__toran')).toBeNull()
+      expect(container.querySelector('.gate__diyas')).toBeNull()
+      // The very thing the lit treatment would have obscured: the map is
+      // still on screen, still the real country, still tappable.
+      expect(container.querySelector('.map')).toBeTruthy()
+      expect(container.querySelectorAll('.base path')).toHaveLength(36)
+    } finally {
+      vi.useRealTimers()
+    }
+  }, 12000)
+})
