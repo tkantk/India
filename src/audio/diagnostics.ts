@@ -1,6 +1,8 @@
 import { createElement, useEffect, useRef } from 'react'
 import type { ReactElement } from 'react'
 import { getNarrator } from './Narrator'
+import { cheapModeDiagnostics } from '../lib/cheapMode'
+import type { CheapModeDiagnostics } from '../lib/cheapMode'
 
 /**
  * A read-only, on-device readout of what the audio clock is actually doing —
@@ -22,6 +24,13 @@ import { getNarrator } from './Narrator'
 type StateChange = { state: string; at: number }
 
 export type DiagnosticSnapshot = {
+  /** Whether `Outline.tsx`'s finger-tracing gesture (and every other
+   *  `!isCheap()`-gated bit of art) actually mounted, and why. This is the
+   *  first thing a device test has to answer: if the probe latched `slow`
+   *  (or reduced-motion is on) on the target iPad, the gesture never mounts
+   *  at all and everything built to react to it is silently inert. See
+   *  `cheapMode.ts`'s `CheapModeDiagnostics` for what each field means. */
+  cheapMode: CheapModeDiagnostics
   /** Raw `ctx.state`, never coerced. */
   state: string
   /** Raw `ctx.currentTime`, in seconds. */
@@ -154,6 +163,7 @@ export function audioDiagnostics(): DiagnosticSnapshot {
   }
 
   return {
+    cheapMode: cheapModeDiagnostics(),
     state: n.diagState,
     currentTime: ctxTime,
     wallDelta,
@@ -204,6 +214,16 @@ function formatRejection(r: TapRejection): string {
   return `  ${r.reason.padEnd(7)} drift ${r.distancePx.toFixed(0)}px  held ${r.durationMs.toFixed(0)}ms`
 }
 
+/** `isCheap()`'s verdict plus why it landed there — see `cheapMode`'s field
+ *  above. Before the probe has decided, `slow`/`medianFrameMs` would read as
+ *  a confident "fast", so that state gets its own words instead. */
+function formatCheapMode(c: CheapModeDiagnostics): string {
+  const rm = `reducedMotion ${c.prefersReducedMotion}`
+  if (!c.decided) return `${c.cheap}  (still probing — ${rm})`
+  const median = c.medianFrameMs === null ? '?' : c.medianFrameMs.toFixed(1)
+  return `${c.cheap}  (slow ${c.slow}, medianFrame ${median}ms, ${rm})`
+}
+
 function formatResume(s: DiagnosticSnapshot): string {
   if (s.lastResumeSettled === null) return 'not yet attempted'
   const ms = s.lastResumeMs === null ? '?' : s.lastResumeMs.toFixed(0)
@@ -231,6 +251,7 @@ export function formatSnapshot(s: DiagnosticSnapshot): string {
     : '  (none)'
   return [
     'audio debug  (#/?debug=audio)',
+    `isCheap()     ${formatCheapMode(s.cheapMode)}`,
     `state         ${s.state}`,
     `currentTime   ${s.currentTime.toFixed(3)}s`,
     `clockAdvancing ${formatClock(s)}`,

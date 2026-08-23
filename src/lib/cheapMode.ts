@@ -70,6 +70,12 @@ let slow = false
 let decided = false
 let watching = false
 
+/** The median rAF delta, in ms, from the sample window that produced `slow`.
+ *  Kept only so `cheapModeDiagnostics()` can show *why* the probe latched
+ *  what it latched — `isCheap()` itself never reads this, only `slow`.
+ *  `null` until `decided`. */
+let medianFrameMs: number | null = null
+
 /** The child's own setting, read every time. Undefined in Node. */
 function prefersLessMotion(): boolean {
   return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
@@ -113,7 +119,8 @@ export function startFrameProbe(): void {
       deltas.sort((a, b) => a - b)
       // The median, not the mean: one garbage-collection pause is not a slow
       // iPad, and one stall must not sentence a fast one.
-      slow = deltas[deltas.length >> 1] > SLOW_FRAME_MS
+      medianFrameMs = deltas[deltas.length >> 1]
+      slow = medianFrameMs > SLOW_FRAME_MS
       decided = true
       watching = false
       return
@@ -135,4 +142,38 @@ export function startFrameProbe(): void {
  */
 export function isCheap(): boolean {
   return prefersLessMotion() || slow
+}
+
+/** Read-only view of what `isCheap()` just answered and *why* — built for
+ *  the `?debug=audio` panel, which needs to tell "the probe latched slow"
+ *  apart from "the probe hasn't decided yet", and both of those apart from
+ *  the live, never-latched reduced-motion setting that can also make
+ *  `isCheap()` true on hardware that measured fine. Never called by
+ *  `isCheap()` itself, and reads no state it does not already hold —
+ *  watching this cannot change the verdict. */
+export type CheapModeDiagnostics = {
+  /** `isCheap()`'s own answer, unchanged. */
+  cheap: boolean
+  /** Whether the frame probe has latched a verdict yet. While this is
+   *  `false`, `slow` reads `false` too, but that is "not measured yet", not
+   *  "measured fast" — the panel must show the two differently. */
+  decided: boolean
+  /** The latched hardware verdict. Meaningless while `decided` is `false`. */
+  slow: boolean
+  /** The live `prefers-reduced-motion` setting, read fresh — the other half
+   *  of `isCheap()`, and the one that never latches. */
+  prefersReducedMotion: boolean
+  /** The median rAF delta, in ms, from the window that produced `slow`.
+   *  `null` until `decided`. */
+  medianFrameMs: number | null
+}
+
+export function cheapModeDiagnostics(): CheapModeDiagnostics {
+  return {
+    cheap: isCheap(),
+    decided,
+    slow,
+    prefersReducedMotion: prefersLessMotion(),
+    medianFrameMs,
+  }
 }

@@ -21,8 +21,14 @@ import type { Bbox, Clip, Cue, Invite } from '../types'
 import './grandTour.css'
 
 /**
- * THE GRAND TOUR: fourteen beats, four minutes five seconds, and the thing
- * every other file in this plan was built for.
+ * THE GRAND TOUR: fourteen beats, three minutes thirty-two seconds, and the
+ * thing every other file in this plan was built for.
+ *
+ * (That number is the sum of `duration` over the 14 `tour.*` clips in
+ * `src/data/timings.json` — re-measure it from there, do not trust this
+ * comment. It has drifted twice already: once from an unmeasured "2:41",
+ * and again when the prosodic-continuity render shortened the tour by
+ * about 33 seconds without a word of text changing.)
  *
  * A child presses one enormous button and is taken through their own country
  * — the words lighting up as they are spoken, states glowing in time, the

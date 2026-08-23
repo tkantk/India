@@ -112,6 +112,46 @@ describe('cheap mode', () => {
     expect(isCheap()).toBe(false)
   })
 
+  it('diagnostics report "not decided yet" as its own state, not a fast-looking false', async () => {
+    const frames = fakeFrames()
+    const { cheapModeDiagnostics, startFrameProbe } = await load()
+    startFrameProbe()
+    frames.paint(10, 50) // short of MIN_SAMPLES / PROBE_MS — no verdict yet
+    const d = cheapModeDiagnostics()
+    expect(d.decided).toBe(false)
+    expect(d.cheap).toBe(false)
+    expect(d.slow).toBe(false)
+    expect(d.medianFrameMs).toBeNull()
+  })
+
+  it('diagnostics expose the median frame time behind a latched slow verdict', async () => {
+    const frames = fakeFrames()
+    const { cheapModeDiagnostics, startFrameProbe } = await load()
+    startFrameProbe()
+    frames.paint(200, 50) // 20 fps, well past SLOW_FRAME_MS
+    const d = cheapModeDiagnostics()
+    expect(d.decided).toBe(true)
+    expect(d.slow).toBe(true)
+    expect(d.cheap).toBe(true)
+    expect(d.medianFrameMs).toBe(50)
+    expect(d.prefersReducedMotion).toBe(false)
+  })
+
+  it('diagnostics tell a latched-slow verdict apart from a live reduced-motion one', async () => {
+    // Both make isCheap() true, but a device test needs to know which: one
+    // is a hardware measurement, the other is a setting a parent can toggle.
+    const frames = fakeFrames()
+    const asked = stubReducedMotion(true)
+    const { cheapModeDiagnostics, startFrameProbe } = await load()
+    startFrameProbe()
+    frames.paint(200, 16.7) // fast hardware
+    const d = cheapModeDiagnostics()
+    expect(d.cheap).toBe(true)
+    expect(d.slow).toBe(false)
+    expect(d.prefersReducedMotion).toBe(true)
+    expect(asked).toContain('(prefers-reduced-motion: reduce)')
+  })
+
   it('stops sampling the moment it has decided', async () => {
     const frames = fakeFrames()
     const { startFrameProbe } = await load()

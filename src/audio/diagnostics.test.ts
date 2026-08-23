@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Mock } from 'vitest'
 import { createElement } from 'react'
 import { render } from '@testing-library/react'
+import { formatSnapshot } from './diagnostics'
+import type { DiagnosticSnapshot } from './diagnostics'
 
 /**
  * THE DOUBLE IS FAITHFUL TO THE REAL AudioContext, and here that matters more
@@ -129,6 +131,15 @@ describe('audioDiagnostics', () => {
   it('returns the full snapshot shape', async () => {
     const { audioDiagnostics } = await freshDiagnostics()
     const snap = audioDiagnostics()
+
+    // isCheap() and why it landed there — Outline.tsx's finger-tracing
+    // gesture (and every other art effect gated on `!isCheap()`) simply
+    // never mounts if this latches true, so the panel has to answer it.
+    expect(typeof snap.cheapMode.cheap).toBe('boolean')
+    expect(typeof snap.cheapMode.decided).toBe('boolean')
+    expect(typeof snap.cheapMode.slow).toBe('boolean')
+    expect(typeof snap.cheapMode.prefersReducedMotion).toBe('boolean')
+    expect(snap.cheapMode.medianFrameMs === null || typeof snap.cheapMode.medianFrameMs === 'number').toBe(true)
 
     expect(typeof snap.state).toBe('string')
     expect(typeof snap.currentTime).toBe('number')
@@ -271,6 +282,47 @@ describe('audioDiagnostics', () => {
   })
 })
 
+/** A full, valid `DiagnosticSnapshot`, overridable per test — the base state
+ *  is "nothing has happened yet", the same state `audioDiagnostics()`'s own
+ *  first call reports. */
+function fakeSnapshot(overrides: Partial<DiagnosticSnapshot> = {}): DiagnosticSnapshot {
+  return {
+    cheapMode: { cheap: false, decided: false, slow: false, prefersReducedMotion: false, medianFrameMs: null },
+    state: 'running',
+    currentTime: 0,
+    wallDelta: null,
+    clockAdvancing: null,
+    lastStateChanges: [],
+    lastResumeSettled: null,
+    lastResumeMs: null,
+    stuck: false,
+    playing: false,
+    recentTapRejections: [],
+    ...overrides,
+  }
+}
+
+describe('formatSnapshot — the isCheap() line', () => {
+  it('shows "still probing" rather than a fast-looking verdict before the probe decides', () => {
+    const text = formatSnapshot(fakeSnapshot())
+    expect(text).toContain('isCheap()     false  (still probing — reducedMotion false)')
+  })
+
+  it('shows the latched verdict plus the median frame time once decided', () => {
+    const text = formatSnapshot(fakeSnapshot({
+      cheapMode: { cheap: true, decided: true, slow: true, prefersReducedMotion: false, medianFrameMs: 33.4 },
+    }))
+    expect(text).toContain('isCheap()     true  (slow true, medianFrame 33.4ms, reducedMotion false)')
+  })
+
+  it('tells a latched slow verdict apart from a live reduced-motion one, both making isCheap() true', () => {
+    const text = formatSnapshot(fakeSnapshot({
+      cheapMode: { cheap: true, decided: true, slow: false, prefersReducedMotion: true, medianFrameMs: 9.1 },
+    }))
+    expect(text).toContain('isCheap()     true  (slow false, medianFrame 9.1ms, reducedMotion true)')
+  })
+})
+
 describe('AudioDebugPanel', () => {
   it('renders nothing without the debug flag', async () => {
     window.location.hash = '#/'
@@ -291,6 +343,7 @@ describe('AudioDebugPanel', () => {
     const { AudioDebugPanel } = await freshDiagnostics()
     const { container } = render(createElement(AudioDebugPanel))
     expect(container).not.toBeEmptyDOMElement()
+    expect(container.textContent).toMatch(/isCheap\(\)/)
     expect(container.textContent).toMatch(/state/i)
     expect(container.textContent).toMatch(/rejected taps/i)
     window.location.hash = ''
