@@ -3,10 +3,11 @@ import type { PointerEvent } from 'react'
 import geo from '../data/geo.json'
 import hitData from '../data/hit.json'
 import { isCheap } from '../lib/cheapMode'
+import { recordTapRejection } from '../audio/diagnostics'
 import { bindCamera } from './camera'
 import { bindMapNodes } from './useMapNodes'
 import {
-  PICK_ROOT, SNAP_PX, isTap,
+  PICK_ROOT, SNAP_PX, describeTap,
   baseMarkup, hitMarkup, buildOutlines, nearestOutline,
   type HitPlace, type Outline, type PointerSample,
 } from './hitLayer'
@@ -124,7 +125,7 @@ export function MapStage({ onPick }: Props) {
    * would mean mapping over the places in React, which is exactly what the
    * injected markup avoids.
    *
-   * Called only once `isTap` has already said this pointerdown/pointerup
+   * Called only once `describeTap` has already said this pointerdown/pointerup
    * pair IS a tap — see below. It reads `e.target` off the pointerup, which
    * for an ordinary tap has barely moved from wherever `pointerdown` hit.
    */
@@ -151,32 +152,49 @@ export function MapStage({ onPick }: Props) {
     if (near) onPick(near)
   }
 
-  /** Where the current gesture went down, or null between gestures and once
-   *  it has been resolved one way or the other. A ref, not state: nothing
-   *  about a gesture in flight should ever cause a render. */
-  const down = useRef<PointerSample | null>(null)
+  /**
+   * Every gesture currently down, keyed by its own `pointerId` — NOT one
+   * slot. Children rest a palm on the map and use two hands constantly, so
+   * a second finger landing before the first lifts is routine, not an edge
+   * case. A single ref slot got this wrong twice over: a second pointerdown
+   * overwrote the first finger's sample, and `onPointerUp` cleared that one
+   * slot unconditionally even when the lifting pointer did not match it —
+   * so BOTH fingers' lifts went silently unrecognised, not just the second
+   * one's. It fails closed (no wrong picks), but the symptom a child sees is
+   * a map that stops answering taps for no visible reason.
+   */
+  const down = useRef(new Map<number, PointerSample>())
 
   const sample = (e: PointerEvent<HTMLDivElement>): PointerSample =>
     ({ pointerId: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp })
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    down.current = sample(e)
+    down.current.set(e.pointerId, sample(e))
   }
 
   /** The other half of the gate. A pick only ever fires from here, once the
-   *  full gesture is in hand and `isTap` has judged it a deliberate tap
-   *  rather than an accidental brush or the first frames of a scroll. */
+   *  full gesture is in hand and `describeTap` has judged it a deliberate
+   *  tap rather than an accidental brush or the first frames of a scroll —
+   *  and only the entry for the pointer that actually lifted is ever
+   *  touched; every other finger still on the map is left exactly as it was. */
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
-    const started = down.current
-    down.current = null
-    if (started && isTap(started, sample(e))) pick(e)
+    const started = down.current.get(e.pointerId)
+    down.current.delete(e.pointerId)
+    if (!started) return
+    const verdict = describeTap(started, sample(e))
+    if (verdict.tap) { pick(e); return }
+    // Not a repair — see `recordTapRejection`'s own docstring — only a
+    // record, for whoever is watching `?debug=audio` on the device where a
+    // real child's tap just missed the gate.
+    recordTapRejection(verdict.reason, verdict.distancePx, verdict.durationMs)
   }
 
-  /** The browser cancels a gesture out from under us — a native scroll
-   *  taking over is the common case. Either way it is not a tap, and there
-   *  is no `pointerup` coming to say so. */
-  const onPointerCancel = () => {
-    down.current = null
+  /** The browser cancels ONE gesture out from under us — a native scroll
+   *  taking over is the common case — and only that pointer's entry is
+   *  forgotten; a second finger still down is untouched. Either way it is
+   *  not a tap, and there is no `pointerup` coming to say so for this one. */
+  const onPointerCancel = (e: PointerEvent<HTMLDivElement>) => {
+    down.current.delete(e.pointerId)
   }
 
   return (

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MapStage, nearestPlace } from './MapStage'
-import { PICK_ROOT, isTap } from './hitLayer'
+import { PICK_ROOT, isTap, TAP_MOVE_PX, TAP_MAX_MS } from './hitLayer'
 import { camera } from './camera'
 import { useMapNodes } from './useMapNodes'
 import geo from '../data/geo.json'
@@ -202,6 +202,23 @@ describe('MapStage', () => {
     expect(onPick).not.toHaveBeenCalled()
   })
 
+  it('still recognises the first finger\'s tap once a second finger has landed', () => {
+    // Children rest a palm on the map and use two hands constantly. A single
+    // ref slot for "the gesture in flight" got this wrong twice over: the
+    // second pointerdown overwrote the first finger's sample entirely, and
+    // the lookup on pointerup then compared the WRONG stored sample against
+    // pointer 1's pointerId — a mismatch `describeTap` correctly declines —
+    // so the first finger's perfectly good tap was silently swallowed too,
+    // not just the second finger's. Tracking by `pointerId` (a `Map`, not a
+    // single ref) is what lets two concurrent gestures resolve independently.
+    const { onPick, container } = mount()
+    const el = container.querySelector('.base path[data-slug="rajasthan"]')!
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 10, clientY: 10 }))
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 2, clientX: 500, clientY: 500 }))
+    el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 10, clientY: 10 }))
+    expect(onPick).toHaveBeenCalledExactlyOnceWith('rajasthan')
+  })
+
   it('forgets a cancelled gesture rather than picking on whatever pointerup follows it', () => {
     const { onPick, container } = mount()
     const el = container.querySelector('.base path[data-slug="rajasthan"]')!
@@ -349,9 +366,12 @@ describe('isTap', () => {
   })
 
   it('is still a tap dead still at the boundary, but not a hair past it', () => {
-    expect(isTap(at(0, 0, 0), at(10, 0, 500))).toBe(true)
-    expect(isTap(at(0, 0, 0), at(10.1, 0, 500))).toBe(false)
-    expect(isTap(at(0, 0, 0), at(10, 0, 501))).toBe(false)
+    // Against the real constants, not numbers copied from them — a
+    // threshold that gets retuned again must not silently strand this test
+    // asserting a boundary that no longer exists.
+    expect(isTap(at(0, 0, 0), at(TAP_MOVE_PX, 0, TAP_MAX_MS))).toBe(true)
+    expect(isTap(at(0, 0, 0), at(TAP_MOVE_PX + 0.1, 0, TAP_MAX_MS))).toBe(false)
+    expect(isTap(at(0, 0, 0), at(TAP_MOVE_PX, 0, TAP_MAX_MS + 1))).toBe(false)
   })
 
   it('is not a tap once the pointer has travelled far enough to be a drag', () => {

@@ -317,6 +317,10 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    * Parking here — the one thing that survives a full unmount — is what
    * fixes that path along with every other one that can tear this component
    * down without going through `goHome` or `end` first.
+   *
+   * (StrictMode's synthetic double-invoke runs this cleanup once before any
+   * beat has played, in dev only — harmless: `autoStart` is never true in
+   * the real app, so `atRef.current` is still null at that moment.)
    */
   useEffect(() => () => {
     n.stop()

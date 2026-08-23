@@ -70,6 +70,43 @@ export type DiagnosticSnapshot = {
   stuck: boolean
   /** `Narrator.playing`. */
   playing: boolean
+  /** The last few taps `MapStage`'s gesture gate declined, most recent
+   *  last — see `recordTapRejection`. `TAP_MOVE_PX`/`TAP_MAX_MS`
+   *  (`hitLayer.ts`) are reasoned judgment, not a measurement of any real
+   *  child's thumb; this is what lets a session on a real device replace
+   *  the reasoning with a reading. */
+  recentTapRejections: TapRejection[]
+}
+
+/** Why the gesture gate said no to a pointerdown/pointerup pair, and by how
+ *  much — `hitLayer.ts`'s `TapVerdict` plus when it happened, so the panel
+ *  can show the most recent ones. */
+export type TapRejection = {
+  reason: 'pointer' | 'moved' | 'slow'
+  distancePx: number
+  durationMs: number
+  /** `performance.now()` at the moment it was recorded. */
+  at: number
+}
+
+/** How many rejected taps the panel keeps. A live look at what is
+ *  happening right now, not a session log — old entries fall off. */
+const MAX_TAP_REJECTIONS = 8
+
+let tapRejections: TapRejection[] = []
+
+/**
+ * Log a tap the gesture gate declined. Called from `MapStage.tsx` — the
+ * only place a real pointerdown/pointerup pair is ever seen — every time
+ * `describeTap` (`hitLayer.ts`) returns anything other than a tap.
+ *
+ * THIS OBSERVES TOO. It has no opinion on `TAP_MOVE_PX`/`TAP_MAX_MS` and
+ * changes nothing about the gate; it only remembers what the gate just did,
+ * for whoever is watching `?debug=audio` on the device where it happened.
+ */
+export function recordTapRejection(reason: TapRejection['reason'], distancePx: number, durationMs: number): void {
+  tapRejections = [...tapRejections, { reason, distancePx, durationMs, at: performance.now() }]
+    .slice(-MAX_TAP_REJECTIONS)
 }
 
 /** How long a sample window must span, in wall-clock milliseconds, before
@@ -126,6 +163,7 @@ export function audioDiagnostics(): DiagnosticSnapshot {
     lastResumeMs: n.diagResumeMs,
     stuck: n.stuck,
     playing: n.playing,
+    recentTapRejections: tapRejections,
   }
 }
 
@@ -162,6 +200,10 @@ function formatChange(c: StateChange): string {
   return `  ${c.state.padEnd(11)} @ ${c.at.toFixed(0)}ms`
 }
 
+function formatRejection(r: TapRejection): string {
+  return `  ${r.reason.padEnd(7)} drift ${r.distancePx.toFixed(0)}px  held ${r.durationMs.toFixed(0)}ms`
+}
+
 function formatResume(s: DiagnosticSnapshot): string {
   if (s.lastResumeSettled === null) return 'not yet attempted'
   const ms = s.lastResumeMs === null ? '?' : s.lastResumeMs.toFixed(0)
@@ -184,6 +226,9 @@ export function formatSnapshot(s: DiagnosticSnapshot): string {
   const changes = s.lastStateChanges.length
     ? s.lastStateChanges.map(formatChange).join('\n')
     : '  (none seen)'
+  const rejections = s.recentTapRejections.length
+    ? s.recentTapRejections.map(formatRejection).join('\n')
+    : '  (none)'
   return [
     'audio debug  (#/?debug=audio)',
     `state         ${s.state}`,
@@ -194,6 +239,8 @@ export function formatSnapshot(s: DiagnosticSnapshot): string {
     `resume()      ${formatResume(s)}`,
     'last statechange events:',
     changes,
+    'recent rejected taps:',
+    rejections,
   ].join('\n')
 }
 

@@ -139,6 +139,7 @@ describe('audioDiagnostics', () => {
     expect(snap.lastResumeMs === null || typeof snap.lastResumeMs === 'number').toBe(true)
     expect(typeof snap.stuck).toBe('boolean')
     expect(typeof snap.playing).toBe('boolean')
+    expect(Array.isArray(snap.recentTapRejections)).toBe(true)
 
     // Nothing has happened yet: no resume attempted, no state changes seen,
     // and — this is the one call in the whole file where it is guaranteed —
@@ -149,6 +150,31 @@ describe('audioDiagnostics', () => {
     expect(snap.lastStateChanges).toEqual([])
     expect(snap.clockAdvancing).toBeNull()
     expect(snap.wallDelta).toBeNull()
+    expect(snap.recentTapRejections).toEqual([])
+  })
+
+  it('logs a tap the gesture gate declined, most recent last, capped at the last few', async () => {
+    // MapStage never calls this in a unit test — it is exercised directly
+    // here, the same way `instance().fireStateChange(...)` stands in for a
+    // real browser event a few tests up. The point is what the panel does
+    // with the log, not how MapStage produces one entry of it.
+    const { audioDiagnostics, recordTapRejection } = await freshDiagnostics()
+
+    recordTapRejection('moved', 34.5, 120)
+    let snap = audioDiagnostics()
+    expect(snap.recentTapRejections).toHaveLength(1)
+    expect(snap.recentTapRejections[0]).toMatchObject({ reason: 'moved', distancePx: 34.5, durationMs: 120 })
+    expect(typeof snap.recentTapRejections[0].at).toBe('number')
+
+    recordTapRejection('slow', 3, 1400)
+    snap = audioDiagnostics()
+    expect(snap.recentTapRejections.map((r) => r.reason)).toEqual(['moved', 'slow'])
+
+    // Bounded, not just happened-to-be-few: nine more and the oldest is
+    // gone, the same way `lastStateChanges` is bounded to three above.
+    for (let i = 0; i < 9; i++) recordTapRejection('pointer', 0, 0)
+    expect(audioDiagnostics().recentTapRejections).toHaveLength(8)
+    expect(audioDiagnostics().recentTapRejections[0].reason).toBe('pointer')
   })
 
   it('reports no verdict before the first sample window closes, then a real one after', async () => {
@@ -266,6 +292,7 @@ describe('AudioDebugPanel', () => {
     const { container } = render(createElement(AudioDebugPanel))
     expect(container).not.toBeEmptyDOMElement()
     expect(container.textContent).toMatch(/state/i)
+    expect(container.textContent).toMatch(/rejected taps/i)
     window.location.hash = ''
   })
 })

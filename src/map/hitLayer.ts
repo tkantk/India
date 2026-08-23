@@ -48,22 +48,67 @@ export const PICK_ROOT = 'stage'
  * pointerdown/pointerup PAIR, and on how far the second one has drifted from
  * the first, is what tells an accidental brush or an attempted scroll apart
  * from a deliberate tap.
+ *
+ * NOT the platform default. Android's touch slop is ~8dp and iOS's pan
+ * threshold is ~10pt — both adult numbers, for an adult's fingertip
+ * precision. This codebase already scales adult HCI guidance up hard for a
+ * six-year-old elsewhere (`--tap`, 104px, is 2.4x Apple's 44pt), and
+ * `SNAP_PX` a few lines below assumes roughly SIX TIMES an adult's
+ * positional slop for this same child's fingertip on this same map. 20px
+ * — double the adult slop, comfortably clear of it — is chosen for the
+ * same reason and kept well under `SNAP_PX` (60px) on purpose, so a tap
+ * near the gate's own edge cannot land somewhere the snap logic would then
+ * treat differently.
+ *
+ * The failure modes are not symmetric. Too generous costs, at worst, an
+ * unwanted tour exit — and "Carry on" (`tourPosition.ts`) now recovers that
+ * completely. Too strict silently eats a deliberate tap with NO recourse at
+ * all: exactly the dead-control defect this plan exists to eliminate. That
+ * asymmetry is why this leans generous rather than splitting the range.
+ *
+ * This number is reasoned judgment anchored to the platform constants
+ * above, not a citation for children's tap kinematics specifically — no
+ * such source was pulled for this change. `?debug=audio` now logs every
+ * rejected tap's actual drift and duration (see `diagnostics.ts`), so a
+ * session on a real iPad with a real child can correct this number with
+ * real data rather than more reasoning.
  */
-export const TAP_MOVE_PX = 10
+export const TAP_MOVE_PX = 20
 
-/** How long a pointerdown/pointerup pair may span and still be one tap, in
- *  milliseconds. A press-and-hold well past this is a different gesture from
- *  a tap even with the finger dead still, and is left for whatever the app
- *  decides a press-and-hold means — today, nothing. */
-export const TAP_MAX_MS = 500
+/**
+ * How long a pointerdown/pointerup pair may span and still be one tap, in
+ * milliseconds. A press-and-hold well past this is a different gesture from
+ * a tap even with the finger dead still, and is left for whatever the app
+ * decides a press-and-hold means — today, nothing.
+ *
+ * NOT the platform default either: 500ms is exactly Android's
+ * `ViewConfiguration.getLongPressTimeout()` and iOS's default
+ * `UILongPressGestureRecognizer.minimumPressDuration` — the generic
+ * adult tap/long-press boundary. 900ms gives a distracted six-year-old
+ * comfortable room to still be mid-tap where an adult gesture recognizer
+ * would already have called it a long-press, while staying nowhere near a
+ * length anyone would mistake for a deliberate hold. Same asymmetry
+ * argument as `TAP_MOVE_PX`: reasoned judgment from the platform constant
+ * above, not a citation, and instrumented in `?debug=audio` so real
+ * rejected-tap durations can correct it later.
+ */
+export const TAP_MAX_MS = 900
 
 /** The two facts a tap gate needs about one end of a pointer gesture. */
 export type PointerSample = { pointerId: number; x: number; y: number; t: number }
 
+/** Why `describeTap` declined a gesture, and by how much — the numbers the
+ *  chosen `TAP_MOVE_PX`/`TAP_MAX_MS` were reasoned judgment about, not a
+ *  measurement of any real child's thumb. `MapStage` logs these to
+ *  `?debug=audio` (see `diagnostics.ts`) so a session on a real iPad with a
+ *  real child can correct the thresholds with real data. */
+export type TapVerdict =
+  | { tap: true }
+  | { tap: false; reason: 'pointer' | 'moved' | 'slow'; distancePx: number; durationMs: number }
+
 /**
- * A deliberate tap: the same pointer, down then up, close to where it went
- * down, and quick — as opposed to an accidental brush or the first frame of
- * a drag or a scroll attempt, which this declines.
+ * The full verdict on a pointerdown/pointerup pair: a deliberate tap, or —
+ * if not — which threshold it missed and by how much.
  *
  * Pure and DOM-free on purpose, the same reason `nearestOutline` is: the
  * threshold and the arithmetic are exactly what a unit test can pin down
@@ -71,12 +116,27 @@ export type PointerSample = { pointerId: number; x: number; y: number; t: number
  * testing and no layout — see `MapStage.test.tsx` for where that limit
  * actually bites.
  */
+export function describeTap(down: PointerSample, up: PointerSample): TapVerdict {
+  const distancePx = Math.hypot(up.x - down.x, up.y - down.y)
+  const durationMs = up.t - down.t
+  if (down.pointerId !== up.pointerId) return { tap: false, reason: 'pointer', distancePx, durationMs }
+  if (distancePx > TAP_MOVE_PX) return { tap: false, reason: 'moved', distancePx, durationMs }
+  if (durationMs > TAP_MAX_MS) return { tap: false, reason: 'slow', distancePx, durationMs }
+  return { tap: true }
+}
+
+/**
+ * A deliberate tap: the same pointer, down then up, close to where it went
+ * down, and quick — as opposed to an accidental brush or the first frame of
+ * a drag or a scroll attempt, which this declines.
+ *
+ * Defined in terms of `describeTap` so the two can never drift apart — this
+ * is the plain yes/no the gate acts on; `describeTap` is the same verdict
+ * with the reasoning attached, for whoever wants to know why a "no" was a
+ * "no".
+ */
 export function isTap(down: PointerSample, up: PointerSample): boolean {
-  if (down.pointerId !== up.pointerId) return false
-  const dx = up.x - down.x
-  const dy = up.y - down.y
-  if (Math.hypot(dx, dy) > TAP_MOVE_PX) return false
-  return up.t - down.t <= TAP_MAX_MS
+  return describeTap(down, up).tap
 }
 
 /**
