@@ -432,4 +432,78 @@ describe('Narrator', () => {
     expect(n.getSnapshot()).toBe(-1)
     expect(n.playing).toBe(false)
   })
+
+  /**
+   * TASK 5. `Reveal.tsx` used to schedule an art hold with a plain
+   * wall-clock `setTimeout`, while the cue that puts the picture up fires
+   * off THIS clock — rate-scaled, frozen across a pause. `scheduleAfter` is
+   * the primitive that fixes that: the same `tick()` loop already driving
+   * cues and the read-along word, exposed so a timed effect can stop owning
+   * a wall-clock timer of its own. These tests are the engine-level half of
+   * the fix; `TourStage.clock.test.tsx` proves the same thing through the
+   * real `Reveal` component.
+   */
+  describe('scheduleAfter — the media clock a timed effect asks instead of setTimeout', () => {
+    it('fires after the given number of MEDIA seconds, scaled by the rate', async () => {
+      await n.play(CLIP)
+      n.setRate(0.85)
+      const fired = vi.fn()
+      n.scheduleAfter(2, fired)          // 2 nominal seconds from right now
+      ctx.advance(2); n.tick()           // 2 REAL seconds is only 1.7 nominal at 0.85
+      expect(fired).not.toHaveBeenCalled()
+      ctx.advance(0.4); n.tick()         // 2.4 real seconds = 2.04 nominal — past the target
+      expect(fired).toHaveBeenCalledOnce()
+    })
+
+    it('does not advance while paused — a stopped clock, not merely a slow one', async () => {
+      await n.play(CLIP)
+      const fired = vi.fn()
+      n.scheduleAfter(3, fired)
+      ctx.advance(2); n.tick()
+      n.pause()
+      ctx.advance(100)                   // no tick(): nothing is polling a frozen clock
+      expect(fired).not.toHaveBeenCalled()
+      n.resume()
+      ctx.advance(1); n.tick()           // the remaining 1 of 3 nominal seconds
+      expect(fired).toHaveBeenCalledOnce()
+    })
+
+    it('keeps counting down in real time once the clip has ended naturally', async () => {
+      // Task 3's `invite.min` extends a hold past the clip's own end (see
+      // `scripts/lib/words.mjs`'s `cueTimes`). There is no more "rate" once
+      // nothing is playing, so this span runs at the same real, un-scaled
+      // speed `GrandTour`'s own invite floor/cap timers already assume for
+      // it — not frozen the way an actual pause is.
+      await n.play(CLIP)
+      n.setRate(0.85)
+      const fired = vi.fn()
+      ctx.advance(10)
+      endNaturally(ctx)                  // CLIP.duration is 10
+      n.scheduleAfter(6, fired)          // the invite's own floor, in real seconds
+      ctx.advance(5); n.tick()
+      expect(fired).not.toHaveBeenCalled()
+      ctx.advance(1); n.tick()
+      expect(fired).toHaveBeenCalledOnce()
+    })
+
+    it('cancels, idempotently, and never fires once cancelled', async () => {
+      await n.play(CLIP)
+      const fired = vi.fn()
+      const cancel = n.scheduleAfter(1, fired)
+      cancel()
+      cancel()                           // must not throw the second time
+      ctx.advance(5); n.tick()
+      expect(fired).not.toHaveBeenCalled()
+    })
+
+    it('drops a pending schedule on stop(), so a stray target cannot fire into whatever plays next', async () => {
+      await n.play(CLIP)
+      const fired = vi.fn()
+      n.scheduleAfter(2, fired)
+      n.stop()
+      await n.play({ ...CLIP, audio: 'audio/en/y.m4a' })
+      ctx.advance(5); n.tick()
+      expect(fired).not.toHaveBeenCalled()
+    })
+  })
 })

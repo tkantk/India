@@ -349,19 +349,28 @@ export function comesHome(clip: Clip, view: Bbox | null): boolean {
  *
  * Mor's lifetime is the art's own hold plus its fade, so he folds his tail
  * away in the same moment the picture finishes leaving rather than a beat
- * before or a beat after it.
+ * before or a beat after it — which is why this times itself off
+ * `n.scheduleAfter` rather than a wall-clock `setTimeout` of its own: `hold`
+ * is nominal MEDIA seconds (`Cue.hold`), the same number `Reveal.tsx` now
+ * times its own hold by, and a pair of independent wall-clock timers built
+ * from the same number would agree only at rate 1 with nothing ever
+ * paused — Task 5's bug, once removed from the picture itself, would
+ * otherwise still be here: Mor folding his tail away while the picture he
+ * is presenting is still on screen, or the highlight wave releasing the map
+ * while the narrator describing it is still slowed down or paused.
  */
-function useStageLife(map: MapApi) {
+function useStageLife(map: MapApi, n: ReturnType<typeof getNarrator>) {
   const [showing, setShowing] = useState<string | null>(null)
   /** Where the camera has just landed, if it landed anywhere. `hold` is the
    *  zoomTo cue's own derived lifetime — see `Here.tsx`. */
   const [here, setHere] = useState<{ at: [number, number]; nonce: number; hold?: number } | null>(null)
-  const fan = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const wave = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Cancel functions from `n.scheduleAfter`, not raw timer handles. */
+  const fan = useRef<(() => void) | null>(null)
+  const wave = useRef<(() => void) | null>(null)
 
   const stop = useCallback(() => {
-    if (fan.current) clearTimeout(fan.current)
-    if (wave.current) clearTimeout(wave.current)
+    fan.current?.()
+    wave.current?.()
     fan.current = null
     wave.current = null
   }, [])
@@ -383,22 +392,22 @@ function useStageLife(map: MapApi) {
       return
     }
     if (HIGHLIGHTS.has(cue.do)) {
-      if (wave.current) clearTimeout(wave.current)
-      wave.current = setTimeout(() => {
+      wave.current?.()
+      wave.current = n.scheduleAfter(HIGHLIGHT_MS / 1000, () => {
         wave.current = null
         map.clear()
-      }, HIGHLIGHT_MS)
+      })
       return
     }
     const hold = stageHold(cue)
     if (!hold) return
-    if (fan.current) clearTimeout(fan.current)
+    fan.current?.()
     setShowing(cue.arg ?? cue.do)
-    fan.current = setTimeout(() => {
+    fan.current = n.scheduleAfter((hold + FADE_MS) / 1000, () => {
       fan.current = null
       setShowing(null)
-    }, hold + FADE_MS)
-  }, [map])
+    })
+  }, [map, n])
 
   useEffect(() => stop, [stop])
 
@@ -443,7 +452,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    * pick up whatever an earlier instance parked before it unmounted.
    */
   const [parkedAt, setParkedAt] = useState<number | null>(() => parked())
-  const { showing, here, saw, clear: clearStage } = useStageLife(map)
+  const { showing, here, saw, clear: clearStage } = useStageLife(map, n)
   /** The invite currently open, if a beat's audio just ended carrying one
    *  and the tour is holding it open rather than advancing at once — see
    *  `useInviteGap`'s own top note. Non-null for the WHOLE wait, not only

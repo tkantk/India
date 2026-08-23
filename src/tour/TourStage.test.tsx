@@ -7,10 +7,17 @@ import geo from '../data/geo.json'
 
 /**
  * The double must be FAITHFUL to the real engine's interface — the plan-wide
- * rule established in Task 4. TourStage only ever touches `onCue` (settable,
- * set once) and `sfx` (fire-and-forget), so that is all the double needs;
- * anything less on either of those two would let production code get bent
- * around a gap the same way Task 4's first double did.
+ * rule established in Task 4. TourStage touches `onCue` (settable, set
+ * once), `sfx` (fire-and-forget) and, since Task 5, `scheduleAfter` — it
+ * hands the last one straight to `MediaClockProvider`, and every art cue
+ * this file fires for real (via the real `dispatch`) mounts a `Reveal` that
+ * calls it. Anything less on any of the three would let production code get
+ * bent around a gap the same way Task 4's first double did.
+ *
+ * `scheduleAfter` itself only has to be a real, cancellable clock — none of
+ * this file's own tests are about rate or pause (that is `Reveal.test.tsx`'s
+ * job, against the real `Narrator`), so a plain wall-clock timer is a
+ * faithful enough stand-in for what THIS double is asked to do.
  *
  * `vi.mock` is hoisted above every import by vitest's transform, so this
  * still applies to the `TourStage` imported above.
@@ -18,6 +25,10 @@ import geo from '../data/geo.json'
 const narrator = {
   onCue: (() => {}) as (cue: Cue) => void,
   sfx: vi.fn(async () => {}),
+  scheduleAfter: vi.fn((seconds: number, cb: () => void) => {
+    const t = setTimeout(cb, seconds * 1000)
+    return () => clearTimeout(t)
+  }),
 }
 vi.mock('../audio/Narrator', () => ({ getNarrator: () => narrator }))
 

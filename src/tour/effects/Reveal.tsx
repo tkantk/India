@@ -18,7 +18,7 @@
  *    the tenth of a viewBox unit, and a scale-in would slide the Ganga off
  *    its own valley for half a second.
  */
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { motion, useReducedMotionConfig } from 'motion/react'
 import geo from '../../data/geo.json'
@@ -26,6 +26,37 @@ import type { Bbox } from '../../types'
 import { useCameraView } from '../../map/useCameraView'
 import { PALETTE } from './art/palette'
 import './effects.css'
+
+/**
+ * How a hold's countdown is scheduled — the MEDIA clock cues themselves
+ * fire on (`Narrator.scheduleAfter`), never the wall clock. `hold` is
+ * authored (or derived, `Cue.hold`) in nominal media seconds: the cue that
+ * put a picture up and the timer that takes it down have to agree on what a
+ * second is, or a slower playback rate or a pause leaves the two adrift —
+ * exactly Task 5's bug, `Reveal.tsx:105-106`'s old plain `setTimeout(hold)`
+ * counting wall-clock ms while the cue that mounted this effect fired off
+ * rate-scaled, pausable media time.
+ *
+ * Defaults to a real wall-clock timer: rendered on its own — every test in
+ * this directory, a symbol, a river, one accumulating sea — there is no
+ * narrator to ask, and a plain `setTimeout` is exactly as timed as this
+ * always was. Only `TourStage`, the seam that actually owns a `Narrator`,
+ * provides the real one, via `MediaClockProvider`.
+ */
+type MediaClock = (seconds: number, cb: () => void) => () => void
+
+const wallClock: MediaClock = (seconds, cb) => {
+  const t = setTimeout(cb, seconds * 1000)
+  return () => clearTimeout(t)
+}
+
+const MediaClockContext = createContext<MediaClock>(wallClock)
+
+/** `TourStage`'s own seam into every `Reveal` under it: hand it
+ *  `Narrator.scheduleAfter` (bound, stable across renders — see that
+ *  method's own note) so a hold means media seconds, not wall ones, for
+ *  real playback. */
+export const MediaClockProvider = MediaClockContext.Provider
 
 /**
  * FALLBACK constants, in ms — not the primary source of an effect's
@@ -98,17 +129,40 @@ type RevealProps = {
 export function Reveal({ hold, variant = 'figure', restartOn, children }: RevealProps) {
   const [leaving, setLeaving] = useState(false)
   const [gone, setGone] = useState(false)
+  const scheduleAfter = useContext(MediaClockContext)
 
+  // The hold: `leaving` starts once the clock says `hold` MEDIA seconds
+  // have passed since this cue fired — scaled by the playback rate, frozen
+  // across a pause, and however far past the clip's own end an authored
+  // `invite` extends it. See `MediaClockContext`'s own note for what "the
+  // clock" is here and why it is not wall time.
+  //
+  // The fade-out that follows is a different clock on purpose: FADE_MS is
+  // how long Motion's own opacity animation actually takes, over real,
+  // un-rate-scaled time, regardless of what the media clock is doing — so
+  // `off` is a plain wall-clock timer, started the instant `leaving`
+  // actually fires rather than a fixed offset from mount (at a slower rate
+  // that lands later in wall time than `hold` alone would suggest). It is
+  // armed here, directly inside the hold's own callback, rather than from a
+  // second effect reacting to `leaving` turning true: a `setTimeout` chained
+  // off a REACT RE-RENDER cannot be relied on to exist yet the instant a
+  // single `vi.advanceTimersByTime` call fires the first one and keeps
+  // draining its queue — every existing test in this directory jumps both
+  // thresholds in one such call, and read as "gone" long before its second
+  // effect's render round-trip would have scheduled anything to find.
   useEffect(() => {
     setLeaving(false)
     setGone(false)
-    const fade = setTimeout(() => setLeaving(true), hold)
-    const off = setTimeout(() => setGone(true), hold + FADE_MS)
+    let off: ReturnType<typeof setTimeout> | null = null
+    const cancelHold = scheduleAfter(hold / 1000, () => {
+      setLeaving(true)
+      off = setTimeout(() => setGone(true), FADE_MS)
+    })
     return () => {
-      clearTimeout(fade)
-      clearTimeout(off)
+      cancelHold()
+      if (off) clearTimeout(off)
     }
-  }, [hold, restartOn])
+  }, [hold, restartOn, scheduleAfter])
 
   if (gone) return null
 

@@ -84,6 +84,27 @@ const narrator = {
   onEnd: null as (() => void) | null,
   onAgain: null as (() => void) | null,
 
+  /**
+   * Task 5: the media-clock scheduler `Reveal.tsx`'s own hold and
+   * `GrandTour.tsx`'s `useStageLife` (Mor's fan, the highlight wave) now use
+   * instead of a wall-clock `setTimeout` of their own. This file mocks
+   * `./cues` so no `Reveal` mounts through the overlay slot — but `Here` is
+   * NOT part of that registry (`GrandTour.tsx` renders it directly off
+   * `zoomTo`), and `useStageLife.saw` calls this for every cue with a
+   * derived hold or a highlight verb, real content included ("plays all
+   * fourteen beats" drives every authored cue in `content/tour.json`). A
+   * missing field here is not a gap this file's own assertions would ever
+   * notice — it is a `TypeError` thrown out of a passive effect the moment
+   * either fires, which is exactly what happened before this was added.
+   * Faithful enough for what THIS double is asked to do: a real,
+   * cancellable clock — rate and pause are `Reveal.test.tsx`'s job, against
+   * the real `Narrator`.
+   */
+  scheduleAfter: vi.fn((seconds: number, cb: () => void) => {
+    const t = setTimeout(cb, seconds * 1000)
+    return () => clearTimeout(t)
+  }),
+
   play: vi.fn(async (clip: Clip) => {
     narrator.cut()
     narrator.playing = false

@@ -106,6 +106,20 @@ export class Narrator {
   /** Monotonic index into `cues`. Never rewinds except on replay. */
   private cursor = 0
   private raf = 0
+  /** `ctx.currentTime` when the clip last ended NATURALLY (`finish()`), or
+   *  `null` otherwise. See `position`'s own note: a `hold` can reach past
+   *  the clip's own end (Task 3's `invite.min` extension —
+   *  `scripts/lib/words.mjs`'s `cueTimes`), and that overhang has to keep
+   *  counting down in real, un-rate-scaled time — there is no more "rate"
+   *  once nothing is playing — exactly the span `GrandTour`'s own invite
+   *  floor/cap timers already assume is real seconds. `pause()` never sets
+   *  this: it is what tells `position` "the clock is still running" rather
+   *  than "the clock has stopped," which is the whole difference between
+   *  the two. */
+  private endedAt: number | null = null
+  /** Pending `scheduleAfter` requests: an absolute target in `position`
+   *  units, and the callback to run once it is reached. */
+  private scheduled = new Set<{ target: number; cb: () => void }>()
 
   private listeners = new Set<() => void>()
   /** url -> decoded clip, in least-recently-used order. */
@@ -379,7 +393,17 @@ export class Narrator {
     const next = Math.min(1, Math.max(SLOWEST, rate))
     if (next === this.rate) return
     const at = this.position
-    if (!this.src) { this.rate = next; this.offset = at; return }
+    if (!this.src) {
+      this.rate = next
+      this.offset = at
+      // Paused: `endedAt` is already null, and stays null — the clock stays
+      // frozen at `offset`, same as before. Ended: re-anchor to now, or the
+      // next `position` read would double-count everything that elapsed
+      // between this call and that read (`offset` already includes it;
+      // `endedAt` would still be pointing at the old anchor otherwise).
+      if (this.endedAt !== null) this.endedAt = this.ctx.currentTime
+      return
+    }
     // One-shot node: a rate change is a fresh node from the same position.
     // The new rate lands only after stopSource(), which recomputes the offset
     // off the clock and would otherwise read it back at the wrong rate.
@@ -432,7 +456,16 @@ export class Narrator {
     this.starts = []
     this.cursor = 0
     this.offset = 0
+    this.endedAt = null
     this.loadingFlag = false
+    // Whatever a beat on its way out was still waiting to hear from the
+    // clock, it is not going to be this engine's clock any more: `stop()`
+    // and the `play()` about to follow it both mean "that clip is gone," and
+    // a target computed against its own timeline must not fire into
+    // whatever plays next. Every legitimate caller (`Reveal`'s own effect
+    // cleanup, `useStageLife`'s `stop`) already cancels its own
+    // registration too — this is defence in depth, not the only guard.
+    this.scheduled.clear()
   }
 
   private startFrom(offset: number) {
@@ -444,6 +477,7 @@ export class Narrator {
     s.onended = () => { if (this.src === s) this.finish() }
     this.offset = offset
     this.startedAt = this.ctx.currentTime
+    this.endedAt = null
     this.src = s
     s.start(0, offset)
   }
@@ -467,11 +501,21 @@ export class Narrator {
     const clip = this.clip
     this.stopSource()
     if (clip) this.offset = clip.duration
+    // From here, media time IS real time: there is no more "rate" to scale
+    // by once nothing is playing. A `scheduleAfter` target past this point
+    // (Task 3's `invite.min` extension) still has to keep counting down,
+    // rather than freeze here the way a genuine pause does — see
+    // `position`'s own note.
+    this.endedAt = this.ctx.currentTime
     // Not unduck(): the tour's next beat is usually milliseconds away.
     this.settle()
     this.curWord = -1
     this.emit()
     this.onEnd?.()
+    // A pending `scheduleAfter` may still be waiting on time that only
+    // starts moving again from here — nothing else is going to restart the
+    // loop that polls it.
+    this.schedule()
   }
 
   // ------------------------------------------------------------------- clock
@@ -482,9 +526,25 @@ export class Narrator {
    * Never `HTMLAudioElement.currentTime` (Firefox quantises it to 2 ms, and to
    * 100 ms under resistFingerprinting) and never `performance.now()` or summed
    * rAF deltas, which drift against the audio clock over a 60-second clip.
+   *
+   * Three states, not two:
+   *  - PLAYING (`src` set): the clock runs at `rate` — this is the branch
+   *    `setRate` exists to change.
+   *  - PAUSED (`src` null, `endedAt` null): frozen at `offset`. This is the
+   *    branch that makes `pause()` actually stop a hold's countdown rather
+   *    than merely slow it — nothing here advances no matter how much real
+   *    time passes.
+   *  - ENDED (`src` null, `endedAt` set by `finish()`): real, un-rate-scaled
+   *    time since the clip finished. A `hold` can reach past the clip's own
+   *    end (Task 3's `invite.min` extension — `scripts/lib/words.mjs`'s
+   *    `cueTimes`), and once nothing is playing there is no more "rate" to
+   *    scale that overhang by — the same real-time span `GrandTour`'s own
+   *    invite floor/cap timers already assume for it.
    */
   get position(): number {
-    return this.src ? this.offset + (this.ctx.currentTime - this.startedAt) * this.rate : this.offset
+    if (this.src) return this.offset + (this.ctx.currentTime - this.startedAt) * this.rate
+    if (this.endedAt !== null) return this.offset + (this.ctx.currentTime - this.endedAt)
+    return this.offset
   }
 
   get word(): number { return this.curWord }
@@ -520,14 +580,63 @@ export class Narrator {
     while (w + 1 < this.starts.length && this.starts[w + 1] <= p) w++
     if (w !== this.curWord) { this.curWord = w; this.emit() }
 
+    // Same reasoning as the cue loop above: every request due by now runs,
+    // in whatever order the set holds them, and a callback that throws must
+    // not take the others down with it.
+    for (const entry of this.scheduled) {
+      if (entry.target <= p) {
+        this.scheduled.delete(entry)
+        try { entry.cb() } catch { /* a broken effect must not stop the clock */ }
+      }
+    }
+
     this.schedule()
   }
 
   private schedule() {
-    if (!this.src || typeof requestAnimationFrame !== 'function') return
+    if (typeof requestAnimationFrame !== 'function') return
+    // Nothing to poll for: no audio playing, and nothing waiting on the
+    // clock either. `scheduleAfter` is the only other thing that arms this
+    // loop while `src` is null — a hold still counting down after the
+    // clip's own natural end (see `position`'s own note).
+    //
+    // Every caller today is cue-driven, so this only ever runs while `tick`
+    // is already looping for a clip that is playing or has just ended. A
+    // `scheduleAfter` call made from genuinely idle state — nothing playing,
+    // nothing having ever ended — would still arm this and keep a per-frame
+    // rAF loop alive UNTIL SOMETHING CANCELS IT, since `position` there is
+    // just the frozen `offset` and its target can never be reached on its
+    // own. Not reachable by anything in this codebase today; worth knowing
+    // before the next caller assumes otherwise.
+    if (!this.src && this.scheduled.size === 0) return
     // Only ever one loop, however many times tick() is called by hand.
     if (this.raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.raf)
     this.raf = requestAnimationFrame(this.tick)
+  }
+
+  /**
+   * Run `cb` once at least `seconds` of MEDIA time have passed from right
+   * now — scaled by the current rate while playing, frozen for as long as
+   * `pause()` holds, and real, un-rate-scaled wall time for any of it that
+   * falls after the clip's own natural end. See `position`'s own note for
+   * why those are three different clocks and not one.
+   *
+   * The seam that lets a timed effect stop owning a wall-clock `setTimeout`
+   * of its own: `Reveal.tsx`'s hold, and `GrandTour.tsx`'s Mor and
+   * highlight-release timers, all use this instead. Piggybacks on the same
+   * per-frame loop that already drives cues and the read-along word
+   * (`tick`) rather than a timer of its own — `schedule()` keeps that loop
+   * alive for as long as anything is playing OR anything is still
+   * scheduled, and lets it stop the moment neither is true.
+   *
+   * Returns a cancel function — idempotent, and safe to call after `cb` has
+   * already run.
+   */
+  scheduleAfter = (seconds: number, cb: () => void): (() => void) => {
+    const entry = { target: this.position + Math.max(0, seconds), cb }
+    this.scheduled.add(entry)
+    this.schedule()
+    return () => { this.scheduled.delete(entry) }
   }
 
   private setWord(w: number) {

@@ -6,6 +6,7 @@ import { useMapNodes } from '../map/useMapNodes'
 import { MapStage } from '../map/MapStage'
 import { dispatch } from './cues'
 import type { CueApi } from './cues'
+import { MediaClockProvider } from './effects/Reveal'
 import type { Cue } from '../types'
 import './tourStage.css'
 
@@ -73,6 +74,12 @@ type Props = {
  * touch a stale `setOverlay` or a map nobody is showing.
  */
 export function TourStage({ onPickState, onCue, scene, children }: Props) {
+  // Hoisted out of the effect below (which used to call this itself) so it
+  // is also here to hand `MediaClockProvider` the engine's real
+  // `scheduleAfter` — see that seam's own note in `Reveal.tsx`. Safe to call
+  // during render: the module-scoped singleton means a StrictMode double
+  // render answers with the same instance, never a second `AudioContext`.
+  const n = getNarrator()
   const map = useMapNodes()
   const [overlay, setOverlay] = useState<ReactNode | null>(null)
   const [sweeping, setSweeping] = useState(false)
@@ -115,7 +122,6 @@ export function TourStage({ onPickState, onCue, scene, children }: Props) {
   useEffect(() => { heard.current = onCue }, [onCue])
 
   useEffect(() => {
-    const n = getNarrator()
     const api: CueApi = {
       map,
       camera: {
@@ -153,18 +159,20 @@ export function TourStage({ onPickState, onCue, scene, children }: Props) {
     return () => {
       n.onCue = () => {}
     }
-  }, [map, show])
+  }, [map, n, show])
 
   return (
-    <div className="tour-stage">
-      <MapStage onPick={onPickState ?? NOOP} />
-      {overlay && (
-        <div className="tour-overlay" data-sweeping={sweeping ? 'true' : undefined}>
-          {overlay}
-        </div>
-      )}
-      {children}
-    </div>
+    <MediaClockProvider value={n.scheduleAfter}>
+      <div className="tour-stage">
+        <MapStage onPick={onPickState ?? NOOP} />
+        {overlay && (
+          <div className="tour-overlay" data-sweeping={sweeping ? 'true' : undefined}>
+            {overlay}
+          </div>
+        )}
+        {children}
+      </div>
+    </MediaClockProvider>
   )
 }
 

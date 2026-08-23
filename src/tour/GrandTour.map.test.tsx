@@ -33,6 +33,15 @@ const narrator = {
   current: null as Clip | null,
   onCue: (() => {}) as (cue: Cue) => void,
   onEnd: null as (() => void) | null,
+  /** Task 5: `useStageLife`'s highlight-release wave (the thing this whole
+   *  file is about) now times itself off this instead of a wall-clock
+   *  `setTimeout` — see `GrandTour.test.tsx`'s own note on the same field
+   *  for why an incomplete double here is a thrown `TypeError`, not a
+   *  silently-wrong assertion. */
+  scheduleAfter: vi.fn((seconds: number, cb: () => void) => {
+    const t = setTimeout(cb, seconds * 1000)
+    return () => clearTimeout(t)
+  }),
   play: vi.fn(async (clip: Clip) => {
     narrator.cut()
     played.push(clip.audio)
