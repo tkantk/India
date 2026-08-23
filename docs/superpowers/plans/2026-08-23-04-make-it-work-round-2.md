@@ -189,6 +189,10 @@ There is a second, independent window: during `play()`'s await the engine has a 
 - Publish a `loading` state so the bar can render it instead of a lying "Play".
 
 - [ ] **Step 1: Fix the doubles first, and watch the existing tests go red.** Before writing a line of production code, make `replay` in both doubles behave like the real thing. If nothing fails, the doubles are still wrong.
+
+  **Task 3's review found the concrete cost of this, and closing it is part of your job.** `GrandTour.test.tsx:120`'s `replay` is a bare `vi.fn()` that never calls `onEnd`, so **no test exercises whether Task 3's trace invite re-arms after a real replay.** Reading the engine (`Narrator.ts:294-304` and `:372-380`: `replay()` → `startFrom(0)` → `s.onended` → `finish()` → `this.onEnd?.()`) and noting that `GrandTour`'s per-beat effect stays mounted across a replay — `at` is unchanged, so `n.onEnd` is never rebound — the invite *should* reopen correctly. But that is emergent behaviour nobody has tested. Once the double is faithful, **add the test that proves it**: replay beat 2 and assert the invite window opens again. If it does not, that is a real bug this plan would otherwise have shipped.
+
+  Note the tally: this is the **sixth** double in this project too incomplete to catch what it stood in for.
 - [ ] **Step 2: Write the failing tests.** `Narrator.test.ts`: replay-after-stop and replay-during-load. And one screen-level test against the **real** engine: tap the map, then press every control in the bar and assert an observable effect for each. That test is the invariant.
 - [ ] **Step 3: Run, fail, implement, pass.**
 - [ ] **Step 4: Write the invariant into `Controls.tsx`** as a comment beside the existing play-button argument, so the next person adding a button knows the rule.
