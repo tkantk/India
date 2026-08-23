@@ -34,6 +34,13 @@ describe('generated geo.json', () => {
       .toEqual(['gujarat', 'haryana', 'madhya-pradesh', 'punjab', 'uttar-pradesh'])
   })
 
+  // Plan 4 / Task 1: content/places/delhi.json's intro used to say only
+  // "Haryana wraps around it", implying a single, enclosing neighbour. This
+  // is the ground truth the fix (both neighbours named) rests on.
+  it('knows Delhi has two neighbours, not one', () => {
+    expect(geo.places.delhi.neighbours.sort()).toEqual(['haryana', 'uttar-pradesh'])
+  })
+
   it('makes neighbour relationships symmetric', () => {
     for (const [slug, p] of Object.entries(geo.places)) {
       for (const n of p.neighbours) {

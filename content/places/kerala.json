@@ -17,7 +17,7 @@
     "animal": {
       "id": "kerala.card.animal",
       "kind": "card",
-      "text": "The elephant belongs to Kerala. He is enormous, but he walks quietly. He uses his trunk for everything: pulling down branches, drinking, and having a shower.",
+      "text": "The elephant is Kerala's own animal. He is enormous, but he walks quietly. He uses his trunk for everything: pulling down branches, drinking, and having a shower.",
       "sfx": "elephant"
     },
     "food": {
@@ -33,7 +33,7 @@
     "hello": {
       "id": "kerala.card.hello",
       "kind": "card",
-      "text": "In Kerala people say Namaskaram. The language here is Malayalam, and here is a funny thing: written in English, Malayalam reads the same backwards as forwards.",
+      "text": "In Kerala people say Namaskaram. The language here is Malayalam, and here is a funny thing: written in English letters, Malayalam reads the same backwards as forwards.",
       "script": "നമസ്കാരം"
     }
   },

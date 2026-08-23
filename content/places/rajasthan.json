@@ -7,7 +7,7 @@
   "intro": {
     "id": "rajasthan.intro",
     "kind": "intro",
-    "text": "This is Rajasthan, the biggest state in all of India. Much of it is desert. A desert is a huge dry place where it hardly ever rains and the sun beats down all day. Most of this one is sand. Gujarat sits below it and Punjab sits up above. The main city is Jaipur, and old Jaipur is painted pink.",
+    "text": "This is Rajasthan, the biggest state in all of India. Much of it is desert. A desert is a huge dry place where it hardly ever rains and the sun beats down all day. Lots of this one is sand. Gujarat sits below it and Punjab sits up above. The main city is Jaipur, and old Jaipur is painted pink.",
     "cues": [
       { "word": 2, "do": "highlightState", "arg": "rajasthan" },
       { "word": 14, "do": "revealSymbol", "arg": "dune" },
@@ -35,7 +35,7 @@
     "hello": {
       "id": "rajasthan.card.hello",
       "kind": "card",
-      "text": "In Rajasthan people say Khamma Ghani. It is a warm and respectful way of saying hello, the kind you use when you are really pleased to see somebody.",
+      "text": "In Rajasthan people say Khamma Ghani. It is Rajasthani, and it is a very polite hello, the kind you use for grown-ups and for guests.",
       "script": "खम्मा घणी"
     }
   },
@@ -81,7 +81,7 @@
       "line": {
         "id": "rajasthan.chand-baori.line",
         "kind": "landmark",
-        "text": "This is a well, but instead of a bucket it has stairs. Three thousand five hundred narrow steps zigzag down thirteen levels, like a staircase folded up inside a deep square hole, until they reach the cool water. In a desert, water is the most precious thing there is."
+        "text": "This is a well, but instead of a bucket it has stairs. Three thousand five hundred narrow steps zigzag down thirteen levels, like a staircase folded up inside a deep square hole, until they reach the cool water. In a dry place, water is the most precious thing there is."
       }
     },
     {

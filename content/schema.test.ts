@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { PlaceSchema, LINE_BUDGET, wordsOf } from './schema'
 
 const validLine = { id: 'raj.intro', kind: 'intro' as const, text: 'Rajasthan is a big state.' }
@@ -77,5 +78,152 @@ describe('wordsOf', () => {
 
   it('collapses runs of whitespace and newlines', () => {
     expect(wordsOf('  a \n  b  ')).toEqual(['a', 'b'])
+  })
+})
+
+// Plan 4 / Task 1: thirteen narration lines a factual audit found wrong,
+// misleading, or imprecise. Reads the real shipped content — not a fixture —
+// because the point is that the actual files say the corrected thing, and
+// that every cue that survives an edit still points at the word it names.
+// content/tour.json cues address a word index, never a timestamp, so a cue
+// whose sentence grew or shrank around it silently points at the wrong word
+// unless something asserts the landing word by name, not just by number.
+describe('Plan 4 Task 1: the thirteen audited narration lines', () => {
+  const tour = JSON.parse(readFileSync('content/tour.json', 'utf8'))
+  const delhi = JSON.parse(readFileSync('content/places/delhi.json', 'utf8'))
+  const rajasthan = JSON.parse(readFileSync('content/places/rajasthan.json', 'utf8'))
+  const kerala = JSON.parse(readFileSync('content/places/kerala.json', 'utf8'))
+
+  const beat = (id: string) => tour.beats.find((b: { id: string }) => b.id === id)
+  const landmark = (place: { landmarks: { id: string }[] }, id: string) =>
+    place.landmarks.find((l: { id: string }) => l.id === id)
+  const cueByVerb = (line: { cues?: { do: string }[] }, verb: string) =>
+    line.cues!.find((c: { do: string }) => c.do === verb)
+
+  it('every edited place still satisfies PlaceSchema', () => {
+    expect(PlaceSchema.safeParse(delhi).success).toBe(true)
+    expect(PlaceSchema.safeParse(rajasthan).success).toBe(true)
+    expect(PlaceSchema.safeParse(kerala).success).toBe(true)
+  })
+
+  // --- tour.05: the line the father reported. Must name "capital" and must
+  // not teach "come to work" or "every country has one city" (both false). ---
+  it('tour.05 names the capital by name and resolves Delhi vs New Delhi', () => {
+    expect(beat('tour.05').text).toBe(
+      "Every country has a capital city, where its leaders make the rules. " +
+      "India's capital is New Delhi. It sits inside a bigger place called Delhi. " +
+      'Hold on, we are flying there now. Look down. That big stone arch is called India Gate.',
+    )
+  })
+
+  it("tour.05's cues still land on the words they name after the rewrite (38 -> 42 words)", () => {
+    const b = beat('tour.05')
+    const words = wordsOf(b.text)
+    const zoomTo = cueByVerb(b, 'zoomTo')
+    const revealSymbol = cueByVerb(b, 'revealSymbol')
+    expect(zoomTo.word).toBe(24)
+    expect(words[zoomTo.word]).toBe('Delhi.')
+    expect(revealSymbol.word).toBe(40)
+    expect(words[revealSymbol.word]).toBe('India')
+  })
+
+  // --- tour.04: measurably false ("smaller pieces") against src/data/geo.json,
+  // where Ladakh is the 7th-largest of 36 shapes. ---
+  it('tour.04 no longer calls union territories the smaller pieces', () => {
+    const text = beat('tour.04').text
+    expect(text).toContain('Those are pieces of a different kind')
+    expect(text).not.toMatch(/smaller pieces/)
+  })
+
+  it("tour.04's cues sit before the edited phrase and do not move", () => {
+    const b = beat('tour.04')
+    expect(cueByVerb(b, 'highlightUnionTerritories').word).toBe(4)
+    expect(cueByVerb(b, 'countTo').word).toBe(5)
+  })
+
+  // --- The nine imprecise lines. ---
+  it('tour.03 no longer promises one greeting per state', () => {
+    const text = beat('tour.03').text
+    expect(text).toContain('many of them have their own food, their own festivals')
+    expect(text).not.toMatch(/each one has its own/)
+  })
+
+  it('tour.10 keeps the Ganga in the north of India, not "across the country"', () => {
+    const text = beat('tour.10').text
+    expect(text).toContain('across the north of India')
+    expect(text).not.toMatch(/across the country/)
+  })
+
+  it('tour.14 invites a tap on any place, not just states — 8 of the 36 are union territories', () => {
+    expect(beat('tour.14').text).toContain('Tap any place on the map')
+  })
+
+  it("tour.14's cue word does not move (same word count)", () => {
+    const b = beat('tour.14')
+    const words = wordsOf(b.text)
+    expect(b.cues[0].word).toBe(10)
+    expect(words[10]).toBe('map,')
+  })
+
+  it('delhi.intro names both of Delhi\'s neighbours, not just Haryana', () => {
+    const text = delhi.intro.text
+    expect(text).toContain('Haryana wraps around three sides of it, and Uttar Pradesh is on the other side.')
+    expect(text).not.toMatch(/Haryana wraps around it\./)
+  })
+
+  it("delhi.intro's lightNeighbour cue still lands on \"Haryana\" at word 41", () => {
+    const words = wordsOf(delhi.intro.text)
+    const cue = cueByVerb(delhi.intro, 'lightNeighbour')
+    expect(cue.word).toBe(41)
+    expect(words[41]).toBe('Haryana')
+  })
+
+  it('rajasthan.intro says "lots" of sand, not the unsupported "most"', () => {
+    expect(rajasthan.intro.text).toContain('Lots of this one is sand.')
+  })
+
+  it("rajasthan.intro's lightNeighbour cues do not move (same word count)", () => {
+    const words = wordsOf(rajasthan.intro.text)
+    const gujarat = rajasthan.intro.cues.find((c: { arg?: string }) => c.arg === 'gujarat')
+    const punjab = rajasthan.intro.cues.find((c: { arg?: string }) => c.arg === 'punjab')
+    expect(gujarat.word).toBe(40)
+    expect(words[40]).toBe('Gujarat')
+    expect(punjab.word).toBe(45)
+    expect(words[45]).toBe('Punjab')
+  })
+
+  it('rajasthan.card.hello names the language and calls it an honorific, not "pleased to see somebody"', () => {
+    const text = rajasthan.card.hello.text
+    expect(text).toContain(
+      'It is Rajasthani, and it is a very polite hello, the kind you use for grown-ups and for guests.',
+    )
+    expect(text).not.toMatch(/really pleased to see somebody/)
+  })
+
+  it('delhi.card.festival names Republic Day', () => {
+    expect(delhi.card.festival.text).toContain('Once a year, on Republic Day, Delhi holds an enormous parade.')
+  })
+
+  it('rajasthan.chand-baori.line puts the stepwell in a dry place, not the desert it is not in', () => {
+    const text = landmark(rajasthan, 'rajasthan.chand-baori').line.text
+    expect(text).toContain('In a dry place, water is the most precious thing there is.')
+    expect(text).not.toMatch(/In a desert, water/)
+  })
+
+  it("delhi.humayuns-tomb.line names the red stone building the dome sits on", () => {
+    const text = landmark(delhi, 'delhi.humayuns-tomb').line.text
+    expect(text).toContain('sits on top of a red stone building, in the middle of a garden')
+  })
+
+  it("kerala.card.animal doesn't imply elephants are found only in Kerala", () => {
+    const text = kerala.card.animal.text
+    expect(text).toContain("The elephant is Kerala's own animal.")
+    expect(text).not.toMatch(/belongs to Kerala/)
+  })
+
+  it('kerala.card.hello attributes the palindrome to the English spelling, not just "written in English"', () => {
+    const text = kerala.card.hello.text
+    expect(text).toContain('written in English letters, Malayalam reads the same backwards as forwards')
+    expect(text).not.toMatch(/written in English,/)
   })
 })

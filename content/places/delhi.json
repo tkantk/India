@@ -7,7 +7,7 @@
   "intro": {
     "id": "delhi.intro",
     "kind": "intro",
-    "text": "This is Delhi, and Delhi is not a state. It is a union territory, which means the government of the whole of India has a big say in how it is run. India's capital city, New Delhi, sits right inside it. Haryana wraps around it. Delhi is enormous and busy, with the river Yamuna running through it and trains that go under the ground.",
+    "text": "This is Delhi, and Delhi is not a state. It is a union territory, which means the government of the whole of India has a big say in how it is run. India's capital city, New Delhi, sits right inside it. Haryana wraps around three sides of it, and Uttar Pradesh is on the other side. Delhi is enormous and busy, with the river Yamuna running through it and trains that go under the ground.",
     "cues": [
       { "word": 2, "do": "highlightState", "arg": "delhi" },
       { "word": 12, "do": "highlightUnionTerritories" },
@@ -29,7 +29,7 @@
     "festival": {
       "id": "delhi.card.festival",
       "kind": "card",
-      "text": "Once a year Delhi holds an enormous parade. Bands march, dancers spin, camels stride past in a long line, and aeroplanes roar low over everybody's head."
+      "text": "Once a year, on Republic Day, Delhi holds an enormous parade. Bands march, dancers spin, camels stride past in a long line, and aeroplanes roar low over everybody's head."
     },
     "hello": {
       "id": "delhi.card.hello",
@@ -91,7 +91,7 @@
       "line": {
         "id": "delhi.humayuns-tomb.line",
         "kind": "landmark",
-        "text": "A great white dome sits in the middle of a garden, and thin channels of water cut that garden into neat green squares. Have a good look at it. One day you will see the Taj Mahal, and you will notice how much it looks like this."
+        "text": "A great white dome sits on top of a red stone building, in the middle of a garden, and thin channels of water cut that garden into neat green squares. Have a good look at it. One day you will see the Taj Mahal, and you will notice how much it looks like this."
       }
     }
   ]

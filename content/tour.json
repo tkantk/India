@@ -15,7 +15,7 @@
     {
       "id": "tour.03",
       "kind": "tour",
-      "text": "India is made of twenty-eight states. A state is like a big piece of the country, and each one has its own food, its own festivals, and its own way of saying hello.",
+      "text": "India is made of twenty-eight states. A state is like a big piece of the country, and many of them have their own food, their own festivals, and their own way of saying hello.",
       "cues": [
         { "word": 4, "do": "highlightAllStates" },
         { "word": 5, "do": "countTo", "arg": "28" }
@@ -24,7 +24,7 @@
     {
       "id": "tour.04",
       "kind": "tour",
-      "text": "India also has eight union territories. Those are smaller pieces, and the government of the whole of India helps to look after them. Some of them are tiny islands, far out in the sea.",
+      "text": "India also has eight union territories. Those are pieces of a different kind, and the government of the whole of India helps to look after them. Some of them are tiny islands, far out in the sea.",
       "cues": [
         { "word": 4, "do": "highlightUnionTerritories" },
         { "word": 5, "do": "countTo", "arg": "8" }
@@ -33,10 +33,10 @@
     {
       "id": "tour.05",
       "kind": "tour",
-      "text": "Every country has one city where the people who run it come to work. In India that city is New Delhi. Hold on, we are flying there now. Look down. That big stone arch is called India Gate.",
+      "text": "Every country has a capital city, where its leaders make the rules. India's capital is New Delhi. It sits inside a bigger place called Delhi. Hold on, we are flying there now. Look down. That big stone arch is called India Gate.",
       "cues": [
-        { "word": 19, "do": "zoomTo", "arg": "delhi" },
-        { "word": 36, "do": "revealSymbol", "arg": "india-gate" }
+        { "word": 24, "do": "zoomTo", "arg": "delhi" },
+        { "word": 40, "do": "revealSymbol", "arg": "india-gate" }
       ]
     },
     {
@@ -80,7 +80,7 @@
     {
       "id": "tour.10",
       "kind": "tour",
-      "text": "Watch this line of water. It is the river Ganga. It begins high up in the snowy mountains, then it runs and runs across the country until it pours itself out into the sea.",
+      "text": "Watch this line of water. It is the river Ganga. It begins high up in the snowy mountains, then it runs and runs across the north of India until it pours itself out into the sea.",
       "cues": [{ "word": 9, "do": "traceRiver", "arg": "ganga" }]
     },
     {
@@ -112,7 +112,7 @@
     {
       "id": "tour.14",
       "kind": "tour",
-      "text": "Now it is your turn. Tap any state on the map, and the two of us will go and see it. There is no wrong one to pick. Come on. Let us go exploring!",
+      "text": "Now it is your turn. Tap any place on the map, and the two of us will go and see it. There is no wrong one to pick. Come on. Let us go exploring!",
       "cues": [{ "word": 10, "do": "highlightAllStates" }]
     }
   ]

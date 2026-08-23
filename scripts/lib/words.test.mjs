@@ -237,7 +237,16 @@ describe('cueTimes against the shipped tour', () => {
     expect(holdsFor('tour.04').find((c) => c.do === 'countTo').hold).toBe(5000)
   })
 
-  it('tour.05: zoomTo is art and its hold matches the Delhi ring; india-gate takes the rest', () => {
+  // Plan 4 / Task 1 rewrote tour.05's text and moved its cues (word 19 -> 24,
+  // 36 -> 40) to fix a factual error, per instructions to change content
+  // only and NOT regenerate src/data/timings.json — that happens once, for
+  // every edited line, in Task 6's single paid render. Until then `shipped`
+  // above is genuinely the old 38-word recording, so word index 40 is out of
+  // range and `holdsFor('tour.05')` throws by design; the old hold numbers
+  // below described the old text and are meaningless for the new one. Skipped
+  // rather than deleted so Task 6 has a clear TODO to restore this with
+  // numbers recomputed against the regenerated timings.
+  it.skip('tour.05: zoomTo is art and its hold matches the Delhi ring; india-gate takes the rest', () => {
     const [zoomTo, indiaGate] = holdsFor('tour.05')
     expect(seconds(zoomTo.hold)).toBeCloseTo(8.80, 1)
     expect(seconds(indiaGate.hold)).toBeCloseTo(1.48, 1)
