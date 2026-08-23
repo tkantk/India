@@ -72,6 +72,12 @@ let lastClip: Clip | null = null
 const narrator = {
   playing: false,
   stuck: false,
+  // Task 4 review: the seventh incomplete double in this project was going
+  // to be this file having no `loading` field at all — `n.loading` reading
+  // `undefined` throughout, harmless only because Controls' loading logic
+  // is proven standalone elsewhere and nothing here currently drives it
+  // true. Faithful anyway: `false`, matching the real engine at rest.
+  loading: false,
   /** What `getSnapshot` hands back: the word being spoken, or -1. */
   word: -1,
   onCue: (() => {}) as (cue: Cue) => void,
@@ -224,6 +230,7 @@ beforeEach(() => {
   narrator.current = null
   lastClip = null
   narrator.playing = false
+  narrator.loading = false
   narrator.word = -1
   narrator.onEnd = null
   narrator.onAgain = null

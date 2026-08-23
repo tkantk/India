@@ -84,6 +84,19 @@ export class Narrator {
   private cues: Cue[] = []
   private starts: number[] = []
 
+  /**
+   * Single source of truth for "there is a decoded buffer ready to reseek,
+   * for the clip currently loaded." `replay()`'s fast path and `canReplay`
+   * both read THIS rather than each re-deriving their own version of it —
+   * they agreed before only because of an unenforced invariant (`buffer`
+   * is never set while `clip` is null at any current mutation site), and a
+   * future edit that decoupled those two nulling paths could otherwise
+   * silently desync what the button claims from what a tap actually does.
+   */
+  private get hasBuffer(): boolean {
+    return this.buffer !== null && this.clip !== null
+  }
+
   /** Media seconds already played when the current node started. */
   private offset = 0
   /** `ctx.currentTime` when the current node started. */
@@ -342,7 +355,7 @@ export class Narrator {
    *     from the top regardless, once that load resolves).
    */
   async replay(): Promise<void> {
-    if (this.buffer && this.clip) {
+    if (this.hasBuffer) {
       this.stopSource()
       this.cursor = 0
       this.offset = 0
@@ -481,14 +494,15 @@ export class Narrator {
    *  everything else here: read it as
    *  `useSyncExternalStore(n.subscribe, () => n.loading)`, never polled. */
   get loading(): boolean { return this.loadingFlag }
-  /** Whether `replay()` has anything at all to act on — the decoded buffer
-   *  (mid-clip, paused, or ended with an invite still open) or, failing
-   *  that, `lastClip` (a stopped state `replay()` would still fall back
-   *  to). False only at rest, before anything has played, and after
-   *  `forget()` — Controls disables "Say it again" rather than leaving it
-   *  to silently no-op, the same rule `loading` already applies to
-   *  Play/Pause. */
-  get canReplay(): boolean { return this.buffer !== null || this.lastClip !== null }
+  /** Whether `replay()` has anything at all to act on — `hasBuffer` (mid-
+   *  clip, paused, or ended with an invite still open) or, failing that,
+   *  `lastClip` (a stopped state `replay()` would still fall back to).
+   *  Shares `hasBuffer` with `replay()`'s own fast-path check rather than
+   *  re-deriving it — see that getter's own note. False only at rest,
+   *  before anything has played, and after `forget()` — Controls disables
+   *  "Say it again" rather than leaving it to silently no-op, the same
+   *  rule `loading` already applies to Play/Pause. */
+  get canReplay(): boolean { return this.hasBuffer || this.lastClip !== null }
 
   /** One scheduler step. Public so tests can drive it by hand; production
    *  drives it from requestAnimationFrame. */
