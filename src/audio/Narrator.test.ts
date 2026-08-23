@@ -227,6 +227,67 @@ describe('Narrator', () => {
     expect(fired).toHaveLength(4)
   })
 
+  it('answers "say it again" even after stop() threw the buffer away — the button that used to be a hard no-op', async () => {
+    // The actual defect: `replay()` bailed on `!this.buffer`, and `stop()`'s
+    // teardown() is exactly what nulls it. Every stopped state a control can
+    // be pressed from — after a tap, after Home, after the tour ends — looks
+    // like this to the engine.
+    const fired: string[] = []
+    n.onCue = (c) => fired.push(c.do)
+    await n.play(CLIP)
+    ctx.advance(3); n.tick()
+    n.stop()
+    expect(n.playing).toBe(false)
+    expect(n.position).toBe(0)
+    fired.length = 0   // only what happens AFTER the replay is under test
+
+    await n.replay()
+
+    expect(n.playing).toBe(true)
+    expect(n.position).toBeCloseTo(0, 5)
+    expect(n.getSnapshot()).toBe(0)
+    // A fresh node, not the one stop() already tore down.
+    expect(ctx.sources.at(-1)!.start).toHaveBeenCalledWith(0, 0)
+    ctx.advance(3); n.tick()
+    expect(fired).toHaveLength(2)   // both cues, from the top, exactly once
+  })
+
+  it('does not fight its own in-flight load when replay is pressed before play() has resolved', async () => {
+    // Pressing "again" while beat 1 — never prefetched — is still decoding.
+    const fired: string[] = []
+    n.onCue = (c) => fired.push(c.do)
+    const first = n.play(CLIP)
+    expect(n.loading).toBe(true)
+    expect(n.playing).toBe(false)
+
+    await n.replay()   // must not throw, double-fetch, or otherwise misfire
+    await first
+
+    expect(n.playing).toBe(true)
+    expect(n.position).toBeCloseTo(0, 5)
+    expect(globalThis.fetch).toHaveBeenCalledOnce()   // no duplicate request
+    ctx.advance(3); n.tick()
+    expect(fired).toHaveLength(2)   // each cue exactly once, not twice
+  })
+
+  it('publishes loading for the span of play()\'s own decode, so the bar never lies about "Play"', async () => {
+    expect(n.loading).toBe(false)
+    const p = n.play(CLIP)
+    expect(n.loading).toBe(true)
+    await p
+    expect(n.loading).toBe(false)
+    expect(n.playing).toBe(true)
+  })
+
+  it('does not stay "loading" forever when the clip 404s', async () => {
+    globalThis.fetch = vi.fn(async () => ({ ok: false, status: 404 })) as never
+    const p = n.play(CLIP)
+    expect(n.loading).toBe(true)
+    await p
+    expect(n.loading).toBe(false)
+    expect(n.playing).toBe(false)
+  })
+
   it('reports the natural end of a clip, so the tour can move to the next beat', async () => {
     const ended = vi.fn()
     n.onEnd = ended

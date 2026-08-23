@@ -9,6 +9,12 @@ import { Controls } from './Controls'
 let listeners: (() => void)[] = []
 const narrator = {
   playing: true, stuck: false,
+  // Task 4: the real `loading` is reactive (see `Narrator.ts`'s own
+  // `get loading()`) and is what the bar renders instead of a lying "Play"
+  // while a clip is in flight with nothing decoded yet to play it with —
+  // real on beat 1, which is never prefetched. `false` at rest, like the
+  // real engine before anything has ever been asked for.
+  loading: false,
   pause: vi.fn(), resume: vi.fn(), replay: vi.fn(),
   setRate: vi.fn(), setVolume: vi.fn(),
   resumeContext: vi.fn(async () => true),
@@ -31,6 +37,7 @@ const mount = () => render(<Controls onPlayPause={onPlayPause} onHome={onHome} /
 beforeEach(() => {
   onPlayPause.mockClear()
   onHome.mockClear()
+  narrator.loading = false
 })
 
 describe('Controls', () => {
@@ -88,6 +95,28 @@ describe('Controls', () => {
     await userEvent.click(screen.getByRole('button', { name: /slower/i }))
     expect(narrator.setRate).toHaveBeenCalledWith(0.85)
     expect(screen.getByRole('button', { name: /normal speed/i })).toBeInTheDocument()
+  })
+
+  it('reports loading honestly instead of a "Play" label the tap could not make good on', async () => {
+    // The second defect this task fixes: during `play()`'s own decode the
+    // engine has a clip in flight but nothing to play it with — `playing`
+    // is false and a naive bar reads "▶ Play" over a beat that has already
+    // started, with both transports dead until the load resolves. Real on
+    // beat 1, which is never prefetched.
+    narrator.playing = false
+    mount()
+    expect(screen.getByRole('button', { name: /^play$/i })).toBeInTheDocument()
+    await act(async () => { narrator.loading = true; narrator.emit() })
+    const loadingButton = screen.getByRole('button', { name: /loading/i })
+    expect(loadingButton).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^play$/i })).not.toBeInTheDocument()
+    // Disabled, not merely relabelled: a tap here cannot do anything either
+    // `pause()` or `resume()` would recognise, so it must not silently
+    // pretend to.
+    await userEvent.click(loadingButton)
+    expect(onPlayPause).not.toHaveBeenCalled()
+    narrator.playing = true
+    narrator.loading = false
   })
 
   it('offers a way out when the audio context gets stuck, without a re-mount', async () => {

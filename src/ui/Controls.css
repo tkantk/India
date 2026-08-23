@@ -82,6 +82,19 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
+/* Loading: the play/pause button while a clip is in flight with nothing
+   decoded yet to play it with (Task 4). Dimmed and inert rather than
+   relabelled-but-still-live — a tap here has no `pause()` or `resume()` it
+   could mean. No animation: a static, honest label is the fix, not a
+   spinner. */
+.controls .control:disabled {
+  opacity: 0.55;
+}
+
+.controls .control:disabled:active {
+  background: none;
+}
+
 /* The wrap itself. Three bases plus two gaps make exactly one row, so where
    the line breaks is decided here rather than by whatever the labels happen
    to measure this week. */

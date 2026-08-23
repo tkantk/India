@@ -29,6 +29,17 @@ import type { Bbox, Clip, Cue } from '../types'
  *  3. Cues arrive through `onCue`, off the audio clock, WHILE the clip plays
  *     — one at a time, in order, exactly once each.
  *
+ * A FOURTH, since Task 4: `replay` used to be a bare `vi.fn()` here — inert,
+ * so no test could tell a real replay from a dead button. It is faithful
+ * now, mirroring the real engine's two paths off the same `current`/
+ * `lastClip` shape `Narrator.ts` actually uses: `current` set (mid-clip,
+ * paused, or ended with an invite still open — `finish()` never clears it)
+ * replays in place and restarts the clip's own run so `onEnd` fires again;
+ * `current` cleared (by `stop()`) falls back to `lastClip` and re-plays it,
+ * exactly the async reload `Narrator.replay()` does after `stop()` threw the
+ * buffer away. That distinction is what makes "the invite reopens after a
+ * real replay" (below) a test that could actually have failed.
+ *
  * The rest of the surface is here because something GrandTour renders reads
  * it: `subscribe`/`playing` for Mor, `subscribe`/`getSnapshot` for ReadAlong,
  * `pause`/`resume`/`replay`/`setRate`/`setVolume`/`stuck`/`resumeContext` for
@@ -55,6 +66,8 @@ let autoEnd = true
 
 let listeners: (() => void)[] = []
 let ending: ReturnType<typeof setTimeout> | null = null
+/** The real engine's `lastClip`: survives `stop()`, unlike `current`. */
+let lastClip: Clip | null = null
 
 const narrator = {
   playing: false,
@@ -63,13 +76,19 @@ const narrator = {
   word: -1,
   onCue: (() => {}) as (cue: Cue) => void,
   onEnd: null as (() => void) | null,
+  onAgain: null as (() => void) | null,
 
   play: vi.fn(async (clip: Clip) => {
     narrator.cut()
     narrator.playing = false
+    narrator.current = null   // teardown(): the real engine clears `clip`/
+                               // `buffer` before the new one is asked for.
+    lastClip = clip
     if (failOn && clip.audio.includes(failOn)) throw new Error('404')
     played.push(clip.audio)
-    // The 404 path: silence, and no end. See (2) above.
+    // The 404 path: silence, and no end. See (2) above. `current` stays
+    // null, exactly as `buffer` stays null in the real engine's own `if
+    // (!buffer) return` branch.
     if (silentOn && clip.audio.includes(silentOn)) {
       narrator.emit()
       return
@@ -80,8 +99,35 @@ const narrator = {
     if (autoEnd) narrator.run(clip)
   }),
 
-  /** The clip currently in the engine, the way the real one holds it. */
+  /** The clip currently in the engine, the way the real one holds
+   *  `clip`/`buffer` together — null whenever `stop()` has run, present for
+   *  as long as `finish()` alone has (an ended clip with its invite still
+   *  open counts as present: `finish()` never tears down). */
   current: null as Clip | null,
+
+  /**
+   * "Say it again", faithful to `Narrator.replay()`'s own two paths:
+   *  - `current` set: reseek in place, no new `play()` — but the clip must
+   *    run its own course again for `onEnd` (and so any invite) to fire a
+   *    second time, which is what restarting `run()` buys.
+   *  - `current` null (`stop()` ran, or nothing has ever played): fall back
+   *    to `lastClip`, exactly as the real `replay()` falls back once
+   *    `stop()`'s `teardown()` has cleared the buffer it needed. A true
+   *    no-op only when there has never been a `lastClip` at all.
+   */
+  replay: vi.fn(() => {
+    if (narrator.current) {
+      narrator.cut()
+      narrator.word = -1
+      narrator.playing = true
+      narrator.emit()
+      if (autoEnd) narrator.run(narrator.current)
+      narrator.onAgain?.()
+      return
+    }
+    if (!lastClip) return
+    void narrator.play(lastClip).then(() => narrator.onAgain?.())
+  }),
 
   /** The clip's own lifetime, compressed into one macrotask: its cues fire in
    *  order while it plays, then it ends. A macrotask and not a microtask,
@@ -118,10 +164,17 @@ const narrator = {
 
   pause: vi.fn(() => { narrator.playing = false; narrator.cut(); narrator.emit() }),
   resume: vi.fn(() => { narrator.playing = true; narrator.emit() }),
-  replay: vi.fn(),
   // stop() never fires onEnd — that is the whole reason abandoning the tour
-  // does not advance it.
-  stop: vi.fn(() => { narrator.playing = false; narrator.cut(); narrator.word = -1; narrator.emit() }),
+  // does not advance it. It DOES clear `current`, the way the real engine's
+  // teardown() clears `clip`/`buffer` — `lastClip` is what survives this,
+  // for `replay`'s own fallback above.
+  stop: vi.fn(() => {
+    narrator.playing = false
+    narrator.cut()
+    narrator.word = -1
+    narrator.current = null
+    narrator.emit()
+  }),
   prefetch: vi.fn(async (clips: Clip[]) => { for (const c of clips) prefetched.push(c.audio) }),
   evict: vi.fn((clips: Clip[]) => { for (const c of clips) evicted.push(c.audio) }),
   sfx: vi.fn(async () => {}),
@@ -153,9 +206,11 @@ beforeEach(() => {
   narrator.cut()
   autoEnd = true
   narrator.current = null
+  lastClip = null
   narrator.playing = false
   narrator.word = -1
   narrator.onEnd = null
+  narrator.onAgain = null
   narrator.onCue = () => {}
   listeners = []
   vi.clearAllMocks()
@@ -671,6 +726,42 @@ describe('the invitation waits', () => {
       await waitFor(() => expect(played).toHaveLength(3))
       // Cleanup: the double never fires an "up" for this synthetic gesture.
       act(() => setTracing(false))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  /**
+   * Task 3's own review flagged this gap: `replay`'s double was a bare
+   * `vi.fn()` that never called `onEnd`, so nothing ever exercised whether
+   * the invite reopens after a REAL replay. Reading the engine
+   * (`Narrator.ts`'s `replay()`/`finish()`) and `GrandTour`'s per-beat effect
+   * — mounted once per `at`, so a replay leaves the SAME `onEnd` hooked up,
+   * `at` itself never changing — says it should. This is the test that
+   * actually proves it, rather than leaving it emergent and untested.
+   *
+   * The proof is a FRESH floor, not merely "it eventually advances": if the
+   * old wait's timers had survived instead of a new session opening, this
+   * would advance at the wrong moment (or not at all, once its stray cap
+   * fired early) rather than waiting out a new 6s from the replayed clip's
+   * own end.
+   */
+  it('reopens the invite after a real replay, with its own fresh floor', async () => {
+    autoEnd = false
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await reachInvite()
+      await userEvent.click(screen.getByRole('button', { name: /again/i }))
+      expect(narrator.replay).toHaveBeenCalledOnce()
+      // The replayed clip must run its own course again — `at` is unchanged,
+      // so this is the SAME `handleEnd`/`armInvite` wiring firing a second
+      // time, not a new one.
+      await act(async () => { narrator.finish() })
+      await act(async () => { vi.advanceTimersByTime(5900) })
+      expect(played).toHaveLength(2)   // short of the NEW invite's own floor
+      await act(async () => { vi.advanceTimersByTime(200) })
+      await waitFor(() => expect(played).toHaveLength(3))
+      expect(idOf(played[2])).toBe(ids[2])
     } finally {
       vi.useRealTimers()
     }

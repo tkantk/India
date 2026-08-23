@@ -557,6 +557,17 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     }
     n.onEnd = handleEnd
 
+    /**
+     * Task 4's engine-side twin of `handleEnd`, wired for the same lifetime.
+     * `replay`'s own `abandonInvite()` call below already covers a replay
+     * that comes through THIS screen's "Say it again" — this is defence in
+     * depth for a `Narrator.replay()` call that does not: `abandon()` is
+     * idempotent, so the two never conflict, and the next plan's 32 state
+     * screens get the protection without having to rediscover it.
+     */
+    const handleAgain = () => { abandonInvite() }
+    n.onAgain = handleAgain
+
     // EVERY BEAT STARTS ON A CLEAN MAP, for the same reason Mor's `showing`
     // expires: a highlight is emphasis, and emphasis that is never taken away
     // stops being emphasis. `highlightAllStates` at beat 3 and
@@ -600,6 +611,7 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     return () => {
       live = false
       if (n.onEnd === handleEnd) n.onEnd = null
+      if (n.onAgain === handleAgain) n.onAgain = null
       // Whichever beat this closure belongs to is being torn down —
       // normally because it just advanced past its own invite (already
       // abandoned by `armInvite`'s own `abandon()` call, so this is a
@@ -681,18 +693,30 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   }, [abandonInvite, clearStage, map, n, stopShimmer])
 
   /**
-   * "Say it again." Controls used to call `n.replay()` directly — there was
-   * nothing here for it to go through — but `replay()` restarts the SAME
-   * clip that just opened an invite (`Narrator.replay()` only checks that a
-   * buffer exists, and stopping is the only thing that forgets one), which
-   * would otherwise leave the ORIGINAL wait's floor/settle/cap timers
-   * ticking against audio that has started over. Clearing them first is the
-   * minimum seam this task needs; making "say it again" properly restart
-   * the invite too is Task 4's, not this one's.
+   * "Say it again." `Narrator.replay()` used to bail with nothing audible at
+   * all — `!this.buffer`, which `stop()` throws away — in every stopped
+   * state a control can be pressed from: after a tap, after Home, after the
+   * tour ends. Task 4 fixed that at the engine, keeping `lastClip` alive
+   * through `teardown()` so `replay()` answers everywhere. This wrapper's
+   * own job stays the one Task 3 gave it: `replay()` can restart the SAME
+   * clip that just opened an invite (an ended clip with its invite still
+   * open still has a buffer — `finish()` never tears down), which would
+   * otherwise leave the ORIGINAL wait's floor/settle/cap timers ticking
+   * against audio that has started over. `abandonInvite()` here, ahead of
+   * the call, is the belt; `n.onAgain` (wired above, alongside `onEnd`) is
+   * the suspenders — the identical cleanup, run from the engine side, for a
+   * `replay()` call that does not come through this screen at all. Both are
+   * idempotent, so having both is free.
+   *
+   * The invite REOPENING after this — beat 2's own "trace the edge" wait,
+   * live again once the replayed clip ends a second time — falls out of
+   * `handleEnd` staying hooked up across a replay (`at` never changes), not
+   * out of anything this function does. See `GrandTour.test.tsx`'s "reopens
+   * the invite after a real replay" for the proof.
    */
   const replay = useCallback(() => {
     abandonInvite()
-    n.replay()
+    void n.replay()
   }, [abandonInvite, n])
 
   /**

@@ -51,6 +51,13 @@ export class Narrator {
   /** Fired when a clip reaches its natural end — not on `pause` or `stop`.
    *  The tour uses it to move to the next beat. */
   onEnd: (() => void) | null = null
+  /** Fired when `replay()` actually restarts something — not on either of
+   *  its no-op paths (nothing has ever played, or the exact clip asked for
+   *  is already mid-load). The engine-side twin of `onEnd`: `GrandTour`
+   *  hooks this to abandon Task 3's pending invite wait whenever a replay
+   *  happens, no matter which control — or, tomorrow, which of the 32
+   *  state screens — triggered it. */
+  onAgain: (() => void) | null = null
 
   private ctx: AudioContext
   private master: GainNode
@@ -66,6 +73,14 @@ export class Narrator {
 
   private clip: Clip | null = null
   private buffer: AudioBuffer | null = null
+  /** The most recently requested clip, kept alive THROUGH `teardown()` —
+   *  unlike `clip`/`buffer`, `stop()` does not clear it. `replay()` needs
+   *  it to answer after every one of the stopped states a control can be
+   *  pressed from: at rest before it, mid-load, after a tap, after Home,
+   *  after the tour ends. `null` only until something has played for the
+   *  first time this session — the one state in which "say it again" has
+   *  genuinely nothing to repeat. */
+  private lastClip: Clip | null = null
   private cues: Cue[] = []
   private starts: number[] = []
 
@@ -88,6 +103,14 @@ export class Narrator {
   private effects = new Map<string, AudioBuffer | null>()
   private ambientName: string | null = null
   private stuckFlag = false
+  /** True for the span of `play()`'s own decode — a clip has been asked for
+   *  and there is no buffer yet to play it with. Without this, the interval
+   *  between a beat starting and its audio actually being decoded reads as
+   *  "Play" in the bar while a beat is already in flight and both
+   *  transports are dead: real on beat 1, which is never prefetched, and on
+   *  any prefetch miss. See the `loading` getter, which Controls renders
+   *  instead of that lie. */
+  private loadingFlag = false
   /** Pending "let the bed back up" from settle(). */
   private settleTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -252,18 +275,26 @@ export class Narrator {
   async play(clip: Clip): Promise<void> {
     this.teardown()
     this.clip = clip
+    this.lastClip = clip
     this.starts = clip.starts ?? []
     // Sorted because the cue cursor only ever moves forward.
     this.cues = [...(clip.cues ?? [])].sort((a, b) => a.t - b.t)
     this.cursor = 0
     this.offset = 0
     this.setWord(-1)   // the outgoing clip's word must not linger while we decode
+    // See `loadingFlag`'s own note: a beat is now in flight with nothing to
+    // play it with yet, and that has to be observable the instant it starts,
+    // not only once something else happens to emit.
+    this.loadingFlag = true
+    this.emit()
 
     await this.resumeContext()
     const buffer = await this.load(clip)
     // A newer play() landed while we were decoding; that one owns the engine,
-    // including the bed.
+    // including the bed and `loadingFlag`.
     if (this.clip !== clip) return
+    this.loadingFlag = false
+    this.emit()
     // Nothing is going to speak, so nothing may stay ducked for it.
     if (!buffer) { this.unduck(); return }
 
@@ -290,17 +321,44 @@ export class Narrator {
     this.tick()
   }
 
-  /** "Say it again" — the same clip from the top, cues included. */
-  replay(): void {
-    if (!this.buffer) return
-    this.stopSource()
-    this.cursor = 0
-    this.offset = 0
-    this.setWord(-1)
-    void this.resumeContext()
-    this.duck()
-    this.startFrom(0)
-    this.tick()
+  /**
+   * "Say it again" — the same clip from the top, cues included.
+   *
+   * Answers in every stopped state, not only mid-clip — that used to be the
+   * whole bug: `!this.buffer` bailed after `stop()` had thrown the buffer
+   * away, at rest, mid-load, after a tap, after Home, after the tour ends.
+   * Two paths now:
+   *   - The clip is still decoded — playing, paused, or ended with an
+   *     invite still open (`finish()` never tears down; only `stopSource()`
+   *     runs there) — so this reseeks the existing buffer with no network
+   *     trip, exactly as before.
+   *   - It is not: `stop()`'s `teardown()` cleared `clip`/`buffer`, or
+   *     nothing has ever played. `lastClip` survives `teardown()` for
+   *     exactly this moment, so this re-issues a full `play()` for it — the
+   *     same fetch-and-decode a fresh beat would need, resolved once it is
+   *     audible again. A true no-op only when there is no `lastClip` at all
+   *     (nothing has ever played this session — nothing to repeat) or when
+   *     the exact clip being asked for is already mid-load (it will start
+   *     from the top regardless, once that load resolves).
+   */
+  async replay(): Promise<void> {
+    if (this.buffer && this.clip) {
+      this.stopSource()
+      this.cursor = 0
+      this.offset = 0
+      this.setWord(-1)
+      void this.resumeContext()
+      this.duck()
+      this.startFrom(0)
+      this.tick()
+      this.onAgain?.()
+      return
+    }
+    const clip = this.lastClip
+    if (!clip) return                // nothing has ever played: a true no-op
+    if (this.clip === clip) return   // already loading this exact clip
+    await this.play(clip)
+    this.onAgain?.()
   }
 
   /** 1 for normal, 0.85 for the "slower" button. */
@@ -328,7 +386,10 @@ export class Narrator {
 
   /** Tear the current clip down without touching the ambient bed, so that
    *  moving straight from one line to the next does not pump the bed up and
-   *  back down between them. */
+   *  back down between them.
+   *
+   *  Deliberately does NOT clear `lastClip` — see its own declaration.
+   *  `replay()` exists to answer after exactly this call. */
   private teardown() {
     this.stopSource()
     // A line is on its way in; the bed must not rise between the two.
@@ -339,6 +400,7 @@ export class Narrator {
     this.starts = []
     this.cursor = 0
     this.offset = 0
+    this.loadingFlag = false
   }
 
   private startFrom(offset: number) {
@@ -395,6 +457,11 @@ export class Narrator {
 
   get word(): number { return this.curWord }
   get playing(): boolean { return this.src !== null }
+  /** A clip has been asked for and there is nothing to play it with yet —
+   *  see `loadingFlag`'s own note. Reactive, through the same `emit()` as
+   *  everything else here: read it as
+   *  `useSyncExternalStore(n.subscribe, () => n.loading)`, never polled. */
+  get loading(): boolean { return this.loadingFlag }
 
   /** One scheduler step. Public so tests can drive it by hand; production
    *  drives it from requestAnimationFrame. */
