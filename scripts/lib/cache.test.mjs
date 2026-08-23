@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isCached, readCacheEntry, isFresh, providerChanged, signatureFingerprint } from './cache.mjs'
+import { isCached, readCacheEntry, isFresh, providerChanged, signatureFingerprint, billingVerdict } from './cache.mjs'
 
 /**
  * tts.mjs's cost preflight (which decides what a forced/unscoped run will
@@ -112,5 +112,36 @@ describe('signatureFingerprint', () => {
 
   it('has a readable placeholder for "nothing recorded yet", not a hash of undefined', () => {
     expect(signatureFingerprint(undefined)).toBe('(none recorded)')
+  })
+})
+
+// The one time this ran against a real bill, `spent` came in BELOW
+// `preflightChars` — a shortfall, not an overage. An earlier version of
+// this collapsed "not equal" into "next_text IS billed" regardless of
+// direction, which is backwards for a shortfall: if next_text/previous_text
+// billed extra on top, the total could only be >= the primary text alone.
+describe('billingVerdict', () => {
+  it('an exact match is read as no evidence of extra billing', () => {
+    const { delta, verdict } = billingVerdict(4340, 4340)
+    expect(delta).toBe(0)
+    expect(verdict).toMatch(/exact match/i)
+    expect(verdict).not.toMatch(/next_text is billed/i)
+  })
+
+  it('billed MORE than the primary text is read as consistent with next_text being billed on top', () => {
+    const { delta, verdict } = billingVerdict(4340, 5000)
+    expect(delta).toBe(660)
+    expect(verdict).toMatch(/MORE/)
+    expect(verdict).toMatch(/consistent with next_text/i)
+  })
+
+  // The real case: 22 lines, preflight 4,340 characters, provider billed
+  // 2,386 — a 1,954-character SHORTFALL, not an overage.
+  it('billed FEWER than the primary text PROVES next_text is not billed on top, not the reverse', () => {
+    const { delta, verdict } = billingVerdict(4340, 2386)
+    expect(delta).toBe(-1954)
+    expect(verdict).toMatch(/FEWER/)
+    expect(verdict).toMatch(/proves next_text is NOT billed on top/i)
+    expect(verdict).not.toMatch(/next_text IS billed/)
   })
 })

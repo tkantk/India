@@ -290,15 +290,18 @@ describe('cueTimes against the shipped tour', () => {
   }
   const seconds = (ms) => ms / 1000
 
-  // Plan 4 / Task 3: beat 2 is now authored with `invite: { min: 6, max: 25
-  // }` (content/tour.json), so the outline's hold is no longer merely
-  // "to the end of the clip" — it is `duration + invite.min` past the cue's
-  // own word: (20.0098 + 6) - 4.145 =~ 21.86s. Before this task the number
-  // here was 15.86 (duration alone), and the outline vanished 41ms before
-  // the audio it was drawn under even finished — the defect this task fixes.
-  it('tour.02: the outline holds past the end of its own audio, through the invite floor (4.1 -> 21.86)', () => {
+  // Plan 4 / Task 3: beat 2 is authored with `invite: { min: 6, max: 25 }`
+  // (content/tour.json), so the outline's hold is `duration + invite.min`
+  // past the cue's own word, not merely "to the end of the clip". Task 6's
+  // chained render (this describe block reads the regenerated
+  // src/data/timings.json throughout) runs the whole tour tighter than the
+  // old, independently-rendered clips — tour.02's duration dropped from
+  // 20.010s to 15.229s — so the number below is smaller than it was before
+  // this task, but the invite floor is still what carries the hold past the
+  // clip's own end.
+  it('tour.02: the outline holds past the end of its own audio, through the invite floor', () => {
     const [outline] = holdsFor('tour.02')
-    expect(seconds(outline.hold)).toBeCloseTo(21.86, 1)
+    expect(seconds(outline.hold)).toBeCloseTo(18.64, 1)
   })
 
   it('tour.03/04: the state and UT counters are capped at 5s though derived is far more', () => {
@@ -308,64 +311,63 @@ describe('cueTimes against the shipped tour', () => {
 
   // Plan 4 / Task 1 rewrote tour.05's text and moved its cues (word 19 -> 24,
   // 36 -> 40) to fix a factual error, per instructions to change content
-  // only and NOT regenerate src/data/timings.json — that happens once, for
-  // every edited line, in Task 6's single paid render. Until then `shipped`
-  // above is genuinely the old 38-word recording, so word index 40 is out of
-  // range and `holdsFor('tour.05')` throws by design; the old hold numbers
-  // below described the old text and are meaningless for the new one. Skipped
-  // rather than deleted so Task 6 has a clear TODO to restore this with
-  // numbers recomputed against the regenerated timings.
-  it.skip('tour.05: zoomTo is art and its hold matches the Delhi ring; india-gate takes the rest', () => {
+  // only and NOT regenerate src/data/timings.json — that happened once, for
+  // every edited line plus the rest of the tour run (prosodic continuity
+  // chains the whole 14-beat run together), in Task 6's single paid render.
+  // The numbers below are recomputed against that regenerated recording —
+  // duration 17.371s, a chained render that runs noticeably tighter than the
+  // old, independently-rendered 19.043s clip the skipped numbers described.
+  it('tour.05: zoomTo is art and its hold matches the Delhi ring; india-gate takes the rest', () => {
     const [zoomTo, indiaGate] = holdsFor('tour.05')
-    expect(seconds(zoomTo.hold)).toBeCloseTo(8.80, 1)
-    expect(seconds(indiaGate.hold)).toBeCloseTo(1.48, 1)
+    expect(seconds(zoomTo.hold)).toBeCloseTo(6.23, 1)
+    expect(seconds(indiaGate.hold)).toBeCloseTo(1.36, 1)
   })
 
   it('tour.06: the flag holds until the counter, which then holds to the beat end', () => {
     const [flag, counter] = holdsFor('tour.06')
-    expect(seconds(flag.hold)).toBeCloseTo(19.45, 1)
-    expect(seconds(counter.hold)).toBeCloseTo(1.63, 1)
+    expect(seconds(flag.hold)).toBeCloseTo(13.33, 1)
+    expect(seconds(counter.hold)).toBeCloseTo(1.68, 1)
   })
 
-  it('tour.07: the tiger holds more than twice as long as the old constant', () => {
+  it('tour.07: the tiger holds most of the beat', () => {
     const [tiger] = holdsFor('tour.07')
-    expect(seconds(tiger.hold)).toBeCloseTo(14.48, 1)
+    expect(seconds(tiger.hold)).toBeCloseTo(13.60, 1)
   })
 
   it('tour.08: the peacock holds to the end of its beat', () => {
     const [peacock] = holdsFor('tour.08')
-    expect(seconds(peacock.hold)).toBeCloseTo(15.27, 1)
+    expect(seconds(peacock.hold)).toBeCloseTo(14.01, 1)
   })
 
   it('tour.09: lotus, banyan and mango each hold only until the next', () => {
     const [lotus, banyan, mango] = holdsFor('tour.09').filter((c) => c.do === 'revealSymbol')
-    expect(seconds(lotus.hold)).toBeCloseTo(11.38, 1)
-    expect(seconds(banyan.hold)).toBeCloseTo(7.73, 1)
-    expect(seconds(mango.hold)).toBeCloseTo(1.11, 1)
+    expect(seconds(lotus.hold)).toBeCloseTo(8.86, 1)
+    expect(seconds(banyan.hold)).toBeCloseTo(5.68, 1)
+    expect(seconds(mango.hold)).toBeCloseTo(1.14, 1)
   })
 
   it('tour.10: the Ganga holds to the end of its beat', () => {
     const [ganga] = holdsFor('tour.10')
-    expect(seconds(ganga.hold)).toBeCloseTo(13.90, 1)
+    expect(seconds(ganga.hold)).toBeCloseTo(13.00, 1)
   })
 
   it('tour.11: the Himalaya hold to the end of their beat', () => {
     const [himalaya] = holdsFor('tour.11')
-    expect(seconds(himalaya.hold)).toBeCloseTo(15.17, 1)
+    expect(seconds(himalaya.hold)).toBeCloseTo(12.29, 1)
   })
 
   it('tour.12: the three seas accumulate and all land together on the beat end', () => {
     const [arabian, bengal, ocean] = holdsFor('tour.12')
-    expect(seconds(arabian.hold)).toBeCloseTo(10.02, 1)
-    expect(seconds(bengal.hold)).toBeCloseTo(6.41, 1)
-    expect(seconds(ocean.hold)).toBeCloseTo(1.60, 1)
+    expect(seconds(arabian.hold)).toBeCloseTo(9.64, 1)
+    expect(seconds(bengal.hold)).toBeCloseTo(6.56, 1)
+    expect(seconds(ocean.hold)).toBeCloseTo(2.17, 1)
   })
 
   it('tour.13: the three greetings accumulate and all land together on the beat end', () => {
     const [namaste, namaskar, vanakkam] = holdsFor('tour.13')
-    expect(seconds(namaste.hold)).toBeCloseTo(7.42, 1)
-    expect(seconds(namaskar.hold)).toBeCloseTo(5.89, 1)
-    expect(seconds(vanakkam.hold)).toBeCloseTo(4.32, 1)
+    expect(seconds(namaste.hold)).toBeCloseTo(6.03, 1)
+    expect(seconds(namaskar.hold)).toBeCloseTo(4.91, 1)
+    expect(seconds(vanakkam.hold)).toBeCloseTo(3.75, 1)
   })
 })
 

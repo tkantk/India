@@ -5,7 +5,7 @@ import { join, dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { timingsFromAlignment, estimateTimings, cueTimes } from './lib/words.mjs'
-import { isCached, readCacheEntry, providerChanged, signatureFingerprint } from './lib/cache.mjs'
+import { isCached, readCacheEntry, providerChanged, signatureFingerprint, billingVerdict } from './lib/cache.mjs'
 import { collectRuns, flattenRuns, keysForRun, selectRuns, planRun } from './lib/runs.mjs'
 
 const flag = (name, def) => process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? def
@@ -312,15 +312,13 @@ if (provider.charactersSpent) {
     console.log(`  ${spent.toLocaleString()} characters billed, about $${(spent / 1000 * 0.10).toFixed(2)}`)
     // Task 6 Step 4: whether next_text/previous_text characters are billed
     // is undocumented. This is the empirical answer, printed every real run
-    // rather than worked out once by hand: preflightChars counts only each
-    // rendered line's OWN text, so any gap against what the provider actually
-    // billed is next_text (previous_request_ids costs nothing to send; it is
-    // just ids) making it into the bill or not.
+    // rather than worked out once by hand — see billingVerdict() for why the
+    // read has to be three-way, not "unequal, so billed".
     if (preflightChars !== null) {
-      const delta = spent - preflightChars
+      const { delta, verdict } = billingVerdict(preflightChars, spent)
       console.log(
         `  preflight estimated ${preflightChars.toLocaleString()} characters; ` +
-        `provider billed ${spent.toLocaleString()} (${delta === 0 ? 'exact match — next_text is NOT billed' : `${delta > 0 ? '+' : ''}${delta.toLocaleString()} — next_text IS billed`})`,
+        `provider billed ${spent.toLocaleString()} (${delta >= 0 ? '+' : ''}${delta.toLocaleString()}): ${verdict}`,
       )
     }
   }

@@ -81,3 +81,36 @@ export function isFresh(renderedAt, now = Date.now()) {
 export function providerChanged({ previousSignature, currentSignature, clipsExist }) {
   return previousSignature !== undefined && previousSignature !== currentSignature && Boolean(clipsExist)
 }
+
+/**
+ * Task 6 Step 4: whether `previous_text`/`next_text` characters are billed
+ * is undocumented. `preflightChars` is the sum of only the rendered lines'
+ * OWN `text.length`; `spent` is the `character-cost` header sum the
+ * provider actually reported. The three-way read matters — an earlier
+ * version of this collapsed "not equal" to "next_text IS billed" and got it
+ * backwards the one time it ran against a real bill, where `spent` came in
+ * BELOW `preflightChars`: if next_text (or previous_text) were billed on
+ * top of a line's own text, the total could only be >= the sum of primary
+ * text alone, never under it. A shortfall proves the opposite of what an
+ * "unequal, so billed" reading would have claimed.
+ */
+export function billingVerdict(preflightChars, spent) {
+  const delta = spent - preflightChars
+  if (delta === 0) {
+    return { delta, verdict: 'exact match — no evidence next_text/previous_text add anything to the bill' }
+  }
+  if (delta > 0) {
+    return {
+      delta,
+      verdict: `billed ${delta.toLocaleString()} MORE than the sum of the rendered lines' own text — ` +
+        `consistent with next_text (or previous_text) being billed on top`,
+    }
+  }
+  return {
+    delta,
+    verdict: `billed ${Math.abs(delta).toLocaleString()} FEWER than the sum of the rendered lines' own text — ` +
+      `proves next_text is NOT billed on top (that would require the total to be at least as large as the ` +
+      `primary text alone); the shortfall itself is unexplained by this run and is worth checking against the ` +
+      `account's usage page`,
+  }
+}
