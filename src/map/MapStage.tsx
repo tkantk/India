@@ -6,9 +6,9 @@ import { isCheap } from '../lib/cheapMode'
 import { bindCamera } from './camera'
 import { bindMapNodes } from './useMapNodes'
 import {
-  PICK_ROOT, SNAP_PX,
+  PICK_ROOT, SNAP_PX, isTap,
   baseMarkup, hitMarkup, buildOutlines, nearestOutline,
-  type HitPlace, type Outline,
+  type HitPlace, type Outline, type PointerSample,
 } from './hitLayer'
 import './map.css'
 
@@ -23,8 +23,8 @@ import './map.css'
  *                repaint of all 36 paths, every frame. The camera flies by
  *                transforming this div, and this component hands the element
  *                itself to `bindCamera` rather than letting the camera look
- *                it up by class. It also owns the one delegated pointerdown
- *                — see PICK_ROOT in hitLayer.ts.
+ *                it up by class. It also owns the one delegated tap — see
+ *                PICK_ROOT in hitLayer.ts.
  *   2. `.base`   the visible art, with `pointer-events: none` on the group.
  *   3. `.hit`    coarse invisible geometry, `fill="none" stroke="none"
  *                pointer-events="fill"`.
@@ -77,8 +77,13 @@ export function nearestPlace(x: number, y: number, within: number): string | nul
 }
 
 type Props = {
-  /** Fires on pointerdown, not click: a child's finger moves, and waiting for
-   *  a clean click costs the responsiveness that makes a map feel alive. */
+  /** Fires on a tap — `pointerdown` paired with a `pointerup` that has not
+   *  travelled far or taken long (`isTap` in `hitLayer.ts`) — not on
+   *  `pointerdown` alone and not on the browser's own `click`. `pointerdown`
+   *  alone used to fire this on the very first frame of a drag, which meant
+   *  a child could not touch the map to scroll or explore it without ending
+   *  whatever was playing; `click` would cost the responsiveness that makes
+   *  a map feel alive, and still would not tell a scroll attempt from a tap. */
   onPick: (slug: string) => void
 }
 
@@ -118,6 +123,10 @@ export function MapStage({ onPick }: Props) {
    * lands on no place never targets anything inside it. 36 handlers in JSX
    * would mean mapping over the places in React, which is exactly what the
    * injected markup avoids.
+   *
+   * Called only once `isTap` has already said this pointerdown/pointerup
+   * pair IS a tap — see below. It reads `e.target` off the pointerup, which
+   * for an ordinary tap has barely moved from wherever `pointerdown` hit.
    */
   const pick = (e: PointerEvent<HTMLDivElement>) => {
     const slug = (e.target as Element).closest?.('[data-slug]')?.getAttribute('data-slug')
@@ -142,10 +151,44 @@ export function MapStage({ onPick }: Props) {
     if (near) onPick(near)
   }
 
+  /** Where the current gesture went down, or null between gestures and once
+   *  it has been resolved one way or the other. A ref, not state: nothing
+   *  about a gesture in flight should ever cause a render. */
+  const down = useRef<PointerSample | null>(null)
+
+  const sample = (e: PointerEvent<HTMLDivElement>): PointerSample =>
+    ({ pointerId: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp })
+
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    down.current = sample(e)
+  }
+
+  /** The other half of the gate. A pick only ever fires from here, once the
+   *  full gesture is in hand and `isTap` has judged it a deliberate tap
+   *  rather than an accidental brush or the first frames of a scroll. */
+  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    const started = down.current
+    down.current = null
+    if (started && isTap(started, sample(e))) pick(e)
+  }
+
+  /** The browser cancels a gesture out from under us — a native scroll
+   *  taking over is the common case. Either way it is not a tap, and there
+   *  is no `pointerup` coming to say so. */
+  const onPointerCancel = () => {
+    down.current = null
+  }
+
   return (
     <>
       <div className="map" ref={root}>
-        <div className={PICK_ROOT} ref={stage} onPointerDown={pick}>
+        <div
+          className={PICK_ROOT}
+          ref={stage}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+        >
           <svg className="base" viewBox={VIEW_BOX} aria-hidden="true">
             <g pointerEvents="none" dangerouslySetInnerHTML={base} />
           </svg>

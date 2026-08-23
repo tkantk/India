@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MapStage, nearestPlace } from './MapStage'
-import { PICK_ROOT } from './hitLayer'
+import { PICK_ROOT, isTap } from './hitLayer'
 import { camera } from './camera'
 import { useMapNodes } from './useMapNodes'
 import geo from '../data/geo.json'
@@ -148,20 +148,66 @@ describe('MapStage', () => {
     // The behavioural half. `svg.base` is where a stray tap actually lands,
     // measured in Chrome — an element the hit layer does not contain. If the
     // handler cannot be reached from there, the snap is dead code.
+    //
+    // A full tap, not a bare pointerdown: the gate requires a matching
+    // pointerup close to where the pointer went down (`isTap` in
+    // `hitLayer.ts`), so a real `PointerEvent` with a `pointerId` is what
+    // this needs to exercise now — a bare `MouseEvent` has none.
     const { onPick, container } = mount()
     const fromBase = container.querySelector('.base path[data-slug="rajasthan"]')!
-    fromBase.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }))
+    fromBase.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }))
+    fromBase.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }))
     expect(onPick).toHaveBeenCalledExactlyOnceWith('rajasthan')
   })
 
   it('survives a tap on nothing in an environment with no SVG geometry', () => {
     // jsdom implements no getScreenCTM, so the snap cannot run here. It must
-    // decline quietly rather than throw inside a pointerdown handler.
+    // decline quietly rather than throw inside a pointerup handler.
     const { onPick, container } = mount()
     const stray = container.querySelector('svg.base')!
-    expect(() => stray.dispatchEvent(
-      new MouseEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }),
-    )).not.toThrow()
+    expect(() => {
+      stray.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }))
+      stray.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }))
+    }).not.toThrow()
+    expect(onPick).not.toHaveBeenCalled()
+  })
+
+  /**
+   * THE GESTURE GATE. `pick` used to fire on `pointerdown` alone, so the
+   * first frame of a drag counted as a pick — a child could not touch the
+   * map to scroll or explore it without ending whatever the tour was saying.
+   * These two prove the gate's WIRING: that a completed tap reaches `onPick`
+   * and a gesture that moved first does not. They cannot prove device
+   * behaviour — jsdom does no hit testing and no layout, `clientX`/`clientY`
+   * here are just numbers on a plain object, not the product of a real
+   * finger and a real screen — only that the handler branches correctly on
+   * the inputs it is given. `isTap`'s own tests below cover the thresholds
+   * precisely; these cover that `MapStage` actually calls it.
+   */
+  it('does not pick when the pointer travels far between down and up — a drag or scroll attempt', () => {
+    const { onPick, container } = mount()
+    const el = container.querySelector('.base path[data-slug="rajasthan"]')!
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 10, clientY: 10 }))
+    el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 210, clientY: 10 }))
+    expect(onPick).not.toHaveBeenCalled()
+  })
+
+  it('does not pick a pointerup from a different pointer than the one that went down', () => {
+    // Two fingers on the map at once: the one that lifts is not the one that
+    // landed, so it is not the tap that started here at all.
+    const { onPick, container } = mount()
+    const el = container.querySelector('.base path[data-slug="rajasthan"]')!
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 10, clientY: 10 }))
+    el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 2, clientX: 10, clientY: 10 }))
+    expect(onPick).not.toHaveBeenCalled()
+  })
+
+  it('forgets a cancelled gesture rather than picking on whatever pointerup follows it', () => {
+    const { onPick, container } = mount()
+    const el = container.querySelector('.base path[data-slug="rajasthan"]')!
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 10, clientY: 10 }))
+    el.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 }))
+    el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 10, clientY: 10 }))
     expect(onPick).not.toHaveBeenCalled()
   })
 
@@ -287,6 +333,37 @@ describe('MapStage', () => {
     api.highlight('kerala', true)
     expect(container.querySelector('[data-slug="kerala"]')!.classList.contains('lit')).toBe(true)
     api.clear()
+  })
+})
+
+/**
+ * The tap gate's own arithmetic, pure and DOM-free — the precise half the
+ * wiring tests above cannot be: they can prove `MapStage` calls this, not
+ * pin down exactly where the thresholds fall.
+ */
+describe('isTap', () => {
+  const at = (x: number, y: number, t = 0, pointerId = 1) => ({ pointerId, x, y, t })
+
+  it('is a tap: the same pointer, barely moved, quick', () => {
+    expect(isTap(at(10, 10, 0), at(12, 9, 40))).toBe(true)
+  })
+
+  it('is still a tap dead still at the boundary, but not a hair past it', () => {
+    expect(isTap(at(0, 0, 0), at(10, 0, 500))).toBe(true)
+    expect(isTap(at(0, 0, 0), at(10.1, 0, 500))).toBe(false)
+    expect(isTap(at(0, 0, 0), at(10, 0, 501))).toBe(false)
+  })
+
+  it('is not a tap once the pointer has travelled far enough to be a drag', () => {
+    expect(isTap(at(10, 10, 0), at(220, 10, 40))).toBe(false)
+  })
+
+  it('is not a tap once it has taken long enough to be a press-and-hold, even dead still', () => {
+    expect(isTap(at(10, 10, 0), at(10, 10, 5000))).toBe(false)
+  })
+
+  it('is not a tap when the pointer that lifted is not the one that landed', () => {
+    expect(isTap(at(10, 10, 0, 1), at(10, 10, 10, 2))).toBe(false)
   })
 })
 

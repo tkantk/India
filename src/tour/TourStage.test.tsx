@@ -74,14 +74,21 @@ describe('TourStage', () => {
     const onPickState = vi.fn()
     const { container } = render(<TourStage onPickState={onPickState} />)
     const kerala = container.querySelector('[data-slug="kerala"]')!
-    fireEvent.pointerDown(kerala, { bubbles: true })
+    // A tap: pointerdown then pointerup, same pointer, same spot — not
+    // pointerdown alone, which no longer picks anything on its own (see
+    // `isTap` in `hitLayer.ts`).
+    fireEvent.pointerDown(kerala, { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 })
+    fireEvent.pointerUp(kerala, { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 })
     expect(onPickState).toHaveBeenCalledWith('kerala')
   })
 
   it('does not crash when a state is tapped and no onPickState was given', () => {
     const { container } = render(<TourStage />)
     const kerala = container.querySelector('[data-slug="kerala"]')!
-    expect(() => fireEvent.pointerDown(kerala, { bubbles: true })).not.toThrow()
+    expect(() => {
+      fireEvent.pointerDown(kerala, { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 })
+      fireEvent.pointerUp(kerala, { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 })
+    }).not.toThrow()
   })
 
   it('sweeps the stage when the scene changes, so art cannot bleed into the next beat', async () => {

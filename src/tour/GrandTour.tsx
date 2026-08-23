@@ -7,6 +7,7 @@ import type { MapApi } from '../map/useMapNodes'
 import { Controls } from '../ui/Controls'
 import { ReadAlong } from '../ui/ReadAlong'
 import { TourStage } from './TourStage'
+import { park, parked, clearPark } from './tourPosition'
 import { Mor } from './Mor'
 import { Here } from './effects/Here'
 import { FADE_MS, HOLD } from './effects/Reveal'
@@ -19,16 +20,22 @@ import type { Bbox, Clip, Cue } from '../types'
 import './grandTour.css'
 
 /**
- * THE GRAND TOUR: fourteen beats, two minutes forty-one seconds, and the
- * thing every other file in this plan was built for.
+ * THE GRAND TOUR: fourteen beats, four minutes five seconds, and the thing
+ * every other file in this plan was built for.
  *
  * A child presses one enormous button and is taken through their own country
  * — the words lighting up as they are spoken, states glowing in time, the
  * camera flying to Delhi and coming home again, a tiger arriving on cue, and
  * a peacock at the edge of the map who turns to present each one. It ends
  * with "Tap any state on the map, and the two of us will go and see it", and
- * that invitation is live from the first second: a tap anywhere on the map
- * ends the tour at once. THE TOUR IS AN OFFER, NEVER A CAGE.
+ * that invitation is live from the first second: a deliberate tap anywhere on
+ * the map leaves the tour at once and flies there. THE TOUR IS AN OFFER,
+ * NEVER A CAGE — but an offer a child accepted by touching the map is not one
+ * they should have to start over from the beginning to take again. Leaving
+ * is not forgetting: an accidental brush or an attempted scroll is ignored
+ * outright (`isTap` in `hitLayer.ts`), and whichever beat was in the air when
+ * a real tap landed is remembered (`tourPosition.ts`) until the child comes
+ * back and either carries on from there or goes home on purpose.
  *
  * WHAT DRIVES IT. Beats advance on the engine's `onEnd`, which fires only at
  * a clip's natural end — never on pause, never on stop. `play()` resolves
@@ -261,6 +268,19 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   /** Has the child been all the way through? Only then does the button
    *  offer it "again" — abandoning at beat 3 is not having seen it. */
   const [finished, setFinished] = useState(false)
+  /**
+   * A mirror of `tourPosition.ts`'s own module-scoped value, kept in React
+   * state for one reason: `parked()` is a plain function, not a subscribed
+   * store, and a render only happens when SOME state changes. `goHome` while
+   * already idle calls `setAt(null)` and `setFinished(false)` with the exact
+   * values they already hold — React bails out of both, no render happens,
+   * and a "Carry on" label from before `clearPark()` ran would sit there
+   * unrefreshed forever. Set explicitly alongside every `park()`/`clearPark()`
+   * call this component makes (`pick`, `goHome`, `end`), so it can never
+   * drift from the module value; read fresh from it only once, on mount, to
+   * pick up whatever an earlier instance parked before it unmounted.
+   */
+  const [parkedAt, setParkedAt] = useState<number | null>(() => parked())
   const { showing, here, saw, clear: clearStage } = useStageLife(map)
 
   const shimmer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -270,8 +290,16 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   }, [])
   useEffect(() => stopShimmer, [stopShimmer])
 
+  /** The beat in the air, kept live in a ref alongside the state itself —
+   *  purely so the unmount effect below can read it. That effect's own
+   *  dependency array is `[n]`, deliberately: putting `at` there would rerun
+   *  it, and its cleanup, on every ordinary beat change, which is exactly
+   *  the `n.stop()` that must NOT happen between beat 3 and beat 4. */
+  const atRef = useRef(at)
+  useEffect(() => { atRef.current = at }, [at])
+
   /**
-   * Leaving this screen stops the tour.
+   * Leaving this screen stops the tour — and remembers where it was.
    *
    * The engine is module-scoped on purpose — it outlives every component, so
    * that React's StrictMode cannot close an AudioContext out from under an
@@ -279,8 +307,21 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    * the beat effect's cleanup only unhooks `onEnd`, and the clip carries on
    * playing to nobody. There is somewhere else to go now (the credits page,
    * and Plan 3's state screens), so this is the moment that becomes audible.
+   *
+   * It is also the moment a beat used to become forgotten. `GrandTour` is
+   * plain component state, and this unmount is reachable in production today
+   * through nothing more exotic than the map's own credit line
+   * (`MapStage.tsx`'s `.credit__more`, `href="#/credits"`): a tap changes the
+   * route, this component unmounts mid-beat, and coming back from
+   * `Credits.tsx`'s "Back to the map" mounted a brand new one at beat zero.
+   * Parking here — the one thing that survives a full unmount — is what
+   * fixes that path along with every other one that can tear this component
+   * down without going through `goHome` or `end` first.
    */
-  useEffect(() => () => { n.stop() }, [n])
+  useEffect(() => () => {
+    n.stop()
+    if (atRef.current !== null) park(atRef.current)
+  }, [n])
 
   const beat = at === null ? null : BEATS[at] ?? null
 
@@ -289,6 +330,10 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
   const end = useCallback(() => {
     setAt(null)
     setFinished(true)
+    // Completion is completion, not a place to carry on from — a parked beat
+    // from an earlier, abandoned pass through the tour must not survive it.
+    clearPark()
+    setParkedAt(null)
     clearStage()
     n.stop()
     void camera.home()
@@ -368,7 +413,17 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     }
   }, [at, end, map, n])
 
-  const start = useCallback(() => {
+  /**
+   * Begin playing some beat from its first word — beat 0 for a fresh start,
+   * or a parked one for "Carry on". Not the exact millisecond a tap or an
+   * unmount caught it at: the father's own third decision, and kinder to a
+   * distracted six-year-old than dropping them into the middle of a word.
+   * `pause()`/`resume()` already preserve an exact offset, but that offset
+   * lives on the engine's now-torn-down clip — `n.stop()` throws it away on
+   * every one of the exits that parks a beat — so there is nothing exact
+   * left to resume TO, only the beat itself, replayed from its start.
+   */
+  const carryOn = useCallback((beatIndex: number) => {
     // Synchronously, inside the tap: WebKit only honours a gesture for work
     // started before the first await, and `play` is an effect away.
     void n.resumeContext()
@@ -376,21 +431,26 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     map.clear()
     clearStage()
     setFinished(false)
-    setAt(0)
+    setAt(beatIndex)
   }, [clearStage, map, n, stopShimmer])
+
+  const start = useCallback(() => carryOn(0), [carryOn])
 
   /**
    * The bar's play/pause, which has exactly one meaning: make something
    * happen. A beat in the air (playing or paused) is the engine's transport;
-   * no beat at all — at rest, or after the end — starts the tour, which is
-   * the same thing the big gold button does. Two targets, one meaning, and
-   * neither of them dead.
+   * no beat at all — at rest, or after the end — starts the tour: from a
+   * parked beat if there is one to carry on from, and from the top
+   * otherwise, which is the same thing the big gold button does. Two
+   * targets, one meaning, and neither of them dead.
    */
   const playPause = useCallback(() => {
     if (n.playing) { n.pause(); return }
     if (at !== null) { n.resume(); return }
+    const p = parked()
+    if (p !== null) { carryOn(p); return }
     start()
-  }, [at, n, start])
+  }, [at, carryOn, n, start])
 
   /**
    * Home. On a one-screen app there is nowhere to navigate TO, so home is
@@ -402,7 +462,9 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
     n.stop()
     setAt(null)
     // Not "again": home is the beginning, and this is what the beginning
-    // looks like.
+    // looks like. Documented as such, so a parked beat does not outlive it.
+    clearPark()
+    setParkedAt(null)
     setFinished(false)
     clearStage()
     stopShimmer()
@@ -414,9 +476,15 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
    * A state was tapped. Whatever was happening stops, and the child goes
    * where they pointed — beat 14 invites exactly this, and every beat before
    * it allows it.
+   *
+   * THE TOUR IS AN OFFER, NEVER A CAGE, but leaving is not forgetting: the
+   * beat that was in the air is parked before it is let go of, so "Carry on"
+   * is there to pick it back up whenever the child (or a grown-up, from the
+   * bar's own Play button) is ready to.
    */
   const pick = useCallback((slug: string) => {
     n.stop()
+    if (at !== null) { park(at); setParkedAt(at) }
     setAt(null)
     clearStage()
     stopShimmer()
@@ -431,7 +499,12 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
       void camera.flyTo(place.bbox, { padding })
     }
     onPickState?.(slug)
-  }, [clearStage, map, n, onPickState, stopShimmer])
+  }, [at, clearStage, map, n, onPickState, stopShimmer])
+
+  // Only meaningful while idle — `beat` is null. `parkedAt` itself is kept
+  // accurate everywhere `at` goes to null (see its own declaration above);
+  // this just skips showing it behind a beat that is actually playing.
+  const parkedBeat = beat ? null : parkedAt
 
   return (
     <>
@@ -464,10 +537,14 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
           <Mor playing={playing} showing={showing} />
 
           {!beat && (
-            <button type="button" className="tap play-big" onClick={start}>
+            <button
+              type="button"
+              className="tap play-big"
+              onClick={() => (parkedBeat !== null ? carryOn(parkedBeat) : start())}
+            >
               <span className="play-big__icon" aria-hidden="true">▶</span>
               <span className="play-big__label">
-                {finished ? 'Show me again' : 'Show me India'}
+                {parkedBeat !== null ? 'Carry on' : finished ? 'Show me again' : 'Show me India'}
               </span>
             </button>
           )}

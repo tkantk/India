@@ -22,7 +22,8 @@ export type HitPlace = {
 }
 
 /**
- * The class on the element that owns the delegated `pointerdown`.
+ * The class on the element that owns the delegated tap — `pointerdown`
+ * paired with `pointerup`, see `isTap` below.
  *
  * It must be an ANCESTOR of every layer, not one of them. A tap that lands on
  * no place at all is not targeted at the hit layer — the hit layer's root is
@@ -33,6 +34,50 @@ export type HitPlace = {
  * run at all.
  */
 export const PICK_ROOT = 'stage'
+
+/**
+ * How far a pointer may travel between going down and coming up and still be
+ * a tap rather than a drag, in CSS pixels — the same reasoning as `SNAP_PX`:
+ * this models a fingertip, so it has to mean the same physical distance
+ * whether the camera is zoomed in or out, which a pointer-event's own
+ * `clientX`/`clientY` already are.
+ *
+ * A picked-and-flown-to state used to fire on the first frame of `pointerdown`
+ * alone, so a child could not touch the map to scroll or simply explore it
+ * without ending whatever the tour was in the middle of saying. Gating on the
+ * pointerdown/pointerup PAIR, and on how far the second one has drifted from
+ * the first, is what tells an accidental brush or an attempted scroll apart
+ * from a deliberate tap.
+ */
+export const TAP_MOVE_PX = 10
+
+/** How long a pointerdown/pointerup pair may span and still be one tap, in
+ *  milliseconds. A press-and-hold well past this is a different gesture from
+ *  a tap even with the finger dead still, and is left for whatever the app
+ *  decides a press-and-hold means — today, nothing. */
+export const TAP_MAX_MS = 500
+
+/** The two facts a tap gate needs about one end of a pointer gesture. */
+export type PointerSample = { pointerId: number; x: number; y: number; t: number }
+
+/**
+ * A deliberate tap: the same pointer, down then up, close to where it went
+ * down, and quick — as opposed to an accidental brush or the first frame of
+ * a drag or a scroll attempt, which this declines.
+ *
+ * Pure and DOM-free on purpose, the same reason `nearestOutline` is: the
+ * threshold and the arithmetic are exactly what a unit test can pin down
+ * precisely, which "was `onPick` called" cannot, since jsdom does no hit
+ * testing and no layout — see `MapStage.test.tsx` for where that limit
+ * actually bites.
+ */
+export function isTap(down: PointerSample, up: PointerSample): boolean {
+  if (down.pointerId !== up.pointerId) return false
+  const dx = up.x - down.x
+  const dy = up.y - down.y
+  if (Math.hypot(dx, dy) > TAP_MOVE_PX) return false
+  return up.t - down.t <= TAP_MAX_MS
+}
 
 /**
  * The eligibility threshold, in viewBox units: a shape with less room inside

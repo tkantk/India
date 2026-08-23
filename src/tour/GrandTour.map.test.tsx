@@ -148,11 +148,15 @@ describe('the map lights up and lets go again', () => {
     act(() => { narrator.onCue(cue('highlightAllStates')) })
     expect(lit()).toBeGreaterThan(0)
 
-    // A tap on a state abandons the tour. Exactly one place stays lit: the
-    // one the child pointed at.
+    // A tap on a state ends the tour and flies there. Exactly one place stays
+    // lit: the one the child pointed at. A real tap: pointerdown then
+    // pointerup, same pointer, same spot (`isTap` in `hitLayer.ts`) — a bare
+    // pointerdown, which is all this used to take, is now a gesture with no
+    // matching pointerup, and would never pick anything.
     const kerala = container.querySelector('[data-testid="state-kerala"]')!
     await act(async () => {
-      kerala.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+      kerala.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }))
+      kerala.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 5, clientY: 5 }))
     })
     expect(lit()).toBe(1)
     expect(container.querySelector('[data-slug="kerala"]')!.classList.contains('lit')).toBe(true)

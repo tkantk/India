@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GrandTour, comesHome, stageHold } from './GrandTour'
+import { parked, clearPark } from './tourPosition'
 import { HOLD, FADE_MS } from './effects/Reveal'
 import tour from '../../content/tour.json'
 import timings from '../data/timings.json'
@@ -157,6 +158,10 @@ beforeEach(() => {
   narrator.onCue = () => {}
   listeners = []
   vi.clearAllMocks()
+  // tourPosition is module-scoped on purpose (GrandTour.tsx explains why:
+  // it has to outlive the component it is parking for). That means it also
+  // outlives any one test in this file unless something clears it here.
+  clearPark()
 })
 
 afterEach(() => { narrator.cut() })
@@ -199,7 +204,7 @@ describe('GrandTour', () => {
     expect(dispatched).toHaveLength(authored.length)
   })
 
-  it('lets a tap on a state abandon the tour', async () => {
+  it('lets a tap on a state leave the tour at once — the offer is never a cage', async () => {
     autoEnd = false
     const onPick = vi.fn()
     mount({ autoStart: true, onPickState: onPick })
@@ -209,17 +214,121 @@ describe('GrandTour', () => {
     expect(narrator.stop).toHaveBeenCalled()
   })
 
-  it('does not carry on to the next beat after the tour is abandoned', async () => {
+  it('does not carry on to the next beat by itself once a tap has left it', async () => {
     autoEnd = false
     mount({ autoStart: true })
     await waitFor(() => expect(played).toHaveLength(1))
     await userEvent.click(await screen.findByTestId('state-rajasthan'))
-    // stop() is not a natural end, so nothing may advance — and if the
-    // sequencer had left its onEnd hooked up, finishing the abandoned clip
-    // would prove it.
+    // stop() is not a natural end, so nothing may advance on its own — and if
+    // the sequencer had left its onEnd hooked up, finishing the abandoned
+    // clip would prove it. "Carry on" resuming the beat is a deliberate tap
+    // on the button, tested separately below; this is what must NOT happen
+    // by itself.
     await act(async () => { narrator.finish() })
     await act(async () => { await new Promise((r) => setTimeout(r, 20)) })
     expect(played).toHaveLength(1)
+  })
+
+  /**
+   * LEAVING IS NOT FORGETTING. A tap still ends the tour at once — nothing
+   * below relitigates that — but a child touches the map because that is
+   * what a map is *for*, and the tour used to punish exactly that instinct
+   * by discarding up to four minutes of narration the child had already sat
+   * through: coming back from a tapped-away beat 8 restarted at beat 1. The
+   * offer stands even after it is taken: the beat that was in the air is
+   * parked (`tourPosition.ts`) and "Carry on" — a third label beside "Show
+   * me India" and "Show me again" — picks it back up from its first word.
+   */
+  describe('a tap leaves, and the tour remembers where it was', () => {
+    it('offers "Carry on" instead of the top, once a tap has left the tour', async () => {
+      autoEnd = false
+      mount({ autoStart: true })
+      await waitFor(() => expect(played).toHaveLength(1))
+      await userEvent.click(await screen.findByTestId('state-rajasthan'))
+      expect(await screen.findByRole('button', { name: /carry on/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /show me india/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /show me again/i })).not.toBeInTheDocument()
+    })
+
+    it("resumes the tapped-away beat from the bar's Play button, not from the top", async () => {
+      autoEnd = false
+      mount({ autoStart: true })
+      await waitFor(() => expect(played).toHaveLength(1))
+      // Move on to beat 1 first, so "resumes beat 0" could not pass this by
+      // accident the way it would if the tap landed on the very first beat.
+      await act(async () => { narrator.finish() })
+      await waitFor(() => expect(played).toHaveLength(2))
+      await userEvent.click(await screen.findByTestId('state-rajasthan'))
+      expect(played).toHaveLength(2)
+      await userEvent.click(screen.getByRole('button', { name: /^play$/i }))
+      await waitFor(() => expect(played).toHaveLength(3))
+      expect(idOf(played[2])).toBe(ids[1])
+    })
+
+    it('resumes the tapped-away beat from "Carry on" too, from its first word', async () => {
+      autoEnd = false
+      mount({ autoStart: true })
+      await waitFor(() => expect(played).toHaveLength(1))
+      await act(async () => { narrator.finish() })
+      await waitFor(() => expect(played).toHaveLength(2))
+      await userEvent.click(await screen.findByTestId('state-rajasthan'))
+      await userEvent.click(await screen.findByRole('button', { name: /carry on/i }))
+      await waitFor(() => expect(played).toHaveLength(3))
+      expect(idOf(played[2])).toBe(ids[1])
+      // Not mid-sentence: a fresh play() from the top of the same clip.
+      expect(narrator.play).toHaveBeenLastCalledWith(CLIPS[ids[1]])
+    })
+
+    it('remembers the beat across a full unmount and remount — the credits round trip', async () => {
+      // The credits link at the bottom of the map (`MapStage.tsx`'s
+      // `.credit__more`) changes the route, which unmounts this component,
+      // and `Credits.tsx`'s "Back to the map" mounts a brand new one. Nothing
+      // about that round trip is exercised here — this is the same unmount
+      // GrandTour itself goes through either way, which is exactly why
+      // parking on unmount (rather than only in `pick`) is what fixes it.
+      autoEnd = false
+      const { unmount } = mount({ autoStart: true })
+      await waitFor(() => expect(played).toHaveLength(1))
+      await act(async () => { narrator.finish() })
+      await waitFor(() => expect(played).toHaveLength(2))
+      unmount()
+      expect(parked()).toBe(1)
+
+      mount({})
+      const carryOn = await screen.findByRole('button', { name: /carry on/i })
+      await userEvent.click(carryOn)
+      await waitFor(() => expect(played).toHaveLength(3))
+      expect(idOf(played[2])).toBe(ids[1])
+    })
+
+    it('clears the remembered beat when the child goes home', async () => {
+      autoEnd = false
+      mount({ autoStart: true })
+      await waitFor(() => expect(played).toHaveLength(1))
+      await userEvent.click(await screen.findByTestId('state-rajasthan'))
+      expect(await screen.findByRole('button', { name: /carry on/i })).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: /home/i }))
+      // Home is documented as the beginning, not "wherever I left off".
+      expect(screen.getByRole('button', { name: /show me india/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /carry on/i })).not.toBeInTheDocument()
+      expect(parked()).toBeNull()
+    })
+
+    it('clears the remembered beat once the tour finishes on its own', async () => {
+      autoEnd = false
+      mount({ autoStart: true })
+      await waitFor(() => expect(played).toHaveLength(1))
+      await userEvent.click(await screen.findByTestId('state-rajasthan'))
+      expect(await screen.findByRole('button', { name: /carry on/i })).toBeInTheDocument()
+      autoEnd = true
+      await userEvent.click(screen.getByRole('button', { name: /carry on/i }))
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: /show me again/i })).toBeInTheDocument(),
+        whole,
+      )
+      expect(screen.queryByRole('button', { name: /carry on/i })).not.toBeInTheDocument()
+      expect(parked()).toBeNull()
+    }, 6000)
   })
 
   it('replays only the current beat, not the whole tour', async () => {
