@@ -14,10 +14,21 @@ export const name = 'say'
 export const voice = 'Tara'
 export const rate = 130
 
-export async function synth(text, { tmpDir, id }) {
+/** CPU-bound local synthesis gains nothing from parallelism, so tts.mjs
+ *  renders one run at a time on this provider. */
+export const concurrency = 1
+
+/**
+ * `previousRequestIds`/`nextText` are part of the provider interface every
+ * caller passes (Task 6's prosodic continuity), but `say` has no server, no
+ * request ids and no concept of "the next segment" — it accepts and ignores
+ * both, which is also why it returns no `requestId`: there is nothing later
+ * in a chain to condition on.
+ */
+export async function synth(text, { tmpDir, id, previousRequestIds, nextText }) {
   const out = join(tmpDir, `${id}.aiff`)
   execFileSync('say', ['-v', voice, '-r', String(rate), '-o', out, text])
-  return { audioPath: out, alignment: null }
+  return { audioPath: out, alignment: null, requestId: null }
 }
 
 /** Part of the cache key: change the voice or rate and everything re-renders. */

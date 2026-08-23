@@ -100,6 +100,76 @@ describe('elevenlabs provider', () => {
     await expect(synth('Hi big', { tmpDir: dir, id: 'e' })).rejects.toThrow(/401/)
   })
 
+  it('sends neither previous_request_ids nor next_text when neither is given', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    await synth('Hi big', { tmpDir: dir, id: 'plain' })
+    const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body)
+    expect(body).not.toHaveProperty('previous_request_ids')
+    expect(body).not.toHaveProperty('next_text')
+    expect(body).not.toHaveProperty('previous_text')
+  })
+
+  it('sends previous_request_ids and next_text when given, and never previous_text alongside them', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    await synth('Hi big', {
+      tmpDir: dir, id: 'chained',
+      previousRequestIds: ['req_1', 'req_2'],
+      nextText: 'The next beat.',
+    })
+    const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body)
+    expect(body.previous_request_ids).toEqual(['req_1', 'req_2'])
+    expect(body.next_text).toBe('The next beat.')
+    expect(body).not.toHaveProperty('previous_text')
+    expect(body).not.toHaveProperty('next_request_ids')
+  })
+
+  it('caps previous_request_ids at 3, most recent (last in the array) kept', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    await synth('Hi big', {
+      tmpDir: dir, id: 'capped',
+      previousRequestIds: ['req_1', 'req_2', 'req_3', 'req_4', 'req_5'],
+    })
+    const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body)
+    expect(body.previous_request_ids).toEqual(['req_3', 'req_4', 'req_5'])
+  })
+
+  it('omits previous_request_ids when given an empty array, rather than sending an empty list', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    await synth('Hi big', { tmpDir: dir, id: 'empty-ids', previousRequestIds: [] })
+    const body = JSON.parse(globalThis.fetch.mock.calls[0][1].body)
+    expect(body).not.toHaveProperty('previous_request_ids')
+  })
+
+  it('returns the request-id header as requestId, for the next line in the chain to condition on', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }, { 'request-id': 'req_abc123' }))
+    const { requestId } = await synth('Hi big', { tmpDir: dir, id: 'has-id' })
+    expect(requestId).toBe('req_abc123')
+  })
+
+  it('returns null, not undefined or a throw, when the response carries no request-id header', async () => {
+    const { synth } = await load()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    const { requestId } = await synth('Hi big', { tmpDir: dir, id: 'no-id' })
+    expect(requestId).toBeNull()
+  })
+
   it('changes its signature when the voice changes, invalidating the cache', async () => {
     const a = await load()
     const sigA = a.signature()
@@ -107,6 +177,20 @@ describe('elevenlabs provider', () => {
     vi.resetModules()
     const b = await import('./elevenlabs.mjs')
     expect(b.signature()).not.toBe(sigA)
+  })
+
+  // signature() feeds the cache key (and Task 6a's provider-change sidecar).
+  // If per-call continuity fields leaked into it, every chained line would
+  // report a "different provider" from the one before it and nothing would
+  // ever be cached.
+  it('does not change based on previousRequestIds or nextText — those are per-call, not per-provider', async () => {
+    const { signature, synth } = await load()
+    const before = signature()
+    globalThis.fetch.mockResolvedValue(okResponse({
+      audio_base64: Buffer.from('x').toString('base64'), alignment: ALIGNMENT,
+    }))
+    await synth('Hi big', { tmpDir: dir, id: 'sig-check', previousRequestIds: ['req_1'], nextText: 'more' })
+    expect(signature()).toBe(before)
   })
 })
 

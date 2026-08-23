@@ -495,3 +495,420 @@ export async function synth(text, { tmpDir, id }) {
     }
   }, 60_000)
 })
+
+// -----------------------------------------------------------------------
+// Task 6a: the tts:draft footgun. `npm run tts:draft` runs --provider=say,
+// whose cache key misses on every line the instant a different provider
+// produced them, and nothing before this guard stopped `say` from silently
+// overwriting a paid clip with the macOS robot voice. The guard fires
+// BEFORE any provider.synth() call, so the "refuses" half of these needs no
+// audio pipeline at all and runs on every platform; only the "--yes bypasses
+// and actually renders" half needs the real say pipeline.
+// -----------------------------------------------------------------------
+describe('Task 6a: provider-change guard refuses before rendering anything', () => {
+  const WORK5 = mkdtempSync(join(tmpdir(), 'tts-guard-work-'))
+  const OUT5 = mkdtempSync(join(tmpdir(), 'tts-guard-out-'))
+  const AUDIO5 = join(OUT5, 'audio')
+  const TIMINGS5 = join(OUT5, 'timings.json')
+  const CACHE5 = join(OUT5, 'cache.json')
+  const SCRIPT5 = join(process.cwd(), 'scripts/tts.mjs')
+  const PLACE = 'guardland'
+
+  const place = (id) => ({
+    id, name: id, type: 'state', capital: 'Guardpur', ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} welcomes every visitor warmly today.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  beforeAll(() => {
+    mkdirSync(join(WORK5, 'content/places'), { recursive: true })
+    writeFileSync(join(WORK5, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
+    mkdirSync(AUDIO5, { recursive: true })
+    // Pretend a previous, DIFFERENT provider already rendered every line: a
+    // fake .m4a on disk for each, plus a cache sidecar recording a signature
+    // that is not `say`'s.
+    for (const id of [
+      `${PLACE}.intro`, `${PLACE}.card.animal`, `${PLACE}.card.food`,
+      `${PLACE}.card.festival`, `${PLACE}.card.hello`,
+      ...Array.from({ length: 5 }, (_, i) => `${PLACE}.lm${i}.line`),
+    ]) {
+      writeFileSync(join(AUDIO5, `${id}.m4a`), 'not real audio, just needs to exist')
+    }
+    writeFileSync(CACHE5, JSON.stringify({ __signature__: 'elevenlabs:some-other-voice:v1' }))
+  })
+
+  afterAll(() => {
+    rmSync(WORK5, { recursive: true, force: true })
+    rmSync(OUT5, { recursive: true, force: true })
+  })
+
+  const run = (...args) => {
+    const fullArgs = [SCRIPT5, '--provider=say',
+      `--audio-dir=${AUDIO5}`, `--timings=${TIMINGS5}`, `--cache=${CACHE5}`, ...args]
+    try {
+      return { code: 0, output: execFileSync('node', fullArgs, { encoding: 'utf8', cwd: WORK5, stdio: 'pipe' }) }
+    } catch (e) {
+      return { code: e.status, output: `${e.stdout ?? ''}${e.stderr ?? ''}` }
+    }
+  }
+
+  it('a changed provider with existing clips on disk exits without --yes, and touches nothing', () => {
+    const { code, output } = run(`--only=${PLACE}`)
+    expect(code, 'the guard must exit non-zero, not silently proceed').not.toBe(0)
+    expect(output).toMatch(/Refusing to render/i)
+    expect(existsSync(TIMINGS5), 'must not have started rendering — no timings file written').toBe(false)
+  })
+
+  it("the refusal message never prints the raw recorded signature — only a redacted fingerprint", () => {
+    const { output } = run(`--only=${PLACE}`)
+    // The exact string beforeAll wrote into the cache sidecar must never
+    // appear verbatim on stdout/stderr — a real ElevenLabs signature embeds
+    // the account's voice id, and this message is safe-to-log by design.
+    expect(output).not.toContain('elevenlabs:some-other-voice:v1')
+    expect(output).toMatch(/\(none recorded\)|[0-9a-f]{8}/)
+  })
+})
+
+// These two only pass when the guard does NOT fire, so the script goes on to
+// render for real through the say -> afconvert pipeline — macOS-only, same
+// as every other real-pipeline suite in this file.
+describe.skipIf(!MACOS)('Task 6a: the guard does not block a legitimate render', () => {
+  const WORK5b = mkdtempSync(join(tmpdir(), 'tts-guard-ok-work-'))
+  const OUT5b = mkdtempSync(join(tmpdir(), 'tts-guard-ok-out-'))
+  const AUDIO5b = join(OUT5b, 'audio')
+  const TIMINGS5b = join(OUT5b, 'timings.json')
+  const CACHE5b = join(OUT5b, 'cache.json')
+  const SCRIPT5b = join(process.cwd(), 'scripts/tts.mjs')
+  const PLACE = 'okland'
+
+  const place = (id) => ({
+    id, name: id, type: 'state', capital: 'Okpur', ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} welcomes every visitor warmly today.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  beforeAll(() => {
+    mkdirSync(join(WORK5b, 'content/places'), { recursive: true })
+    writeFileSync(join(WORK5b, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
+    mkdirSync(AUDIO5b, { recursive: true })
+    writeFileSync(join(AUDIO5b, `${PLACE}.intro.m4a`), 'not real audio, just needs to exist')
+  })
+
+  afterAll(() => {
+    rmSync(WORK5b, { recursive: true, force: true })
+    rmSync(OUT5b, { recursive: true, force: true })
+  })
+
+  const run = (...args) => execFileSync('node', [
+    SCRIPT5b, '--provider=say', `--only=${PLACE}`,
+    `--audio-dir=${AUDIO5b}`, `--timings=${TIMINGS5b}`, `--cache=${CACHE5b}`, ...args,
+  ], { encoding: 'utf8', cwd: WORK5b })
+
+  it('--force on an unchanged provider is unaffected — the guard only fires on a provider SWAP', () => {
+    writeFileSync(CACHE5b, JSON.stringify({ __signature__: 'say:Tara:130' }))
+    const output = run('--force')
+    expect(output).not.toMatch(/Refusing to render/i)
+    expect(existsSync(TIMINGS5b)).toBe(true)
+  }, 30_000)
+
+  it('a fresh tree — no sidecar signature at all — prompts for nothing, even with clips already on disk', () => {
+    const freshCache = join(OUT5b, 'fresh-cache.json')
+    // No cache file at all: existsSync(CACHE) is false in tts.mjs, so `cache`
+    // starts as {} and cache.__signature__ is undefined.
+    const output = run(`--cache=${freshCache}`)
+    expect(output).not.toMatch(/Refusing to render/i)
+  }, 30_000)
+})
+
+describe.skipIf(!MACOS)('Task 6a: --yes bypasses the provider-change guard and renders for real', () => {
+  const WORK6 = mkdtempSync(join(tmpdir(), 'tts-guard-yes-work-'))
+  const OUT6 = mkdtempSync(join(tmpdir(), 'tts-guard-yes-out-'))
+  const AUDIO6 = join(OUT6, 'audio')
+  const TIMINGS6 = join(OUT6, 'timings.json')
+  const CACHE6 = join(OUT6, 'cache.json')
+  const SCRIPT6 = join(process.cwd(), 'scripts/tts.mjs')
+  const PLACE = 'yesland'
+
+  const place = (id) => ({
+    id, name: id, type: 'state', capital: 'Yespur', ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} welcomes every visitor warmly today.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  beforeAll(() => {
+    mkdirSync(join(WORK6, 'content/places'), { recursive: true })
+    writeFileSync(join(WORK6, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
+    mkdirSync(AUDIO6, { recursive: true })
+    writeFileSync(join(AUDIO6, `${PLACE}.intro.m4a`), 'not real audio, just needs to exist')
+    writeFileSync(CACHE6, JSON.stringify({ __signature__: 'elevenlabs:some-other-voice:v1' }))
+  })
+
+  afterAll(() => {
+    rmSync(WORK6, { recursive: true, force: true })
+    rmSync(OUT6, { recursive: true, force: true })
+  })
+
+  it('--yes proceeds through a changed-provider guard and actually renders', () => {
+    const args = [SCRIPT6, '--provider=say', `--only=${PLACE}`,
+      `--audio-dir=${AUDIO6}`, `--timings=${TIMINGS6}`, `--cache=${CACHE6}`, '--yes']
+    const output = execFileSync('node', args, { encoding: 'utf8', cwd: WORK6, stdio: 'pipe' })
+    expect(output).not.toMatch(/Refusing to render/i)
+    expect(existsSync(TIMINGS6)).toBe(true)
+    const timings = JSON.parse(readFileSync(TIMINGS6, 'utf8'))
+    expect(Object.keys(timings).some((k) => k.startsWith(PLACE))).toBe(true)
+    // The sidecar now reflects `say`, closing the gap for the NEXT run.
+    const cache = JSON.parse(readFileSync(CACHE6, 'utf8'))
+    expect(cache.__signature__).toMatch(/^say:/)
+  }, 30_000)
+})
+
+// -----------------------------------------------------------------------
+// Task 6b: prosodic continuity. A stub provider stands in for ElevenLabs —
+// same interface (signature/concurrency/synth/requestId), but ASYNC and
+// non-blocking (a setTimeout delay, not a blocking child process), which is
+// what makes real wall-clock parallelism observable at all: `say` itself is
+// a blocking execFileSync call, so no stub built on it could ever show two
+// requests genuinely overlapping in time. Every call is logged — id,
+// previousRequestIds, nextText, start/end — to a file, because the stub runs
+// in a spawned child process and cannot share memory with this test.
+// Encoding (afconvert) still runs for real, on a single pre-rendered seed
+// clip every call copies — that is the macOS dependency this whole suite is
+// gated on, not the (fake) network request.
+// -----------------------------------------------------------------------
+describe.skipIf(!MACOS)('Task 6b: runs — serial within, parallel across, ids threaded, cache chaining, --only widening, id expiry', () => {
+  const WORK7 = mkdtempSync(join(tmpdir(), 'tts-runs-work-'))
+  const OUT7 = mkdtempSync(join(tmpdir(), 'tts-runs-out-'))
+  const AUDIO7 = join(OUT7, 'audio')
+  const TIMINGS7 = join(OUT7, 'timings.json')
+  const CACHE7 = join(OUT7, 'cache.json')
+  const SCRIPT7 = join(process.cwd(), 'scripts/tts.mjs')
+  const STUB7 = join(WORK7, 'stub-chain.mjs')
+  const SEED = join(WORK7, 'seed.aiff')
+  const LOG = join(OUT7, 'calls.jsonl')
+  const PLACE = 'onestate'
+  const DELAY_MS = 200
+
+  const place = (id) => ({
+    id, name: id, type: 'state', capital: 'Onepur', ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} welcomes every visitor warmly today.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  const beat = (n, text) => line(`tour.0${n}`, 'tour', text)
+  const tour = (texts) => ({ beats: texts.map((t, i) => beat(i + 1, t)) })
+  const FOUR_BEATS = [
+    'Namaste! Come with me on a little walk.',
+    'This is the very first stop on our way.',
+    'Now we turn and see something else entirely.',
+    'And here we are, right at the very end.',
+  ]
+  const tourPath = () => join(WORK7, 'content/tour.json')
+
+  const stubSource = `
+import { copyFileSync, appendFileSync } from 'node:fs'
+import { join } from 'node:path'
+export const name = 'stub-chain'
+export const signature = () => 'stub-chain:v1'
+export const concurrency = 4
+const SEED = ${JSON.stringify(SEED)}
+const LOG = ${JSON.stringify(LOG)}
+const DELAY_MS = ${DELAY_MS}
+export async function synth(text, { tmpDir, id, previousRequestIds, nextText }) {
+  const startedAt = Date.now()
+  await new Promise((r) => setTimeout(r, DELAY_MS))
+  const out = join(tmpDir, \`\${id}.aiff\`)
+  copyFileSync(SEED, out)
+  const endedAt = Date.now()
+  appendFileSync(LOG, JSON.stringify({
+    id, previousRequestIds: previousRequestIds ?? null, nextText: nextText ?? null, startedAt, endedAt,
+  }) + '\\n')
+  return { audioPath: out, alignment: null, requestId: \`req_\${id}\` }
+}
+`
+
+  beforeAll(() => {
+    mkdirSync(join(WORK7, 'content/places'), { recursive: true })
+    writeFileSync(join(WORK7, 'content/places', `${PLACE}.json`), JSON.stringify(place(PLACE)))
+    writeFileSync(tourPath(), JSON.stringify(tour(FOUR_BEATS)))
+    writeFileSync(STUB7, stubSource)
+    // One real, tiny clip, generated once — every synth() call below just
+    // copies it, so encoding is real but no test pays for eleven separate
+    // blocking `say` invocations.
+    execFileSync('say', ['-v', 'Tara', '-r', '130', '-o', SEED, 'Hello.'])
+  })
+
+  afterAll(() => {
+    rmSync(WORK7, { recursive: true, force: true })
+    rmSync(OUT7, { recursive: true, force: true })
+  })
+
+  const run = (...args) => execFileSync('node', [
+    SCRIPT7, `--provider=${STUB7}`,
+    `--audio-dir=${AUDIO7}`, `--timings=${TIMINGS7}`, `--cache=${CACHE7}`, ...args,
+  ], { encoding: 'utf8', cwd: WORK7 })
+
+  const readLog = () => existsSync(LOG)
+    ? readFileSync(LOG, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l))
+    : []
+  const resetLog = () => writeFileSync(LOG, '')
+  const byId = (entries, id) => entries.find((e) => e.id === id)
+
+  it('renders every place line and every tour beat on a full run', () => {
+    resetLog()
+    run()
+    const entries = readLog()
+    expect(entries.map((e) => e.id).sort()).toEqual(
+      [
+        `${PLACE}.intro`, `${PLACE}.card.animal`, `${PLACE}.card.food`, `${PLACE}.card.festival`, `${PLACE}.card.hello`,
+        ...Array.from({ length: 5 }, (_, i) => `${PLACE}.lm${i}.line`),
+        'tour.01', 'tour.02', 'tour.03', 'tour.04',
+      ].sort(),
+    )
+  }, 30_000)
+
+  it('a run-of-one (every place line) sends no previousRequestIds and no nextText', () => {
+    const entries = readLog()
+    for (const id of [`${PLACE}.intro`, `${PLACE}.card.animal`]) {
+      const e = byId(entries, id)
+      expect(e.previousRequestIds).toBeNull()
+      expect(e.nextText).toBeNull()
+    }
+  })
+
+  it('ids are threaded through the tour run, most recent last, capped at 3', () => {
+    const entries = readLog()
+    expect(byId(entries, 'tour.01').previousRequestIds).toBeNull()
+    expect(byId(entries, 'tour.02').previousRequestIds).toEqual(['req_tour.01'])
+    expect(byId(entries, 'tour.03').previousRequestIds).toEqual(['req_tour.01', 'req_tour.02'])
+    expect(byId(entries, 'tour.04').previousRequestIds).toEqual(['req_tour.01', 'req_tour.02', 'req_tour.03'])
+  })
+
+  it('next_text is forward-only: each beat gets the NEXT beat\'s text, and the last beat gets none', () => {
+    const entries = readLog()
+    expect(byId(entries, 'tour.01').nextText).toBe(FOUR_BEATS[1])
+    expect(byId(entries, 'tour.02').nextText).toBe(FOUR_BEATS[2])
+    expect(byId(entries, 'tour.03').nextText).toBe(FOUR_BEATS[3])
+    expect(byId(entries, 'tour.04').nextText).toBeNull()
+  })
+
+  it('the tour run is strictly serial: each beat starts only after the one before it ended', () => {
+    const entries = readLog()
+    const ordered = ['tour.01', 'tour.02', 'tour.03', 'tour.04'].map((id) => byId(entries, id))
+    const SLACK_MS = 20 // clock/scheduling jitter, tiny next to the 200ms delay
+    for (let i = 1; i < ordered.length; i++) {
+      expect(ordered[i].startedAt, `${ordered[i].id} started before ${ordered[i - 1].id} ended`)
+        .toBeGreaterThanOrEqual(ordered[i - 1].endedAt - SLACK_MS)
+    }
+  })
+
+  it('independent runs (the place lines) genuinely overlap in wall-clock time — real parallelism, not a queue of one', () => {
+    const entries = readLog()
+    const placeCalls = entries.filter((e) => e.id.startsWith(PLACE))
+    const overlaps = (a, b) => a.startedAt < b.endedAt && b.startedAt < a.endedAt
+    let overlapping = false
+    for (let i = 0; i < placeCalls.length && !overlapping; i++) {
+      for (let j = i + 1; j < placeCalls.length; j++) {
+        if (overlaps(placeCalls[i], placeCalls[j])) { overlapping = true; break }
+      }
+    }
+    expect(overlapping, 'no two independent runs ever overlapped — the pool is not actually parallel').toBe(true)
+  })
+
+  it('--only=tour.02 widens to the whole 4-beat run, not just tour.02', () => {
+    resetLog()
+    run('--only=tour.02', '--force')
+    const ids = readLog().map((e) => e.id).sort()
+    expect(ids).toEqual(['tour.01', 'tour.02', 'tour.03', 'tour.04'])
+  }, 30_000)
+
+  it('--only with a value that matches nothing errors instead of silently rendering zero lines', () => {
+    resetLog()
+    let result
+    try {
+      result = { code: 0, output: execFileSync('node', [
+        SCRIPT7, `--provider=${STUB7}`, '--only=tour.99',
+        `--audio-dir=${AUDIO7}`, `--timings=${TIMINGS7}`, `--cache=${CACHE7}`,
+      ], { encoding: 'utf8', cwd: WORK7, stdio: 'pipe' }) }
+    } catch (e) {
+      result = { code: e.status, output: `${e.stdout ?? ''}${e.stderr ?? ''}` }
+    }
+    expect(result.code).not.toBe(0)
+    expect(result.output).toMatch(/matched no lines/)
+    expect(readLog()).toHaveLength(0)
+  })
+
+  it('editing only the LAST beat re-renders it and the beat before it, but leaves beats 1-2 cached', () => {
+    resetLog()
+    const edited = JSON.parse(readFileSync(tourPath(), 'utf8'))
+    edited.beats[3].text = 'And here we are, at a very different end indeed.'
+    writeFileSync(tourPath(), JSON.stringify(edited))
+
+    run()
+
+    const entries = readLog()
+    expect(entries.map((e) => e.id).sort()).toEqual(['tour.03', 'tour.04'])
+    // tour.03's chain still seeds from the CACHED (not re-rendered) tour.01
+    // and tour.02 ids from the very first run above.
+    expect(byId(entries, 'tour.03').previousRequestIds).toEqual(['req_tour.01', 'req_tour.02'])
+    expect(byId(entries, 'tour.03').nextText).toBe(edited.beats[3].text)
+  }, 30_000)
+
+  it('stale (>2h old) preceding request ids restart the WHOLE run from its first line', () => {
+    // Doctor the persisted cache: back-date tour.01 and tour.02's renderedAt
+    // well past the 2-hour freshness window, so tour.03's would-be seed ids
+    // are no longer good enough to condition a request on.
+    const cache = JSON.parse(readFileSync(CACHE7, 'utf8'))
+    const THREE_HOURS = 3 * 60 * 60 * 1000
+    for (const id of ['tour.01', 'tour.02']) {
+      cache[id] = { ...cache[id], renderedAt: Date.now() - THREE_HOURS }
+    }
+    writeFileSync(CACHE7, JSON.stringify(cache))
+
+    resetLog()
+    const edited = JSON.parse(readFileSync(tourPath(), 'utf8'))
+    edited.beats[3].text = 'And here we are, at yet another different end.'
+    writeFileSync(tourPath(), JSON.stringify(edited))
+
+    run()
+
+    const ids = readLog().map((e) => e.id).sort()
+    expect(ids).toEqual(['tour.01', 'tour.02', 'tour.03', 'tour.04'])
+    expect(byId(readLog(), 'tour.01').previousRequestIds).toBeNull()
+  }, 30_000)
+})

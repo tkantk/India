@@ -5,6 +5,12 @@ import { envHelp } from '../lib/env-guard.mjs'
 
 export const name = 'elevenlabs'
 
+/** Creator tier's Multilingual-v2 concurrency limit is 5; tts.mjs asks each
+ *  provider how many RUNS it may render at once and uses 4 to leave
+ *  headroom. Runs, not lines, since Task 6 moved the pool from lines to
+ *  runs — a chained run is inherently serial regardless of this number. */
+export const concurrency = 4
+
 const MODEL = 'eleven_multilingual_v2'
 const FORMAT = 'mp3_44100_64'
 const SETTINGS = {
@@ -40,7 +46,20 @@ export const charactersSpent = () => (priced < delivered ? null : spent)
 
 const TTS_FINAL_HELP = { npmScript: 'tts:final', directCommand: 'scripts/tts.mjs --provider=elevenlabs' }
 
-export async function synth(text, { tmpDir, id }) {
+/**
+ * `previousRequestIds` (up to 3, most recent last) and `nextText` are Task
+ * 6's prosodic-continuity hooks: forward pass only. `previous_text` is
+ * deliberately never sent — ElevenLabs' own docs say it is ignored whenever
+ * `previous_request_ids` is present, and sending both would suggest this
+ * code does not know that. `next_request_ids` is equally deliberately never
+ * built: it would need ids that do not exist yet (the whole point of a
+ * forward pass), and its presence suppresses `next_text` being honoured.
+ *
+ * Capped to 3 here too, defensively, even though tts.mjs's own run planner
+ * already caps it — a provider's request body is the one place an
+ * over-length list can never leak through by accident.
+ */
+export async function synth(text, { tmpDir, id, previousRequestIds, nextText }) {
   if (!key()) throw new Error(envHelp('ELEVENLABS_API_KEY', TTS_FINAL_HELP))
   if (!voiceId()) {
     throw new Error(
@@ -61,11 +80,15 @@ export async function synth(text, { tmpDir, id }) {
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId()}/with-timestamps` +
               `?output_format=${FORMAT}`
 
+  const body = { text, model_id: MODEL, voice_settings: SETTINGS }
+  if (previousRequestIds?.length) body.previous_request_ids = previousRequestIds.slice(-3)
+  if (nextText) body.next_text = nextText
+
   for (let attempt = 0; attempt < 5; attempt++) {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'xi-api-key': key(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, model_id: MODEL, voice_settings: SETTINGS }),
+      body: JSON.stringify(body),
     })
 
     // Two different 429s exist: too_many_concurrent_requests and system_busy.
@@ -86,7 +109,13 @@ export async function synth(text, { tmpDir, id }) {
     delivered++
     const cost = res.headers.get('character-cost')
     if (cost) { spent += Number(cost); priced++ }
-    return { audioPath, alignment }
+    // The id later members of this same run condition on via
+    // `previous_request_ids`. Undocumented whether every response carries
+    // one, so a missing header degrades to "no continuity id available for
+    // this line" rather than throwing — losing prosodic continuity on one
+    // line is a quality regression, not a reason to fail a paid render.
+    const requestId = res.headers.get('request-id') ?? null
+    return { audioPath, alignment, requestId }
   }
   throw new Error(`ElevenLabs gave up after 5 attempts on "${id}"`)
 }

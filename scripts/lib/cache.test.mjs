@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isCached } from './cache.mjs'
+import { isCached, readCacheEntry, isFresh, providerChanged, signatureFingerprint } from './cache.mjs'
 
 /**
  * tts.mjs's cost preflight (which decides what a forced/unscoped run will
@@ -29,5 +29,88 @@ describe('isCached', () => {
 
   it('is not cached on a brand-new line, where nothing has ever been cached', () => {
     expect(isCached({ cachedKey: undefined, currentKey: 'abc123', audioExists: false, hasPrevious: undefined })).toBe(false)
+  })
+})
+
+describe('readCacheEntry', () => {
+  it('reads a pre-Task-6 flat string as its key, with no id and no timestamp', () => {
+    expect(readCacheEntry('abc123')).toEqual({ key: 'abc123', requestId: undefined, renderedAt: undefined })
+  })
+
+  it('reads the newer object shape as-is', () => {
+    expect(readCacheEntry({ key: 'abc123', requestId: 'req_1', renderedAt: 1000 }))
+      .toEqual({ key: 'abc123', requestId: 'req_1', renderedAt: 1000 })
+  })
+
+  it('reads a missing entry (a brand-new line) as all-undefined', () => {
+    expect(readCacheEntry(undefined)).toEqual({ key: undefined, requestId: undefined, renderedAt: undefined })
+  })
+})
+
+describe('isFresh', () => {
+  const TWO_HOURS = 2 * 60 * 60 * 1000
+  const now = 10_000_000
+
+  it('is fresh just under two hours old', () => {
+    expect(isFresh(now - (TWO_HOURS - 1), now)).toBe(true)
+  })
+
+  it('is not fresh at exactly two hours old', () => {
+    expect(isFresh(now - TWO_HOURS, now)).toBe(false)
+  })
+
+  it('is not fresh well past two hours old', () => {
+    expect(isFresh(now - TWO_HOURS * 3, now)).toBe(false)
+  })
+
+  it('is not fresh when there is no timestamp at all', () => {
+    expect(isFresh(undefined, now)).toBe(false)
+  })
+})
+
+describe('providerChanged', () => {
+  it('refuses when a recorded signature differs from the current one and clips exist', () => {
+    expect(providerChanged({ previousSignature: 'say:Tara:130', currentSignature: 'elevenlabs:v1', clipsExist: true }))
+      .toBe(true)
+  })
+
+  it('is unaffected when the signature is the same, however many clips exist', () => {
+    expect(providerChanged({ previousSignature: 'elevenlabs:v1', currentSignature: 'elevenlabs:v1', clipsExist: true }))
+      .toBe(false)
+  })
+
+  it('does not refuse a changed signature when nothing on disk could be destroyed', () => {
+    expect(providerChanged({ previousSignature: 'say:Tara:130', currentSignature: 'elevenlabs:v1', clipsExist: false }))
+      .toBe(false)
+  })
+
+  it('a fresh tree — no recorded signature at all — never refuses, however different the current one is', () => {
+    expect(providerChanged({ previousSignature: undefined, currentSignature: 'elevenlabs:v1', clipsExist: true }))
+      .toBe(false)
+  })
+})
+
+// A raw signature can embed real account configuration — ElevenLabs' includes
+// the voice id — and the provider-change guard's console message must be
+// safe to appear in a terminal or a CI log. This is what makes it so,
+// tested directly rather than trusted by eye.
+describe('signatureFingerprint', () => {
+  const REAL_SIGNATURE = 'elevenlabs:AENoBp8y6Xe7vGqG1oj4:eleven_multilingual_v2:mp3_44100_64:{"speed":0.85}'
+
+  it('never contains the raw signature it was derived from', () => {
+    expect(signatureFingerprint(REAL_SIGNATURE)).not.toContain(REAL_SIGNATURE)
+    expect(REAL_SIGNATURE).not.toContain(signatureFingerprint(REAL_SIGNATURE))
+  })
+
+  it('is stable: the same signature always fingerprints the same', () => {
+    expect(signatureFingerprint(REAL_SIGNATURE)).toBe(signatureFingerprint(REAL_SIGNATURE))
+  })
+
+  it('differs for a different signature, so a human can see it changed', () => {
+    expect(signatureFingerprint(REAL_SIGNATURE)).not.toBe(signatureFingerprint('say:Tara:130'))
+  })
+
+  it('has a readable placeholder for "nothing recorded yet", not a hash of undefined', () => {
+    expect(signatureFingerprint(undefined)).toBe('(none recorded)')
   })
 })
