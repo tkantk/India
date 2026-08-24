@@ -101,6 +101,33 @@ Three plans were shaped so this one inherits their work. Forking any of it is a 
 
 ---
 
+## Task 1b: A layout gate for the place screen
+
+**Files:** create `scripts/place-strip.mjs` (or extend `tour-strip.mjs`); `package.json`; `src/screens/place.css`
+
+**Found immediately after Task 1 landed, by rendering the new screen at a viewport nobody had tried.** This task exists because of what that render showed, and it must come before any of the 32 places is written — a gate added afterwards inherits 36 screens' worth of accumulated defects.
+
+**The gap.** `tour-strip.mjs` measures twelve real iPad viewports and has sixteen collision checks, including `creditOverBar`. **None of them look at the place route.** The app has just gained what will be its most-visited screen — 36 of them — with zero layout gating, and it already carries the same class of bug the tour needed a whole task to fix.
+
+**Measured at 1024×768 landscape**, `shot.mjs` reports `shelfBottom=768 barTop=648`, and the render shows the **credit line overlapped by the intro text panel** — the word "pink." sitting on top of "boundaries by DataMeet India community (CC BY 4.0)". That is a licence-attribution obligation, and it is precisely the defect Plan 5's Task 3 fixed on the tour with a dark pill. The fix did not generalise because nothing made it.
+
+**What the gate must measure**, for every place screen at every real iPad viewport:
+- the credit legible and overlapped by nothing;
+- no tile, card or text behind the control bar;
+- every tile a real 104px touch target, and its label not clipped — candidate C's screenshots showed "Festival" rendering as "tival";
+- the state's own shape actually drawn and not clipped;
+- and, learning from the tour: **the drawn shape's size**, because `tour-strip` measures position and timing but never size, which is how a 2.5× shrink of the Delhi flight sailed through a fully green run.
+
+**Run it against all four existing places**, not one. Delhi is tiny and a union territory, Kerala is long and thin, Rajasthan is large — they fail differently.
+
+- [ ] **Step 1: Write the gate and watch it fail** on the credit overlap above. A gate that passes on its first run against a known defect is not a gate.
+- [ ] **Step 2: Fix what it legitimately catches**, starting with the credit.
+- [ ] **Step 3: Wire it into `package.json` beside the other probes, and make it print what it measured** — the existing probes are useful precisely because their output is readable.
+- [ ] **Step 4: Record in `docs/handover.md` what this gate does and does not catch**, in the same spirit as the existing entries.
+- [ ] **Step 5: Commit.**
+
+---
+
 ## Task 2: The three fields that must exist before any content is written
 
 **Files:** `content/schema.ts`, `content/places/*.json` (the four that exist), `scripts/validate-content.mjs`, `docs/handover.md`
