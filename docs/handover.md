@@ -77,22 +77,37 @@ used for the photo's alt text and anywhere else the whole title matters.
 *"Chhatrapati Shivaji Maharaj Terminus"* is a real Indian landmark name and
 does not fit anywhere close to a shelf tile; a rejected candidate's own
 screenshots showed real text clipping to *"tival"* ("Festival") for exactly
-this reason. `content/schema.ts`'s `SHORT_BUDGET` (24 characters) is a
-MEASURED number, not a guess: `scripts/place-strip.mjs` — the real layout
-gate that drives a real headless Chrome over the real built CSS — puts the
-narrowest tile this app ever renders at 129.6x120px (an iPad mini in
-portrait, five tiles across a 744px screen; see that script's own
-`build/place-layout.json` output). A one-off calibration pass using the same
-technique (`getBoundingClientRect` on the real `.tile__word`, at that same
-narrowest tile) found the actual hazard is not total character count but a
-single unbroken word: `"Brihadeeswarar Temple"` (21 characters) clipped,
-because `"Brihadeeswarar"` alone (14 letters, no space to wrap on) is wider
-than the tile itself, while `"Ajanta and Ellora Caves"` (23 characters, four
-words) did not. Every `short` drafted for the four seed places tops out at 18
-characters (`"Athirappilly Falls"`); 24 gives that real worst case genuine
-headroom. **`SHORT_BUDGET` is a length guard, not a guarantee** — write
-`short` as an actual short phrase (two or three ordinary words), never one
-very long compound word, however few characters it totals.
+this reason. `content/schema.ts` enforces TWO ceilings, not one, because a
+tile clips on a long WORD, not a long phrase, and the first version of this
+field got that backwards.
+
+`scripts/place-strip.mjs` — the real layout gate that drives a real headless
+Chrome over the real built CSS — puts the narrowest tile this app ever
+renders at 129.6x120px (an iPad mini in portrait, five tiles across a 744px
+screen; see that script's own `build/place-layout.json` output). A one-off
+calibration pass using the same technique (`getBoundingClientRect` on the
+real `.tile__word`, at that same narrowest tile) proved the hazard directly:
+`"Brihadeeswarar Temple"` (21 characters — UNDER a 24-character total
+budget) clips, because `"Brihadeeswarar"` alone (14 letters, no space to
+wrap on) renders at 132.1px, wider than the 129.6px tile itself, while
+`"Ajanta and Ellora Caves"` (23 characters, FOUR words, longest word 6
+letters) does not clip at all. **`SHORT_WORD_BUDGET` (12 characters) is the
+ceiling that actually stops a clip** — every word in `short` must be at most
+12 characters — and it is set where it is because truncating the same word
+letter by letter found 12 characters ("Brihadeeswar") safe with real margin
+(115.3px) while 13 was not reliably safe (two other real 13-letter words
+measured 130.2px and 130.4px, a hair either side of the tile's own edge).
+`SHORT_BUDGET` (24 characters total) is kept alongside it only as a softer,
+cosmetic guard against a short value that is technically clip-free but is
+four words wrapped to four lines — not a TILE label any more even though
+nothing overflows. Every `short` drafted for the four seed places has a
+longest word of 12 characters or fewer (`"Athirappilly"`, in `"Athirappilly
+Falls"`) — right at the ceiling, with no room to spare, which is why it was
+measured rather than assumed. **Do not "simplify" this back to one
+character-count check** — `content/schema.test.ts` pins both
+`"Brihadeeswarar Temple"` (must reject) and `"Ajanta and Ellora Caves"`
+(must accept) as the specification, by name, so a future edit that only
+checks total length fails a real test, not just a comment.
 
 **`lang`, on `card.hello`.** The BCP-47 tag for the language `script` (the
 same card's native-script text — `खम्मा घणी`, `നമസ്കാരം`, `ନମସ୍କାର`,
@@ -101,10 +116,23 @@ Plan 2; nothing ever said what LANGUAGE it was in, which is exactly what
 eventually has to pick the right lettering (Devanagari for Hindi, the
 Malayalam script for Malayalam, the Odia script for Odia — three visibly
 different scripts already live in these four files with nothing
-distinguishing them programmatically). The four seed values: `rajasthan` →
-`raj` (Rajasthani has no ISO 639-1 code; `raj` is its BCP-47-valid ISO 639-3
-fallback), `kerala` → `ml` (Malayalam), `odisha` → `or` (Odia), `delhi` →
-`hi` (Hindi).
+distinguishing them programmatically). The four seed values: `kerala` →
+`ml` (Malayalam), `odisha` → `or` (Odia), `delhi` → `hi` (Hindi) — each of
+these three unambiguously implies one script in real-world use, so the bare
+primary subtag is enough to pick the right lettering on its own.
+
+`rajasthan` → **`raj-Deva`**, not bare `raj`. Rajasthani has no ISO 639-1
+code, so `raj` (its BCP-47-valid ISO 639-3 fallback) is still where the tag
+starts — but unlike Hindi, Malayalam or Odia, Rajasthani does not
+unambiguously imply one script: it has historically been written in more
+than one (Devanagari today is standard, but it is not the only one that has
+been used), so `raj` alone gives a future renderer nothing to decide
+lettering with, which is the one job this field exists to do. `-Deva` (the
+BCP-47 script subtag for Devanagari) is added so the tag actually determines
+the lettering, matching what `script` already holds (`खम्मा घणी`). Bare
+`raj` is still a syntactically valid tag — `BCP47_RE` accepts it, and
+`content/schema.test.ts` checks both forms are valid tags — it is just not
+the one this app ships, because it does not finish the job.
 
 ### The colour table — `src/tour/effects/subject.ts`
 

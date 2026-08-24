@@ -16,28 +16,56 @@ export const LINE_BUDGET = {
 export type LineKind = keyof typeof LINE_BUDGET
 
 /**
- * The character ceiling for `Landmark.short` — the word a landmark tile
- * actually shows, as opposed to `name` (the real, possibly long, title used
- * for the photo's own alt text). MEASURED, not guessed, against the
- * narrowest real tile this app ever renders: `place-strip.mjs`'s own
- * `build/place-layout.json` puts that at 129.6x120px, an iPad mini in
- * portrait (5 tiles across a 744px screen) — narrower than any landscape
- * rail tile (159px, two columns of a fixed 328px rail).
+ * TWO ceilings for `Landmark.short` — the word a landmark tile actually
+ * shows, as opposed to `name` (the real, possibly long, title used for the
+ * photo's own alt text) — and they guard two different things.
+ *
+ * `SHORT_WORD_BUDGET` is the one that actually stops a tile from clipping,
+ * and it constrains the LONGEST SINGLE WORD, not the whole phrase. A tile
+ * wraps text at spaces; it cannot break inside a word, so a single word
+ * wider than the tile's own box overflows it outright regardless of how
+ * short everything else on the tile is. Both budgets are MEASURED, not
+ * guessed, against the narrowest real tile this app ever renders:
+ * `place-strip.mjs`'s own `build/place-layout.json` puts that at
+ * 129.6x120px, an iPad mini in portrait (5 tiles across a 744px screen) —
+ * narrower than any landscape rail tile (159px, two columns of a fixed
+ * 328px rail).
  *
  * A one-off calibration pass (same technique `place-strip.mjs` itself uses:
  * a real headless Chrome, the real built CSS, `getBoundingClientRect` on the
- * real `.tile__word`) against that narrowest tile found the ACTUAL hazard is
- * not total length but a single unbroken word: "Brihadeeswarar Temple" (21
- * characters) clipped, because "Brihadeeswarar" alone (14 letters, no space
- * to wrap on) is wider than the tile itself, while "Ajanta and Ellora Caves"
- * (23 characters, four words) did not, and neither did "Chhatrapati Shivaji
- * Rly" (23 characters). Every `short` drafted for the four seed places tops
- * out at 18 ("Athirappilly Falls"); this ceiling gives that real worst case
- * genuine headroom while still reading as a TILE label, not a landmark's
- * full title. It is a length guard, not a guarantee — a `short` value still
- * has to be an actual short phrase (two or three ordinary words), not one
- * very long compound word, however few characters it totals.
+ * real `.tile__word`) against that narrowest tile is what proves it: full
+ * "Brihadeeswarar Temple" (21 characters, two words) CLIPS, because
+ * "Brihadeeswarar" alone (14 letters, no space to wrap on) renders at
+ * 132.1px — wider than the 129.6px tile itself — while "Ajanta and Ellora
+ * Caves" (23 characters, FOUR words, longest word 6 letters) does not clip
+ * at all, because nothing in it is a single word that wide. A first version
+ * of this file got this backwards: it constrained total length only (24
+ * characters), which happily accepted "Brihadeeswarar Temple" at 21 and
+ * would have clipped on the tile exactly as measured — total length was
+ * never the hazard.
+ *
+ * The exact pixel boundary is razor-thin and not to be trusted at face
+ * value: truncating the same word letter by letter, 12 characters
+ * ("Brihadeeswar") measures 115.3px (safe, real margin under 129.6px) and
+ * 13 ("Brihadeeswara") measures 125.1px — while two OTHER real 13-letter
+ * words ("Mahabalipuram", "Visakhapatnam") measured 130.2px and 130.4px,
+ * a hair either side of the tile's own 129.6px edge, changing verdict on
+ * fractions of a pixel depending on which specific letters are in the word.
+ * 12 is the last length with genuine headroom in every word actually
+ * measured (max 115.3px against 129.6px available); 13 is not, and 14
+ * (`"Brihadeeswarar"` itself) clips outright. Every `short` value drafted
+ * for the four seed places has a longest word of 12 characters or fewer
+ * ("Athirappilly", in "Athirappilly Falls") — this ceiling gives that real
+ * worst case no room to spare, which is why it was measured directly rather
+ * than assumed to still be safe.
+ *
+ * `SHORT_BUDGET` (total characters) is kept alongside it as a softer, purely
+ * cosmetic guard — a tile that never clips because every word is short
+ * enough can still be four words wrapped to four lines, which is not a
+ * TILE label any more even though nothing overflows — but it is not what
+ * stops a clip. Do not "simplify" this back to one number.
  */
+export const SHORT_WORD_BUDGET = 12
 export const SHORT_BUDGET = 24
 
 /** The single definition of "a word", shared by the schema, the validator,
@@ -148,15 +176,29 @@ const LandmarkSchema = z.object({
   name: z.string().min(1),
   /** What the landmark's own tile actually prints. A tile is 129.6x120px on
    *  the narrowest real device this app renders (an iPad mini in portrait —
-   *  see `SHORT_BUDGET`'s own comment for how that was measured), and
+   *  see `SHORT_WORD_BUDGET`'s own comment for how that was measured), and
    *  `name` is not written to that constraint: "Chhatrapati Shivaji Maharaj
    *  Terminus" is a real Indian landmark name and does not fit anywhere
    *  close to it. `short` is the tile-length name authored alongside it,
-   *  on purpose, rather than truncated at render time. */
+   *  on purpose, rather than truncated at render time.
+   *
+   *  Two checks, because a tile clips on a long WORD, not a long phrase —
+   *  see `SHORT_WORD_BUDGET`'s own comment for the measurement. The `.max`
+   *  below is the softer, cosmetic total-length guard; the `.superRefine`
+   *  is the one that actually stops a clip. */
   short: z.string().min(1).max(
     SHORT_BUDGET,
     `landmark short name exceeds its ${SHORT_BUDGET}-character tile budget`,
-  ),
+  ).superRefine((s, ctx) => {
+    const tooLong = s.split(/\s+/).find((word) => word.length > SHORT_WORD_BUDGET)
+    if (tooLong) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `landmark short name has a word over ${SHORT_WORD_BUDGET} characters ` +
+          `("${tooLong}") — a tile cannot break a single long word, however short the whole phrase is`,
+      })
+    }
+  }),
   /** Fully qualified so the photo fetcher does not land on a disambiguation
    *  page — "Rock Garden" returns a botanical garden in the Netherlands. */
   photoQuery: z.string().min(1),

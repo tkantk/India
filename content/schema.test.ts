@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { PlaceSchema, LINE_BUDGET, SHORT_BUDGET, wordsOf } from './schema'
+import { PlaceSchema, LINE_BUDGET, SHORT_BUDGET, SHORT_WORD_BUDGET, wordsOf } from './schema'
 import type { Cue, Landmark, Line, Place, TourBeat } from './schema'
 
 const validLine = { id: 'raj.intro', kind: 'intro' as const, text: 'Rajasthan is a big state.' }
@@ -21,7 +21,7 @@ const validPlace = {
     festival: { id: 'raj.card.festival', kind: 'card' as const, text: 'Teej is a swing festival.' },
     hello: {
       id: 'raj.card.hello', kind: 'card' as const, text: 'People say Khamma Ghani.', script: 'खम्मा घणी',
-      lang: 'raj',
+      lang: 'raj-Deva',
     },
   },
   landmarks: Array.from({ length: 5 }, (_, i) => ({
@@ -127,8 +127,14 @@ describe('species, short and lang — required before content scales', () => {
     expect(PlaceSchema.safeParse(withHello({ lang: '' })).success).toBe(false)
   })
 
-  it('accepts real BCP-47 tags, including the ISO 639-3 fallback Rajasthani needs', () => {
-    for (const lang of ['hi', 'ml', 'or', 'raj']) {
+  it('accepts real BCP-47 tags, including the script subtag Rajasthani needs', () => {
+    // "raj" alone (the ISO 639-3 fallback Rajasthani needs, having no 639-1
+    // code) does not, on its own, say which script to render it in the way
+    // "hi"/"ml"/"or" unambiguously do — Rajasthani is written in more than
+    // one script in practice. "raj-Deva" (Devanagari) is what this app
+    // actually ships for it; bare "raj" is still a VALID tag, just not the
+    // one that determines lettering, so it stays accepted here too.
+    for (const lang of ['hi', 'ml', 'or', 'raj', 'raj-Deva']) {
       expect(PlaceSchema.safeParse(withHello({ lang })).success).toBe(true)
     }
   })
@@ -138,12 +144,30 @@ describe('species, short and lang — required before content scales', () => {
     expect(PlaceSchema.safeParse({ ...validPlace, landmarks: [rest, ...validPlace.landmarks.slice(1)] }).success).toBe(false)
   })
 
-  it(`rejects a short name over the ${SHORT_BUDGET}-character tile budget`, () => {
-    expect(PlaceSchema.safeParse(withLandmark0({ short: 'x'.repeat(SHORT_BUDGET + 1) })).success).toBe(false)
+  // Both of these use TWO words, each within SHORT_WORD_BUDGET, so they
+  // isolate the total-length check from the word-length check below —
+  // a single long token would fail for the wrong reason.
+  it(`rejects a short name over the ${SHORT_BUDGET}-character total budget`, () => {
+    const over = `${'x'.repeat(SHORT_WORD_BUDGET)} ${'x'.repeat(SHORT_BUDGET - SHORT_WORD_BUDGET)}`
+    expect(over.length).toBe(SHORT_BUDGET + 1)
+    expect(PlaceSchema.safeParse(withLandmark0({ short: over })).success).toBe(false)
   })
 
-  it('accepts a short name exactly at the budget', () => {
-    expect(PlaceSchema.safeParse(withLandmark0({ short: 'x'.repeat(SHORT_BUDGET) })).success).toBe(true)
+  it('accepts a short name exactly at the total budget', () => {
+    const exact = `${'x'.repeat(SHORT_WORD_BUDGET)} ${'x'.repeat(SHORT_BUDGET - SHORT_WORD_BUDGET - 1)}`
+    expect(exact.length).toBe(SHORT_BUDGET)
+    expect(PlaceSchema.safeParse(withLandmark0({ short: exact })).success).toBe(true)
+  })
+
+  // THE CHECK THAT ACTUALLY STOPS A CLIP — see SHORT_WORD_BUDGET's own
+  // comment in content/schema.ts. A single word this long is well under the
+  // total budget above, so without this check it would sail through.
+  it(`rejects a single word over ${SHORT_WORD_BUDGET} characters, even far under the total budget`, () => {
+    expect(PlaceSchema.safeParse(withLandmark0({ short: 'x'.repeat(SHORT_WORD_BUDGET + 1) })).success).toBe(false)
+  })
+
+  it(`accepts a single word exactly at ${SHORT_WORD_BUDGET} characters`, () => {
+    expect(PlaceSchema.safeParse(withLandmark0({ short: 'x'.repeat(SHORT_WORD_BUDGET) })).success).toBe(true)
   })
 
   it('rejects the real "Chhatrapati Shivaji Maharaj Terminus" case that motivated this field', () => {
@@ -153,6 +177,24 @@ describe('species, short and lang — required before content scales', () => {
     expect(PlaceSchema.safeParse(
       withLandmark0({ name: 'Chhatrapati Shivaji Maharaj Terminus', short: 'CST Station' }),
     ).success).toBe(true)
+  })
+
+  /**
+   * THE SPECIFICATION. These two exact strings are not invented — they came
+   * out of a real headless Chrome measuring the real built `.tile__word` at
+   * the narrowest real tile this app renders (129.6x120px, an iPad mini in
+   * portrait). "Brihadeeswarar Temple" (21 characters — UNDER the 24-char
+   * total budget) genuinely clips, because "Brihadeeswarar" alone renders
+   * at 132.1px, wider than the tile itself. "Ajanta and Ellora Caves" (23
+   * characters, four words, longest word 6 letters) does not clip at all. A
+   * total-length check alone accepts the first and would have shipped a
+   * clipped tile — see `SHORT_WORD_BUDGET`'s own comment in
+   * `content/schema.ts`. If this test is ever changed to pass by loosening
+   * the rule rather than fixing new content, the tile is clipping again.
+   */
+  it('rejects "Brihadeeswarar Temple" (a real word too wide for the tile) and accepts "Ajanta and Ellora Caves" (four short words)', () => {
+    expect(PlaceSchema.safeParse(withLandmark0({ short: 'Brihadeeswarar Temple' })).success).toBe(false)
+    expect(PlaceSchema.safeParse(withLandmark0({ short: 'Ajanta and Ellora Caves' })).success).toBe(true)
   })
 })
 
