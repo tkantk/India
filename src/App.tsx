@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import { StartGate } from './screens/StartGate'
 import { IndiaScreen } from './screens/IndiaScreen'
+import { PlaceScreen } from './screens/PlaceScreen'
 import { Credits } from './screens/Credits'
 import { getNarrator } from './audio/Narrator'
 
@@ -24,6 +25,41 @@ const playTestSound = async () => {
   } catch { /* silence is the answer the gate is already prepared for */ }
 }
 
+/**
+ * The two screens that navigate, wrapped where `useNavigate` is legal.
+ *
+ * Nothing below `IndiaScreen` may call a router hook: `GrandTour`,
+ * `TourStage` and `MapStage` are mounted with no Router by their own tests
+ * and by `probe-map-hits.mjs` / `probe-camera.mjs`, and `MapStage` already
+ * uses a plain `<a href="#/credits">` rather than a `<Link>` because of it.
+ * So the navigation is created here and injected as an ordinary callback.
+ */
+function IndiaRoute() {
+  const navigate = useNavigate()
+  return <IndiaScreen onPickState={(slug) => navigate(`/place/${slug}`)} />
+}
+
+/**
+ * `key={slug}` is load-bearing. Tapping a neighbouring state from a place's
+ * own page changes the param without changing the route, which React would
+ * otherwise treat as the same component with new props — leaving the open
+ * card, the "heard" ticks and the camera's own arrival effect belonging to
+ * the place the child just left. A key makes turning to a neighbour exactly
+ * as clean as arriving from the map.
+ */
+function PlaceRoute() {
+  const navigate = useNavigate()
+  const { slug = '' } = useParams()
+  return (
+    <PlaceScreen
+      key={slug}
+      slug={slug}
+      onPick={(next) => navigate(`/place/${next}`)}
+      onHome={() => navigate('/')}
+    />
+  )
+}
+
 function App() {
   const [ready, setReady] = useState(false)
 
@@ -34,7 +70,7 @@ function App() {
           path="/"
           element={
             ready ? (
-              <IndiaScreen />
+              <IndiaRoute />
             ) : (
               <StartGate onReady={() => setReady(true)} unlock={unlock} playTestSound={playTestSound} />
             )
@@ -45,6 +81,16 @@ function App() {
             terms do not care whether a child has tapped "I heard it" — so the
             deep link works from a cold start, and from the map's credit line
             at any point in the tour. */}
+        {/* One state's own page. Not behind the gate either, and for a
+            plainer reason than the credits: a child only ever reaches it
+            from the map, which is already past the gate — but a grown-up
+            reloading the iPad on Rajasthan should land on Rajasthan, not be
+            sent back to "Tap here to begin" having lost their place. The
+            audio unlock is a property of the engine singleton, not of this
+            route, so nothing about the gate's job is skipped by arriving
+            here directly; there is simply no narration until a gesture has
+            unlocked the context, which is true everywhere. */}
+        <Route path="/place/:slug" element={<PlaceRoute />} />
         <Route path="/credits" element={<Credits />} />
       </Routes>
     </MotionConfig>

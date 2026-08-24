@@ -16,6 +16,8 @@ import type { GlyphName } from './Glyph'
 const NAMES: GlyphName[] = [
   'play', 'pause', 'loading', 'again', 'slower', 'normal',
   'sound-on', 'sound-off', 'home',
+  // The four a state screen's card tiles reach for (PlaceScreen.tsx).
+  'animal', 'food', 'festival', 'hello',
 ]
 
 describe('Glyph', () => {

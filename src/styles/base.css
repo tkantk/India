@@ -197,6 +197,119 @@ body {
   -webkit-box-decoration-break: clone;
 }
 
+
+/* ------------------------------------------------- THE NARRATED CAPTION
+
+   `.say` - the sentence being spoken, with the word lit (see ReadAlong) -
+   moved here out of `src/tour/grandTour.css` when the state screens needed
+   the same box and, like every screen that is not the tour, never load that
+   file. Exactly the move `--map-floor`/`--say-lane` above already made, for
+   exactly the reason recorded there.
+
+   `:where(.say)`, not `.say`, and that is load-bearing rather than tidy:
+   grandTour.css's phone breakpoint re-anchors this box to the TOP of the
+   screen with an ordinary `.say { top: 0; bottom: auto }`, and Vite does not
+   bundle CSS in import order (measured - this file lands after
+   grandTour.css). At equal specificity the later rule silently wins, which
+   would undo the phone layout in the shipped build only. Zero specificity
+   makes that impossible: any plain `.say` rule, in any file, in any order,
+   beats these defaults.
+
+   `--say-lines` (which sizes the lane this box is allowed to fill, and
+   therefore `--map-floor`, and therefore how a map is framed) stays a
+   MEASURED constant per screen and per breakpoint - the tour's live in
+   grandTour.css, the state screen's in screens/place.css. */
+/* The narrated line, with the word being spoken lit (see ReadAlong). It sits
+   over the map rather than in the flow above or below it, and that is not a
+   stylistic choice: the beats run from 20 to 43 words, so a band in the flow
+   would change height between sentences, the map would rescale to fit what
+   was left, and every piece of map-registered art — the Ganga, the Himalaya,
+   the three seas — would step sideways with it, four times a minute. */
+:where(.say) {
+  position: absolute;
+  left: 0;
+  /* Full width, not clear of Mor's corner. A column narrowed to leave him
+     room ran the worst beat to 5 lines/194px of the map — most of what
+     Task 4 reclaims comes from letting it run under him instead, down to 3
+     lines/124px. He still never stands ON the words: `--mor-floor` above
+     adds `--say-lane`, this box's own worst-case height, so his feet clear
+     the top of it rather than the bar alone. */
+  right: 0;
+  bottom: calc(var(--floor) + 4px);
+
+  padding: 10px 16px;
+  border-radius: 16px;
+
+  /* SEE-THROUGH ON PURPOSE, and the number is chosen rather than picked.
+
+     The band lies over the southern end of the map, which is where beat 12's
+     three seas are drawn and where the Ganga reaches the water. At full
+     opacity, "underneath them both is the Indian Ocean" is narrated over a
+     white lid with the Indian Ocean behind it — which is exactly the thing
+     watching the tour end to end was for.
+
+     The alternative, reserving the space and shrinking the map, costs more
+     than it buys: every state and every generated pin is sized in viewBox
+     units, so a third off the map is a third off every tap target Task 5
+     measured.
+
+     At 0.72 the geography reads through and the contrast still does not
+     move. --ink on the blend, measured: 15.3:1 over bare paper, 13.9:1 over
+     the map's beige land, 12.0:1 over a lit saffron state, 14.2:1 over the
+     pale water and 10.7:1 over the Ganga's deep blue, which is the worst
+     case anywhere on this map. The word being spoken sits on --highlight at
+     13.4:1 whatever is underneath, because that one is opaque. All of them
+     are past the 7:1 AAA target the rest of the app is held to. */
+  background: rgba(253, 248, 239, 0.72);
+
+  /* THE RULE IS AN INSET SHADOW, NOT A BORDER, and that is a layout
+     decision rather than a stylistic one. `.say` is the one box in the app
+     whose exact wrapping is arithmetic somebody else depends on:
+     `--say-lines` is a MEASURED constant (5, 4 above 792px, 9 below 600px)
+     that feeds `--say-lane`, which feeds `--map-floor`, which is what the
+     map is framed against and what `npm run tour:strip` checks at twelve
+     viewports. `* { box-sizing: border-box }` means a 3px border would take
+     6px out of the content width, re-wrap the longest beat, and silently
+     falsify all of it. An inset box-shadow paints the same line, follows
+     the same `border-radius`, and occupies no layout at all.
+
+     The caption is now a printed caption strip — paper, the app's one ink
+     round it, the shared lift — instead of a translucent slab. 0.72 is
+     unchanged and still the measured figure: --ink over it is 14.5:1 on the
+     new water, 14.0:1 on the new land, 12.0:1 on a lit saffron state and
+     10.7:1 over the Ganga's deep blue, all past the 7:1 AAA target.
+
+     THE TOP LAYER IS THE SUBJECT'S OWN COLOUR — the one genuinely new thing
+     here. `TourStage` writes `--subject-accent` from `subject.ts`, keyed by
+     whatever is currently on stage (`GrandTour`'s `showing`); with nothing
+     showing it falls back to the app's own --deep. A child who cannot yet
+     read fluently gets a second, wordless signal that this sentence and the
+     tiger's card on screen are the same thing — the same colour appears on
+     both. An INSET shadow, like the rule below it, for the same layout
+     reason: `inset 0 6px 0 <colour>` paints a solid 6px band inside the top
+     edge without adding a pixel to this box's own height, so `--say-lines`
+     and everything measured off it stay exactly as they were. Listed FIRST
+     so it paints on top of the ink rule rather than under it. */
+  box-shadow:
+    inset 0 6px 0 var(--subject-accent, var(--deep)),
+    inset 0 0 0 var(--rule) var(--ink-line),
+    var(--lift);
+
+  /* Above the tour art, which is a `z-index: auto` sibling — a caption that
+     the tiger could cover would be no caption at all. Still below Mor (2) and
+     the play button (3). */
+  z-index: 1;
+
+  /* Text over a map, never a target: a child reaching for Kerala through the
+     words must reach Kerala. */
+  pointer-events: none;
+}
+
+/* Nothing is being spoken. The element stays in the tree — it carries
+   `data-beat`, which is how the frame-strip probe and anyone with devtools
+   open knows which of the fourteen is in the air — but it shows nothing. */
+:where(.say[data-quiet]) { display: none; }
+
 /* IndiaScreen's root. A flex column so `.tour-stage`-shaped boxes (see
    src/tour/tourStage.css) grow to fill it; everything the tour puts on
    screen is positioned inside one. */

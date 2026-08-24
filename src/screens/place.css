@@ -1,0 +1,474 @@
+/* A PAGE IN THE BOOK — one state, laid out like a spread.
+
+   Top to bottom: the picture (the map, still flown to the state the child
+   tapped), the sentence being spoken, the licence credit, the shelf of nine
+   things to open, and the fixed control bar. Everything above the shelf is
+   framed by the SHARED convention in base.css — `--map-floor`, `--say-lane`,
+   `--credit-lane` — and this file only says the three things that are
+   genuinely different here. */
+
+/* Two classes, so these beat both `:where(.india)`'s zero-specificity
+   defaults in base.css and any plain `.india` rule anywhere else — the
+   handover's own instruction for a screen that needs to override the
+   framing ("write it as an ordinary `.india` rule, or scope it to the
+   screen's own class"). */
+.india.place {
+  /* WHAT CLEARS THE FIXED BAR IS THE SHELF, NOT THE STAGE.
+
+     On the tour, `--floor` is `--bar-over + --credit-lane`, because the map
+     runs to the bottom of the screen and has to stop short of a bar lying
+     over it. Here the shelf is a real flow sibling between the stage and
+     the bar, and it carries the bar's clearance as its own padding (below).
+     So the stage's floor is the credit lane alone — anything more would be
+     a bar's worth of empty page in the middle of the layout. */
+  --floor: var(--credit-lane);
+
+  /* The credit sits at the very bottom of the stage, in that lane. It is a
+     CC BY 4.0 obligation and map.css needs a number here or it falls back
+     to 0 and hides under the caption. */
+  --credit-floor: 4px;
+
+  /* MEASURED, like the tour's, and carrying the same one line of headroom.
+     The longest thing this box ever holds is a place intro: 400 characters
+     by `content/schema.ts`'s own budget, 387 in Delhi's actual line — the
+     worst that exists — against the tour's longest beat at 43 words.
+     Measured in Chrome at 820x1024, Delhi's intro wraps to exactly SIX
+     lines (`.say` reported 229px = 6 x 1.45 x 24 + 20), so seven is that
+     worst case plus one, which is what a 400-character intro will need.
+     Re-measure if `--text`, the gutter or this screen's width changes: this
+     number feeds `--say-lane`, which feeds `--map-floor`, which is how the
+     picture above it is framed. */
+  --say-lines: 7;
+
+  /* The shelf. Two rows: four cards at exactly one tap target tall, five
+     landmarks a little taller because a photograph needs room to be a
+     photograph. Every tile still clears 104px in both dimensions —
+     measured at 820x1024: 184x104 for a card, 145x120 for a landmark. */
+  --card-h: var(--tap);
+  --landmark-h: 120px;
+  --shelf-gap: 10px;
+}
+
+/* Any map-registered layer this screen renders as a child of the stage —
+   the state's own drawn border, and the invisible corridor a finger traces
+   along it — has to be framed on the SAME rect as `.map`, not on the whole
+   stage. `.cue-layer` is `inset: 0` by default (effects.css), which is
+   correct inside `.tour-overlay` (already framed) and wrong for a direct
+   child of the stage: the same viewBox letterboxed into a taller box lands
+   the border above the coastline it is drawn on. */
+.place .tour-stage > .cue-layer {
+  inset: var(--map-ceiling, 0px) 0 var(--map-floor, 0px) 0;
+}
+
+/* ------------------------------------------------------------ the title */
+
+/* The page's own name, on a plate in the corner of the picture — printed on
+   the state's own page tone (`subject.ts`, keyed by the land it stands on),
+   so the title and the caption's top band and the open tile are all one
+   colour before a word of it is read.
+
+   Never a target, and never over the middle of the picture: top-left is the
+   one corner of a flown-to bbox that is reliably padding rather than
+   geography, because `flyTo` centres what it frames. */
+.place-name {
+  position: absolute;
+  top: calc(var(--map-ceiling, 0px) + 12px);
+  left: 12px;
+  z-index: 2;
+  margin: 0;
+  padding: 7px 16px;
+  border-radius: var(--plate-rx);
+  background: var(--subject-page, var(--paper));
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+  pointer-events: none;
+}
+
+.place-name__word {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+/* The type and the capital. `capital` is authored on every place and had no
+   reader anywhere in the app until this line; it is printed, not narrated,
+   because no line was ever written to say it. Small, because it is for the
+   grown-up in whose lap the iPad is sitting. */
+.place-name__kind {
+  display: block;
+  margin-top: 2px;
+  font-size: 17px;
+  color: var(--deep);
+}
+
+/* ------------------------------------------------------- what is on show */
+
+/* The slot the open page's picture lands in — the same rect as the map, so
+   a photograph is laid ON the picture rather than over the whole screen.
+   Inert: the art is never a tap target (effects.css's own first rule), and
+   a child reaching past it for a neighbouring state must reach it. */
+.place-plate {
+  position: absolute;
+  inset: var(--map-ceiling, 0px) 0 var(--map-floor, 0px) 0;
+  display: grid;
+  place-items: center;
+
+  /* THE TITLE PLATE MUST NEVER LIE ON THE PHOTOGRAPH. Not a nicety: 18 of
+     the 20 photographs are CC BY or CC BY-SA, and the handover's own rule
+     is that cropping or OVERLAYING one creates an adaptation, which for
+     share-alike would have to be released under the same licence. The top
+     inset is `.place-name`'s own measured height plus its offset, so the
+     picture is centred in what is left rather than under the title. */
+  padding: 84px 12px 10px;
+  pointer-events: none;
+}
+
+/* A photograph on a printed plate: paper, the app's one ink, the shared
+   corner and the shared lift — the same object family as a reveal's page
+   and the caption under it. */
+.place-photo {
+  margin: 0;
+  padding: 12px 12px 8px;
+  max-width: min(62vmin, 460px);
+  border-radius: var(--plate-rx);
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+}
+
+/* UNMODIFIED. The twenty photographs run from 960x396 to 960x1477 — an
+   aspect range of 0.27 to 1.54 — and a fixed frame would have to crop
+   something. `max-width`/`max-height` with `height: auto` scales the whole
+   frame instead: 18 of the 20 are CC BY or CC BY-SA, where a crop is an
+   adaptation and would drag this app's own presentation under the same
+   licence. A tall photograph is simply tall. */
+.place-photo__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(26vmin, 210px);
+  border-radius: 12px;
+  margin: 0 auto;
+}
+
+/* The credit, WITH the image and not only on the colophon page — which is
+   what CC BY 3(a) actually asks for. Small: it is for an adult, like the
+   map's own credit line, and a six-year-old has the photograph. */
+.place-photo__by {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--deep);
+  text-align: center;
+}
+
+.place-photo__by a { color: var(--deep); }
+
+/* THE TOUR'S OWN CUE ART, ON A SHORTER PLATE.
+
+   A place's intro carries the same cues a tour beat does — Rajasthan's
+   draws a dune at word 14 — and `TourStage` dispatches them here exactly as
+   it does there, which is most of why this screen is built on it. But
+   `.cue-figure` is sized for the tour's map box (`min(50vmin, 400px)`,
+   measured against 764 x 715 at 820x1024), and this screen's picture is
+   358px tall because the shelf and a longer caption take the difference. At
+   400 the card hangs out of the bottom of the plate and over the caption.
+   Measured, not guessed: 300 is the largest that fits inside 358 with the
+   plate's own rule and lift, and it also clears the title plate's corner. */
+.place .cue-figure { width: min(38vmin, 300px); }
+
+/* The greeting card reuses `.cue-script` from effects.css verbatim — the
+   plate beat 13 already prints three greetings on. All this adds is room:
+   one greeting on its own can afford to be bigger than three stacked. */
+.place .cue-script .cue-greeting__native { font-size: min(13vmin, 88px); }
+
+/* --------------------------------------------------------- the caption */
+
+/* `.say` itself is base.css's. Two things differ here, and both are facts
+   about this screen rather than preferences.
+
+   1. It is inset from the edge of the stage, not full-bleed. On the tour the
+      caption runs edge to edge because it has to pass UNDER Mor's corner;
+      there is no Mor here, and a caption with a margin reads as printed.
+
+   2. It is CENTRED IN ITS LANE rather than sitting at the bottom of it.
+      `--say-lines` reserves the worst case (7 lines, see above) and a
+      place's lines run from 128 characters to 387, so on most pages two or
+      three of those lines go unused. Bottom-anchored, all that slack opens
+      as one 70px gap between the picture and its own caption, which is the
+      one place in a book a gap must not be. `.say-lane` is an unpainted box
+      of exactly `--say-lane` height that the caption is centred in, so the
+      slack splits evenly above and below and the strip reads as a caption
+      set under a plate rather than as a box that drifted. */
+.place .say-lane {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(100% - var(--map-floor));
+  height: var(--say-lane);
+  display: grid;
+  align-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.place .say {
+  position: static;
+  border-radius: var(--plate-rx);
+}
+
+/* ----------------------------------------------------------- the shelf */
+
+/* Nine things to open, laid out like a spread: four cards across the top,
+   five landmarks under them. Never scrolls and never hides anything behind
+   a gesture — everything this page contains is on this page. */
+.place-shelf {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--shelf-gap);
+  padding-top: var(--shelf-gap);
+
+  /* THE BAR'S CLEARANCE LIVES HERE. `--bar-over` is how much of the fixed
+     control bar lies over this box (base.css). The shelf is the last thing
+     in the flow, so it is the thing that has to stop short of it — which is
+     also what lets `--floor` above drop the bar entirely. */
+  /* The 8px is a printed gap: measured without it, the last row of tiles
+     ended 3px above the bar's own gold rule, which reads as the tiles
+     being cut off by it rather than sitting on a shelf. */
+  padding-bottom: calc(var(--bar-over) + 8px);
+}
+
+.place-shelf__row {
+  display: flex;
+  gap: var(--shelf-gap);
+  align-items: stretch;
+}
+
+.place-shelf__row > .tile { flex: 1 1 0; }
+
+.place-shelf__row--cards > .tile { height: var(--card-h); }
+.place-shelf__row--landmarks > .tile { height: var(--landmark-h); }
+
+/* A TILE IS A PRINTED PLATE, and a target. `--tap` (104px) is the floor in
+   both dimensions — 2cm on a 264ppi iPad, the Nielsen Norman figure for
+   under-nines — and `.tap` in base.css already guarantees it; the heights
+   above only ever make one taller.
+
+   Compound selector so it beats `.tap`'s own single-class rules whichever
+   order the bundler concatenates the two files in, the same defence
+   `.controls .control` and `.tap.play-big` already use. */
+.place .tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  /* A flex item will not shrink below its content without this, and five
+     landmark names are wider than five fifths of an iPad. */
+  min-width: 0;
+
+  padding: 6px;
+  overflow: hidden;
+
+  border-radius: var(--plate-rx);
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+  color: var(--ink);
+  transition: background 140ms ease-out;
+}
+
+/* THE ONE THAT IS SPEAKING. It takes the state's own page tone and the same
+   6px band of the subject's accent the caption carries at the top of its
+   own box — so the tile, the title and the sentence being read are visibly
+   one thing, which is the whole point of `subject.ts` having an `accent`
+   role at all. An inset shadow rather than a border, so the tile does not
+   change size when it opens. */
+.place .tile[data-open] {
+  background: var(--subject-page, var(--paper));
+  box-shadow:
+    inset 0 6px 0 var(--subject-accent, var(--deep)),
+    var(--lift);
+}
+
+.place .tile:active { background: var(--highlight); }
+
+.tile__mark {
+  display: grid;
+  place-items: center;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--deep);
+}
+
+/* The photograph, framed. `cover` is a CSS frame over the whole, unmodified
+   file — the plate above shows every pixel of it — and it is what keeps
+   five wildly different aspect ratios reading as five tiles rather than
+   five different objects. */
+.tile__photo {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--page);
+}
+
+.tile__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* EVERY TILE CARRIES A WORD. Not an option: a six-year-old who cannot yet
+   reliably parse a picture gets the name of the thing every time, exactly
+   as every control in the bar does. */
+.tile__word {
+  font-size: var(--text);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* A landmark's own name is a name, not a label — "The Fishing Nets at
+   Kochi" is five words under a 145px photograph. It is set smaller than
+   `--text` so it can be read whole rather than truncated: the 24px floor in
+   this app is for the NARRATED sentence and the control words, and a caption
+   under a picture that is itself the signal is a different job. */
+.place-shelf__row--landmarks .tile__word {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Heard all the way through. Small, in the corner, gold on ink — the app's
+   own "you did a thing" colour, the same one the play button and the
+   carry-on button are. */
+.tile__tick {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 16px;
+}
+
+/* -------------------------------------------------- a place with no page */
+
+/* 32 of 36 places have nothing written. This is a page, not an error.
+
+   There is no shelf on it, so nothing between the stage and the fixed bar
+   is carrying the bar's clearance any more — the stage has to take it back,
+   or the licence credit at the foot of the stage ends up behind the bar,
+   which is exactly what `map.css` says must never happen to it. And the
+   caption is one short UI line rather than a 400-character intro, so the
+   seven-line lane is seven lines of nothing: two here, which is enough for
+   "Tap a state to visit it." at this width and no more. */
+.india.place[data-empty] {
+  --floor: calc(var(--bar-over) + var(--credit-lane));
+  /* And the credit itself, which is measured from the stage's own bottom
+     edge and not from the caption: without this it sits at y=1020 on an
+     820x1024 iPad, which is behind the control bar. */
+  --credit-floor: calc(var(--bar-over) + 4px);
+  --say-lines: 2;
+}
+.place-empty {
+  position: absolute;
+  inset: var(--map-ceiling, 0px) 0 var(--map-floor, 0px) 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+.place-empty__line {
+  margin: 0;
+  max-width: 22ch;
+  padding: 12px 22px;
+  border-radius: var(--plate-rx);
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.place-empty__line--small {
+  font-size: var(--text);
+  font-weight: 400;
+  border: 0;
+  box-shadow: none;
+  background: none;
+  padding: 0;
+}
+
+.place-empty__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.place-empty__row .tile { width: 168px; height: var(--tap); }
+
+/* ------------------------------------------------------------ landscape */
+
+/* An iPad on its side has 704px of height and the control bar takes 120 of
+   them. Stacked, the shelf and the caption would leave the picture about
+   275px tall — a letterbox of a state. So the shelf becomes a rail down the
+   right instead, and the picture keeps 500-odd pixels.
+
+   `orientation: landscape` plus a width floor, so this never catches a
+   phone held sideways: the app is iPad-only by ruling, and a phone gets an
+   honest line on the cover screen rather than a fourth layout. */
+@media (orientation: landscape) and (min-width: 900px) {
+  .india.place {
+    flex-direction: row;
+    gap: 14px;
+
+    /* Nothing is between the stage and the bar any more, so the stage
+       carries the bar's clearance itself — exactly the tour's own floor,
+       and the licence credit needs the same lift for the same reason
+       (map.css: "a credit hidden behind a toolbar is not a credit"). */
+    --floor: calc(var(--bar-over) + var(--credit-lane));
+    --credit-floor: calc(var(--bar-over) + 4px);
+
+    /* Wider column, shorter lines: 400 characters wrap to four here. */
+    --say-lines: 4;
+    --landmark-h: 108px;
+  }
+
+  .place-shelf {
+    flex: 0 0 328px;
+    padding-top: 0;
+    justify-content: center;
+  }
+
+  /* Both rows become two columns, so the nine tiles fill the rail in five
+     bands rather than one nine-wide strip nobody can aim at. */
+  .place-shelf__row {
+    flex-wrap: wrap;
+  }
+
+  .place-shelf__row > .tile {
+    flex: 1 1 calc(50% - var(--shelf-gap));
+    min-width: 0;
+  }
+
+  .place-shelf__row--cards > .tile { height: 104px; }
+}
