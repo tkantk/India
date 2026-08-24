@@ -90,18 +90,23 @@ type Page = {
    *  a landmark this is `short`, the tile-length name — never `name`, which
    *  is written to be accurate, not to fit 129.6px. */
   word: string
-  /** The fuller text for the photo's own alt attribute. Only landmarks set
-   *  this (to their real `name`); falls back to `word` for a card, which has
-   *  no separate long form. */
+  /** The fuller text for the photo's own alt attribute. Landmarks set this
+   *  to their real `name`; the animal card sets it to its species' display
+   *  name (Task 5a) — the one card whose photo names one exact thing, the
+   *  same reason `symbol` is never set for it (see `Page.symbol`'s own
+   *  note). Falls back to `word` for food/festival/hello, which have no
+   *  separate long form: the tile's own word ("Food") already is the whole
+   *  claim the plate makes. */
   alt?: string
   /** The mark beside it, for the four cards. */
   glyph?: GlyphName
-  /** The photograph: for the five landmarks, and — once Task 5 has fetched
-   *  one — the animal card. Keyed by `species` for the animal (see
-   *  `pagesFor`'s own note); `PHOTOS` has no such entry yet, so this is
-   *  `undefined` for every seed place today, which is the correct, honest
-   *  state: the plate below renders nothing for a card whose photo does not
-   *  exist rather than a stand-in shape. */
+  /** The photograph: for the five landmarks, and — since Task 5a fetched one
+   *  for each of the four seed species — the animal card. Keyed by `species`
+   *  for the animal (see `pagesFor`'s own note); `PHOTOS` has no entry for a
+   *  species nobody has fetched yet (every one of the ~32 places still to be
+   *  written), and this stays `undefined` for those, which is the correct,
+   *  honest state: the plate below renders nothing for a card whose photo
+   *  does not exist rather than a stand-in shape. */
   photo?: Credit
   /** The drawn category mark this card's OWN big picture shows while its
    *  line plays — `food`'s bowl, `festival`'s rangoli, the exact glyph the
@@ -204,6 +209,21 @@ const ARRIVE_MS = 900
 const ARRIVAL_MARGIN = 0.16
 const MIN_MARGIN = 6
 
+/** "asian-elephant" -> "Asian elephant" — the sentence-case a species'
+ *  common name is actually written in, for the photo's own alt text and the
+ *  bold caption beneath it (`Photograph`'s `word` prop, fed from `Page.alt`).
+ *  Same rule, independently kept in sync by convention rather than shared
+ *  code, as `scripts/fetch-photos.mjs`'s own `speciesQuery` — one runs in
+ *  the browser, the other in Node, so there is no single function both could
+ *  import without adding a Node/browser-shared module for four characters
+ *  of logic. Only the first word is capitalised ("Asian elephant", never
+ *  "Asian Elephant") because that is how Wikipedia itself titles a species
+ *  article. */
+function speciesLabel(species: string): string {
+  const [first, ...rest] = species.split('-')
+  return [first[0].toUpperCase() + first.slice(1), ...rest].join(' ')
+}
+
 function pagesFor(place: Place): Page[] {
   const pages: Page[] = [
     { id: 'intro', clipId: place.intro.id, word: place.name },
@@ -218,14 +238,17 @@ function pagesFor(place: Place): Page[] {
       symbol: card.symbol,
       script: line.script,
       sfx: line.sfx,
+      // The species' own display name, not the generic tile word ("Animal")
+      // — the same reason a landmark's `alt` is its real `name`, not `short`.
+      alt: card.key === 'animal' ? speciesLabel(place.card.animal.species) : undefined,
       // The one card whose big picture is a photograph rather than a drawn
       // mark or a script. Keyed by `species`, not by place: a photograph of
       // a dromedary is a photograph of a dromedary regardless of which
-      // state is telling the story, so a future place that shares a species
-      // reuses the same fetch rather than paying for it twice. `PHOTOS` has
-      // no entry for any species today — Task 5 has not run — so this is
-      // `undefined` for all four seed places, which `Page.photo`'s own note
-      // says is the correct, honest state.
+      // state is telling the story, so a place that shares a species with
+      // another reuses the same fetch rather than paying for it twice.
+      // `PHOTOS` has an entry for each of the four seed species (Task 5a);
+      // it is `undefined` here only for a species nobody has fetched yet,
+      // which `Page.photo`'s own note says is the correct, honest state.
       photo: card.key === 'animal' ? PHOTOS[place.card.animal.species] : undefined,
     })
   }

@@ -7,13 +7,21 @@ import './credits.css'
 /**
  * THE CREDITS PAGE, AND WHY IT IS NOT OPTIONAL.
  *
- * The app bundles 20 photographs, 11 sounds and one set of state boundaries
- * that other people made. 18 of the photographs and 7 of the sounds carry
- * `attributionRequired: true`. CC BY 4.0 s3(a) and CC BY-SA 4.0 s3(a) attach
- * that duty to SHARING the material — making it available — not to putting
- * it on a screen. The repository shares all 31 files and so does the deployed
- * site, so the credit was already owed before a single landmark photograph
- * was displayed to anybody. This page is how it is paid.
+ * The app bundles a growing set of photographs (landmarks and, since Task
+ * 5a, animals — see `PHOTOS`' own note below), 11 sounds and one set of
+ * state boundaries that other people made. Most of the photographs and 7 of
+ * the sounds carry `attributionRequired: true`. CC BY 4.0 s3(a) and CC
+ * BY-SA 4.0 s3(a) attach that duty to SHARING the material — making it
+ * available — not to putting it on a screen. The repository shares every
+ * one of these files and so does the deployed site, so the credit was
+ * already owed before a single landmark photograph was displayed to
+ * anybody. This page is how it is paid.
+ *
+ * Deliberately no fixed count anywhere on this page or in its own test —
+ * `Credits.test.tsx` used to pin an exact number and broke the day Task 5a
+ * added four photographs nobody had to touch this file for. Every count
+ * below (`Object.keys(PHOTOS).length` etc.) is read off the JSON at render
+ * time for exactly that reason.
  *
  * WHO IT IS FOR. Not the child. Everything else in this app is sized and
  * worded for a six-year-old; this is a page an adult reads, so it is set in
@@ -159,11 +167,12 @@ export function Credits() {
         <section className="credits__section" aria-labelledby="credits-photos">
           <h2 id="credits-photos">Photographs</h2>
           <p className="credits__note">
-            {Object.keys(PHOTOS).length} landmark photographs from Wikimedia
-            Commons. Each one is a thumbnail rendered by Wikimedia's own servers
-            and stored unaltered — a change of size and format, not of content,
-            so none of them has been adapted. They are bundled in the repository
-            for a landmark feature that is not finished yet, and are not part of
+            {Object.keys(PHOTOS).length} photographs from Wikimedia Commons —
+            landmarks, and (since Task 5a) each state's own animal, fetched by
+            species rather than by common name so the picture is the right
+            animal. Each one is a thumbnail rendered by Wikimedia's own
+            servers and stored unaltered — a change of size and format, not
+            of content, so none of them has been adapted. They are part of
             the deployed site.
           </p>
           <ul className="credits__list">

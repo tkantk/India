@@ -2,7 +2,7 @@ Namaste India — Mor's Big Journey
 https://github.com/tkantk/India
 
 The MIT licence in LICENSE covers the code in this repository and nothing
-else. This repository also redistributes 33 files that other people made, and
+else. This repository also redistributes 37 files that other people made, and
 those keep their own licences. The split, file by file:
 
 --------------------------------------------------------------------------
@@ -65,9 +65,12 @@ simplified to SVG path data. See scripts/build-world.mjs.
 4. PHOTOGRAPHS — individual licences, see src/data/photo-credits.json
 --------------------------------------------------------------------------
 
-The 20 photographs in public/photos/ come from Wikimedia Commons and remain
+The 24 photographs in public/photos/ come from Wikimedia Commons and remain
 under their own individual licences: CC0, public domain, CC BY 2.0, CC BY 4.0,
-CC BY-SA 3.0 and CC BY-SA 4.0. 18 of the 20 require attribution.
+CC BY-SA 3.0 and CC BY-SA 4.0. 22 of the 24 require attribution. Twenty are
+landmarks; four (Task 5a) are each state's own animal, one photograph per
+distinct species so two places naming the same species share it rather than
+each fetching their own.
 
 Per-file artist, licence, licence URL, source page and ready-to-render
 attribution are in src/data/photo-credits.json, and are displayed in the app

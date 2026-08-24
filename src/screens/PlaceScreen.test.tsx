@@ -140,7 +140,11 @@ describe('PlaceScreen', () => {
 
   it('shows a real photograph on every landmark tile', () => {
     const { container } = render(<PlaceScreen slug="rajasthan" />)
-    const images = [...container.querySelectorAll('.tile__photo img')]
+    // Scoped to the landmarks row specifically: since Task 5a the animal
+    // tile ALSO carries a `.tile__photo img` (its own species photograph),
+    // and this test's own claim is about the five landmarks, not that tile.
+    const row = container.querySelector('.place-shelf__row--landmarks')
+    const images = [...(row?.querySelectorAll('.tile__photo img') ?? [])]
     expect(images).toHaveLength(5)
     for (const [i, img] of images.entries()) {
       expect(img.getAttribute('src')).toContain(`photos/${rajasthan.landmarks[i].id}.jpg`)
@@ -355,13 +359,41 @@ describe('PlaceScreen', () => {
   })
 
   describe('the animal card', () => {
-    it('shows nothing at all for a species with no photograph fetched yet — never a generic stand-in', async () => {
+    it('shows a real photograph of the exact species, keyed by species — never a generic stand-in', async () => {
       const user = userEvent.setup()
       const { container } = render(<PlaceScreen slug="rajasthan" />)
       await user.click(screen.getByRole('button', { name: 'Animal' }))
-      // Exactly as a landmark's own plate degrades when it has no photo:
-      // nothing rendered, not a paw standing in for a dromedary.
-      expect(container.querySelector('.place-plate')?.children.length).toBe(0)
+
+      const img = container.querySelector('.place-photo__img')
+      expect(img).toBeInTheDocument()
+      // Keyed by SPECIES (dromedary), not by place — see PlaceScreen.tsx's
+      // own note on `pagesFor`: a photograph of a dromedary is a photograph
+      // of a dromedary regardless of which state tells the story.
+      const species = rajasthan.card.animal.species
+      expect(img?.getAttribute('src')).toContain(`photos/${species}.jpg`)
+      // The bold caption beneath it names the species itself ("Dromedary"),
+      // not the generic tile word ("Animal") — the one card whose photo
+      // names one exact thing, same reasoning as a landmark's own `name`.
+      expect(container.querySelector('.place-photo__name')?.textContent).toBe('Dromedary')
+
+      const by = container.querySelector('.place-photo__by')
+      expect(by?.innerHTML).toBe(CREDITS[species].attributionHtml)
+    })
+
+    it('never falls back to the tile\'s own generic glyph, structurally — CARDS sets no `symbol` for animal', async () => {
+      // The negative case ("shows nothing when no photo exists") no longer
+      // has a real place to exercise it against: all four seed species have
+      // a fetched photograph as of Task 5a. What guarded it before still
+      // holds, structurally rather than behaviourally now: `place-mark`
+      // (the tile's enlarged glyph, used by food/festival) only ever renders
+      // when `page.symbol` is set, and the animal card is the one CARDS
+      // entry that never sets `symbol` — see `Page.symbol`'s own note for
+      // why. So even on the day a species has no photo yet, this card can
+      // only ever render a photograph or nothing, never a stand-in shape.
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: 'Animal' }))
+      expect(container.querySelector('.place-mark')).toBeNull()
     })
   })
 

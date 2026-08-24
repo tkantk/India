@@ -258,5 +258,61 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Bengal_tiger_in_Ranthambore_National_Park.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Thomas_Fuhrmann_Jakobsthal\" title=\"User:Thomas Fuhrmann Jakobsthal\">Thomas Fuhrmann</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Bengal_tiger_in_Ranthambore_National_Park.jpg\">via Wikimedia Commons</a>"
+  },
+  "house-sparrow": {
+    "file": "photos/house-sparrow.jpg",
+    "width": 960,
+    "source": "commons-search",
+    "fileTitle": "File:House Sparrow in Saswad August 2025 by Tisha Mukherjee 01.jpg",
+    "artist": "Tisha Mukherjee",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:House_Sparrow_in_Saswad_August_2025_by_Tisha_Mukherjee_01.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Tisha_Mukherjee\" title=\"User:Tisha Mukherjee\">Tisha Mukherjee</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:House_Sparrow_in_Saswad_August_2025_by_Tisha_Mukherjee_01.jpg\">via Wikimedia Commons</a>",
+    "locality": "confirmed"
+  },
+  "indian-roller": {
+    "file": "photos/indian-roller.jpg",
+    "width": 960,
+    "source": "commons-search",
+    "fileTitle": "File:Indian roller (Coracias benghalensis benghalensis).jpg",
+    "artist": "Charles J. Sharp",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_roller_(Coracias_benghalensis_benghalensis).jpg",
+    "attributionHtml": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Indian_roller_(Coracias_benghalensis_benghalensis).jpg\">via Wikimedia Commons</a>",
+    "locality": "confirmed"
+  },
+  "dromedary": {
+    "file": "photos/dromedary.jpg",
+    "width": 960,
+    "source": "commons-search",
+    "fileTitle": "File:Dromedary in Thar desert.jpg",
+    "artist": "Clément Bardot",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Dromedary_in_Thar_desert.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Cl%C3%A9ment_Bardot\" title=\"User:Clément Bardot\">Clément Bardot</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Dromedary_in_Thar_desert.jpg\">via Wikimedia Commons</a>",
+    "locality": "confirmed"
+  },
+  "asian-elephant": {
+    "file": "photos/asian-elephant.jpg",
+    "width": 960,
+    "source": "commons-search",
+    "fileTitle": "File:Asian Elephant herd.jpg",
+    "artist": "Drashokk",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Asian_Elephant_herd.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Drashokk\" title=\"User:Drashokk\">Drashokk</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Asian_Elephant_herd.jpg\">via Wikimedia Commons</a>",
+    "locality": "confirmed"
   }
 }

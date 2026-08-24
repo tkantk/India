@@ -21,6 +21,7 @@
     "voices": "node --env-file-if-exists=.env scripts/voices.mjs",
     "fetch:photos": "node scripts/fetch-photos.mjs",
     "contact-sheet": "node scripts/contact-sheet.mjs",
+    "contact-sheet:animals": "node scripts/contact-sheet-animals.mjs",
     "fetch:sounds": "node scripts/fetch-sounds.mjs",
     "build:art": "node scripts/build-geo-art.mjs",
     "contact-sheet:art": "node scripts/contact-sheet-art.mjs",

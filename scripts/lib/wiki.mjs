@@ -105,6 +105,142 @@ export function vet(ii) {
   return { ok: true }
 }
 
+/**
+ * "A tiger behind concrete answers 'the tiger looks fake' worse than the
+ * drawing already does" (Task 5's own brief). There is no field anywhere in
+ * Wikimedia's metadata that says "this individual animal is captive" — the
+ * only signal available at all is text a human or a WikiProject happened to
+ * write, in the file's own title or the Commons categories it was filed
+ * under. So this is a heuristic, not a fact-check, and it is honest about
+ * the gap: `vetAnimal`'s own test file pins a case it cannot catch (a
+ * captive animal whose title and categories name only the species and the
+ * place, never the word "zoo" or "captiv*" anywhere) right next to the cases
+ * it can.
+ *
+ * Deliberately does NOT fire on "sanctuary", "national park" or "reserve" —
+ * India's own wild, protected habitats are routinely named exactly that way
+ * (Ranthambore NATIONAL PARK, Periyar WILDLIFE SANCTUARY), and treating
+ * those words as a captivity signal would reject precisely the photographs
+ * this project wants.
+ */
+const ZOO_RE = /\bzoos?\b|zoological\s+(garden|park)|safari\s+park|wildlife\s+park|animal\s+park|\bcaptiv\w*|\benclosure\b|\baquarium\b|\bmenagerie\b|\bcircus\b/i
+
+/** Checks `ii.fileTitle` and `ii.categories` (an array of Commons category
+ *  strings, as `fetch-photos.mjs`'s `fileInfo()` attaches) against `ZOO_RE`.
+ *  `categories` is optional — a caller that never asked Commons for them
+ *  gets `false` here rather than a crash, which only matters for a caller
+ *  that skips `vetAnimal` for exactly that reason (there is none today; it
+ *  is here so this function has no silent way to be misused). */
+export function isZooPhoto(ii) {
+  const haystack = [ii.fileTitle, ...(ii.categories ?? [])].join(' | ')
+  return ZOO_RE.test(haystack)
+}
+
+/** `vet()` plus the one check that only means anything for an animal photo.
+ *  Every landmark photo is still judged by plain `vet()` alone — a fort or a
+ *  temple has no "captive" failure mode to check for. */
+export function vetAnimal(ii) {
+  const base = vet(ii)
+  if (!base.ok) return base
+  if (isZooPhoto(ii)) return { ok: false, why: 'title or category names a zoo, enclosure or other captive setting' }
+  return { ok: true }
+}
+
+/**
+ * "Right species, wrong continent" — this task's own first pass fetched a
+ * genuine dromedary photographed in Egypt and a genuine house sparrow
+ * photographed in Brooklyn. Both pass `vetAnimal` (right species, free
+ * licence, not a zoo) and both are still wrong for a card that tells a
+ * six-year-old about the animal that lives HERE. This is the machine-side
+ * half of closing that: a locality check `fetch-photos.mjs` uses to PREFER
+ * an India-located candidate over one it cannot place, or one it can place
+ * outside India. It is not a hard filter — see `localityVerdict`'s own note
+ * on why "not established" must never collapse to "reject".
+ *
+ * India's rough bounding box (mainland plus every island this app draws —
+ * see src/data/geo.json's own recorded northernBound of 37.077 for the true
+ * detailed shape, which this is a coarse box around, not a copy of). Wide
+ * enough for the Andamans/Nicobars (Indira Point, India's own southernmost
+ * point, is 6.75°N 93.82°E) and the north-east (Arunachal Pradesh reaches
+ * ~97.4°E) without being so wide it would also wave through most of
+ * Pakistan or China.
+ */
+const INDIA_BBOX = { minLat: 6, maxLat: 36, minLon: 68, maxLon: 98 }
+
+/**
+ * SRI LANKA, carved out explicitly and checked BEFORE `INDIA_BBOX` — found
+ * by this task's own real run, not hypothesised: a "Sri Lankan elephant"
+ * candidate, genuinely geotagged at 6.29°N 81.408°E (Yala National Park, SRI
+ * LANKA), landed inside the plain India box above and was reported `true`.
+ * A flat lat/lon box cannot separate the two countries by latitude alone —
+ * Sri Lanka's own range (roughly 5.9-9.9°N) genuinely overlaps India's,
+ * because Kanyakumari, India's own mainland southern tip, is 8.08°N, barely
+ * north of Sri Lanka's own northern coast. Longitude is what actually
+ * separates them at those latitudes: Sri Lanka's own landmass sits within a
+ * narrow 79.3-82.1°E band that India's mainland coastline does not reach
+ * into at the same latitudes, and the Nicobars — the one Indian territory
+ * that shares this latitude band — sit much further east (~93.8°E), well
+ * clear of this box. This is a targeted fix for the one neighbour this task
+ * actually hit, not a claim that every other neighbour (Bangladesh, Nepal,
+ * Bhutan, Pakistan, Myanmar) is similarly guarded against — `localityVerdict`'s
+ * own top note already says this is a heuristic, not a fact-check.
+ */
+const SRI_LANKA_BBOX = { minLat: 5.8, maxLat: 9.9, minLon: 79.3, maxLon: 82.1 }
+
+const inBox = (lat, lon, box) =>
+  lat >= box.minLat && lat <= box.maxLat && lon >= box.minLon && lon <= box.maxLon
+
+/** `true`/`false` against a real `{lat, lon}` Commons geotag, `null` when
+ *  there is none to check — "no coordinate" is not the same claim as
+ *  "outside India", and must never be reported as `false`. */
+export function coordsInIndia(coords) {
+  if (!coords || typeof coords.lat !== 'number' || typeof coords.lon !== 'number') return null
+  const { lat, lon } = coords
+  if (inBox(lat, lon, SRI_LANKA_BBOX)) return false
+  return inBox(lat, lon, INDIA_BBOX)
+}
+
+/** Builds a regex matching "India", "Indian", or any of the given region
+ *  names (state/UT names — the caller passes `src/data/geo.json`'s own list
+ *  so this file does not hand-maintain a second copy of it) as a whole
+ *  word. Escapes each name (several carry "&" — "Jammu & Kashmir") so a
+ *  region name cannot corrupt the pattern. */
+export function indiaLocalityRegex(regionNames = []) {
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const alt = ['india', 'indian', ...regionNames.map(esc)].join('|')
+  return new RegExp(`\\b(${alt})\\b`, 'i')
+}
+
+/** The fallback signal, for the — common — case of no geotag at all: does
+ *  the file's own title or Commons categories say so in plain text. */
+export function textNamesIndia(ii, indiaRe = indiaLocalityRegex()) {
+  const haystack = [ii.fileTitle, ...(ii.categories ?? [])].join(' | ')
+  return indiaRe.test(haystack)
+}
+
+/**
+ * TRI-STATE, on purpose: `true` (confirmed India), `false` (confirmed
+ * elsewhere), or `null` (not established either way) — never a boolean
+ * defaulting a "don't know" to "no". Coordinates are checked first and are
+ * definitive when present; title/category text is the fallback.
+ *
+ * The `null` case is not a hypothetical: this task's own Asian elephant
+ * (Bandipur National Park, Karnataka — genuinely India) carries neither
+ * coordinates nor any category or title text naming India or a state, only
+ * the park's own name, which nothing here has a gazetteer to recognise.
+ * Reporting that as `false` would have caused the caller to actively
+ * PREFER a worse, non-Indian candidate over a genuinely Indian one it
+ * simply couldn't prove — worse than doing nothing. A human still has to
+ * close that specific gap; this function's job is only to never claim
+ * false confidence in the meantime.
+ */
+export function localityVerdict(ii, indiaRe = indiaLocalityRegex()) {
+  const byCoords = coordsInIndia(ii.coordinates)
+  if (byCoords !== null) return byCoords
+  if (textNamesIndia(ii, indiaRe)) return true
+  return null
+}
+
 export function attribution(ii) {
   const g = k => ii.extmetadata?.[k]?.value
   const code = String(g('License') ?? '').toLowerCase()

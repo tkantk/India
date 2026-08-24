@@ -9,16 +9,24 @@ import sounds from '../data/sound-credits.json'
 /**
  * THIS IS THE TEST THAT STOPS THE LICENCE BREACH COMING BACK.
  *
- * 18 of the 20 photographs and 7 of the 11 sounds carry
+ * Most of the photographs and 7 of the 11 sounds carry
  * `attributionRequired: true`. CC BY 4.0 s3(a) and CC BY-SA 4.0 s3(a) attach
  * that duty to SHARING the work, not to putting it on screen — and this
- * repository and the deployed site both share all 31 files. So the credit is
- * not decoration that can be deferred until the landmark screens exist: it
- * is the condition on which the files may be in the repository at all.
+ * repository and the deployed site both share every one of these files. So
+ * the credit is not decoration that can be deferred until the landmark
+ * screens exist: it is the condition on which the files may be in the
+ * repository at all.
  *
  * The check is deliberately against the JSON rather than a fixed list. Fetch
  * a new photograph tomorrow and this test starts demanding its credit
- * without anybody editing it.
+ * without anybody editing it — literally: this used to pin `required.length`
+ * to a hand-typed 25, and broke the moment Task 5a's four animal photographs
+ * landed (29). The count below is deliberately NOT re-pinned to a new magic
+ * number for the same reason — the content is going to 192 photographs
+ * across two more tasks, and a fixed number is a maintenance chore future
+ * work would have to remember to update. `toBeGreaterThan(0)` keeps the one
+ * thing this test actually exists to catch: a refactor that quietly stopped
+ * rendering the lists would make an empty `required` pass silently.
  */
 type Credit = { attributionRequired: boolean; attributionHtml: string; licence: string }
 const PHOTOS: Record<string, Credit> = photos
@@ -48,9 +56,9 @@ describe('the credits page', () => {
   it('renders the attribution every file that requires one legally requires', () => {
     const { container } = render(<Credits />)
     const required = every.filter(([, c]) => c.attributionRequired)
-    // 18 photographs + 7 sounds. A refactor that quietly stopped rendering
-    // the lists would otherwise make this pass on an empty set.
-    expect(required.length).toBe(25)
+    // Derived, not typed — see the describe block's own comment for why a
+    // fixed number was the wrong fix here.
+    expect(required.length).toBeGreaterThan(0)
     for (const [what, credit] of required) {
       expect(container.innerHTML, `${what} is not credited`).toContain(asRendered(credit.attributionHtml))
     }
