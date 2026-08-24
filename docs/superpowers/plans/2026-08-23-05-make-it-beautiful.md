@@ -168,7 +168,11 @@ Decide and state which: fix it, or declare the app iPad-only and make the phone 
 
 Carried from Plan 3, where it was deferred behind correctness work. The father asked for it directly after the first test: *"around the map it should show blue ocean but not showing that."*
 
-**Why this is not a background colour.** Painting the stage blue would turn Nepal, Bangladesh, Pakistan, Bhutan, Sri Lanka and Myanmar into open sea — and beat 12 names the neighbours and lights them up. A child told "these are India's neighbours" while looking at ocean where Nepal should be is being taught something false. The ocean needs the neighbouring **land** drawn too.
+**Correction to this task's original rationale, made before executing it.** Plan 3 wrote, and Plan 5 repeated, that "beat 12 names the neighbours and lights them up", so a plain blue background would contradict the narration. **That is false, and it was carried forward twice without being checked.** Verified against the content: no beat of the tour names Nepal, Bangladesh, Pakistan, Bhutan, Sri Lanka, Myanmar or China, or uses the word "neighbour" at all — and `lightNeighbour` (`cues.ts:107`) is an alias of `highlightOne`, which lights **one Indian state**, not a country. The narration cannot be contradicted by an empty sea because the narration never mentions what is out there.
+
+**The real reason to do it anyway is stronger.** The map now draws India, alone, in unbroken pale blue on every side. A six-year-old looking at that learns that India is an island. Nothing in the narration corrects him, and accuracy is the thing this project's owner has said outranks everything — he has personally caught two factual errors already. Teaching an untruth through a picture is no better than teaching it through a sentence.
+
+So: the ocean needs the neighbouring **land** drawn too, not because a beat would contradict it, but because the map is a claim about the world and it is currently making a false one.
 
 **Note what changed since Plan 3 wrote this:** the chosen direction already puts the land in a pale blue sea. Establish first whether that satisfies the request, or whether real neighbour landmasses are still wanted. **If the picture-book sea is enough, say so and close this task** — do not build a Natural Earth pipeline to solve a problem that a fill already solved.
 
@@ -178,7 +182,7 @@ If it is still wanted:
 - Neighbour polygons must be clipped against India's own depicted boundary so none overlaps Indian territory as the depiction gate defines it.
 - Natural Earth is public domain; record it in `NOTICE` and the credits screen anyway.
 
-- [ ] **Step 1: Decide whether this is still needed**, with a screenshot of the current map as evidence. Record the decision either way.
+- [ ] **Step 1: Confirm the corrected rationale above against the rendered map**, with a screenshot as evidence. The question is no longer "does the narration need it" — that was answered and the answer was no. The question is whether a child looking at the current map would conclude India is an island. Record the decision either way.
 - [ ] **Step 2 (if needed): Write the failing test** — same viewBox, not interactive, no filter, no neighbour polygon overlapping India's depicted boundary.
 - [ ] **Step 3: Build it, report the bundle cost, re-run the strip and both probes.**
 - [ ] **Step 4: Commit.**
