@@ -13,6 +13,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { PICK_ROOT, baseMarkup, hitMarkup } from '../../src/map/hitLayer.ts'
+import { seaMarkup } from '../../src/map/sea.ts'
 
 /**
  * @param {object} o
@@ -27,11 +28,17 @@ export function mapPage({ geo, hits, script, module = false, style = '' }) {
   const css = readFileSync('src/styles/base.css', 'utf8') + readFileSync('src/map/map.css', 'utf8')
   const names = Object.fromEntries(Object.entries(geo.places).map(([s, p]) => [s, p.name]))
   const viewBox = geo.viewBox.join(' ')
+  // Read directly, not threaded through as a parameter like `geo`/`hits`: no
+  // probe ever needs to doctor the sea, it is only ever the shipped
+  // src/data/world.json, the same reason the stylesheet below is read
+  // straight off disk instead of being passed in too.
+  const world = JSON.parse(readFileSync('src/data/world.json', 'utf8'))
 
   return `<!doctype html><html><head><meta charset="utf-8"><style>${css}
   body { position: absolute; padding: 0; } #frame { position: absolute; inset: 0; }${style}
 </style></head><body><div id="frame">
   <div class="map"><div class="${PICK_ROOT}">
+    <svg class="sea" viewBox="${viewBox}" aria-hidden="true">${seaMarkup(world.places)}</svg>
     <svg class="base" viewBox="${viewBox}" aria-hidden="true"><g pointer-events="none">${baseMarkup(geo.places)}</g></svg>
     <svg class="hit" viewBox="${viewBox}">${hitMarkup(hits, names)}</svg>
     <svg class="glow" viewBox="${viewBox}" aria-hidden="true"><path/></svg>

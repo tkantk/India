@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { Credits } from './Credits'
 import geo from '../data/geo.json'
+import world from '../data/world.json'
 import photos from '../data/photo-credits.json'
 import sounds from '../data/sound-credits.json'
 
@@ -67,9 +68,19 @@ describe('the credits page', () => {
     expect(screen.getByText(geo.attribution)).toBeVisible()
   })
 
-  it('groups the three kinds of thing so a reader can tell what is what', () => {
+  // Task 5: Natural Earth is public domain and asks for no credit at all —
+  // this project credits every third-party source it ships regardless, the
+  // same "manners rather than law" standard the public-domain photographs
+  // and sounds above are already held to.
+  it('credits Natural Earth for the neighbouring land, though public domain requires none', () => {
     render(<Credits />)
-    for (const name of [/^map$/i, /^photographs$/i, /^sounds$/i]) {
+    expect(screen.getByText(world.attribution)).toBeVisible()
+    expect(world.attribution).toMatch(/public domain/i)
+  })
+
+  it('groups the four kinds of thing so a reader can tell what is what', () => {
+    render(<Credits />)
+    for (const name of [/^map$/i, /^neighbouring land$/i, /^photographs$/i, /^sounds$/i]) {
       expect(screen.getByRole('heading', { level: 2, name })).toBeVisible()
     }
   })

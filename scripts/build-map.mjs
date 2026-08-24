@@ -2,10 +2,10 @@
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import rewind from '@mapbox/geojson-rewind'
-import { geoConicConformal, geoPath, geoBounds } from 'd3-geo'
+import { geoPath, geoBounds } from 'd3-geo'
 import { slugify, classify, shareBorder, boundsOf, simplifyRing } from './lib/geo.mjs'
+import { indiaProjection, W, H } from './lib/projection.mjs'
 
-const W = 1000, H = 1100
 const RAW = 'build/map'
 const BASE = 'https://raw.githubusercontent.com/datameet/maps/master/States/Admin2'
 const ATTRIBUTION = 'India state boundaries by DataMeet India community (CC BY 4.0)'
@@ -76,11 +76,7 @@ if (fc.features.length !== 36) {
   throw new Error(`expected 36 states and union territories, got ${fc.features.length}`)
 }
 
-const projection = geoConicConformal()
-  .parallels([12.4729, 35.1728])   // Survey of India LCC standard parallels
-  .rotate([-80, 0])                // central meridian 80E
-  .precision(2)
-  .fitSize([W, H], fc)
+const projection = indiaProjection(fc)
 const path = geoPath(projection)
 
 const ringsOf = (geom) =>

@@ -1,4 +1,5 @@
 import geo from '../data/geo.json'
+import world from '../data/world.json'
 import photoCredits from '../data/photo-credits.json'
 import soundCredits from '../data/sound-credits.json'
 import './credits.css'
@@ -129,6 +130,27 @@ export function Credits() {
                 Modified for this app: simplified to about 2% of its original
                 vertices (Visvalingam, shape-preserving), reprojected conic
                 conformal and rendered to SVG paths.
+              </p>
+            </li>
+          </ul>
+        </section>
+
+        <section className="credits__section" aria-labelledby="credits-world">
+          <h2 id="credits-world">Neighbouring land</h2>
+          <ul className="credits__list">
+            <li className="credit-item" data-testid="credit-world-naturalearth">
+              <h3 className="credit-item__title">Neighbouring countries beyond India's border</h3>
+              <p className="credit-item__file">src/data/world.json</p>
+              <p className="credit-item__by">{world.attribution}</p>
+              <p className="credit-item__source">
+                <a href="https://www.naturalearthdata.com/">Natural Earth</a>, public domain —
+                no permission or attribution required. Credited anyway, in keeping with every
+                other source on this page.
+              </p>
+              <p className="credit-item__edit">
+                Modified for this app: countries other than India, cropped to a box around
+                India, erased against India's own depicted boundary, reprojected to match
+                src/data/geo.json and rendered to SVG paths.
               </p>
             </li>
           </ul>

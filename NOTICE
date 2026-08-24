@@ -2,7 +2,7 @@ Namaste India — Mor's Big Journey
 https://github.com/tkantk/India
 
 The MIT licence in LICENSE covers the code in this repository and nothing
-else. This repository also redistributes 32 files that other people made, and
+else. This repository also redistributes 33 files that other people made, and
 those keep their own licences. The split, file by file:
 
 --------------------------------------------------------------------------
@@ -35,7 +35,34 @@ shape-preserving), reprojected conic conformal, and rendered to SVG path data.
 See scripts/build-map.mjs and scripts/build-hitlayer.mjs.
 
 --------------------------------------------------------------------------
-3. PHOTOGRAPHS — individual licences, see src/data/photo-credits.json
+3. NEIGHBOURING LAND — NATURAL EARTH, PUBLIC DOMAIN
+--------------------------------------------------------------------------
+
+src/data/world.json is derived from Natural Earth's 1:50m Admin 0 (Countries)
+dataset:
+
+    https://www.naturalearthdata.com/
+    Public domain. "No permission is needed to use Natural Earth. Crediting
+    the authors is unnecessary."
+
+Credited anyway, on the credits screen (#/credits) — this project credits
+every third-party source it ships, required or not.
+
+Added for Task 5: the map used to draw India alone, in unbroken pale blue on
+every side, which is a picture that teaches a six-year-old India is an
+island. This layer is the neighbouring land beyond India's own border —
+Pakistan, China, Nepal, Bhutan, Bangladesh, Myanmar, Sri Lanka and a few more
+within a generous box around India — drawn beneath India's own map, muted and
+flat, never interactive.
+
+MODIFIED: countries other than India, cropped to a box around India, ERASED
+against India's own depicted boundary (not merely filtered by name — see
+scripts/build-world.mjs for why an ISO filter alone is not enough), projected
+with the identical conic conformal projection src/data/geo.json uses, and
+simplified to SVG path data. See scripts/build-world.mjs.
+
+--------------------------------------------------------------------------
+4. PHOTOGRAPHS — individual licences, see src/data/photo-credits.json
 --------------------------------------------------------------------------
 
 The 20 photographs in public/photos/ come from Wikimedia Commons and remain
@@ -51,7 +78,7 @@ stored byte for byte as it was delivered. That is a change of format and size,
 not of content, so none of these is an adaptation.
 
 --------------------------------------------------------------------------
-4. SOUNDS — individual licences, see src/data/sound-credits.json
+5. SOUNDS — individual licences, see src/data/sound-credits.json
 --------------------------------------------------------------------------
 
 The 11 sounds in public/audio/ come from Wikimedia Commons and remain under
@@ -81,7 +108,7 @@ Accordingly, the seven files below — the modified versions, not the originals
     public/audio/sfx/sparrow.m4a             CC BY-SA 3.0
 
 --------------------------------------------------------------------------
-5. NARRATION AUDIO
+6. NARRATION AUDIO
 --------------------------------------------------------------------------
 
 The narration in public/audio/en/ is synthesised from the scripts in

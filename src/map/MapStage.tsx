@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import geo from '../data/geo.json'
 import hitData from '../data/hit.json'
+import world from '../data/world.json'
 import { isCheap } from '../lib/cheapMode'
 import { recordTapRejection } from '../audio/diagnostics'
 import { bindCamera } from './camera'
@@ -11,10 +12,11 @@ import {
   baseMarkup, hitMarkup, buildOutlines, nearestOutline,
   type HitPlace, type Outline, type PointerSample,
 } from './hitLayer'
+import { seaMarkup } from './sea'
 import './map.css'
 
 /**
- * The map: four layers, in DOM order, each one shaped by WebKit's legacy SVG
+ * The map: five layers, in DOM order, each one shaped by WebKit's legacy SVG
  * engine — the one on every iPad this has to run on.
  *
  *   1. `.stage`  an HTML <div>. The only element that is ever transformed.
@@ -26,21 +28,40 @@ import './map.css'
  *                itself to `bindCamera` rather than letting the camera look
  *                it up by class. It also owns the one delegated tap — see
  *                PICK_ROOT in hitLayer.ts.
- *   2. `.base`   the visible art, with `pointer-events: none` on the group.
- *   3. `.hit`    coarse invisible geometry, `fill="none" stroke="none"
+ *   2. `.sea`    Task 5: the neighbouring land beyond India's own border —
+ *                Pakistan, China, Nepal, Bhutan, Bangladesh, Myanmar, Sri
+ *                Lanka and a few more within a generous box, muted and flat,
+ *                `pointer-events: none`. It exists so the map stops making a
+ *                claim it cannot back up: unbroken pale blue on every side of
+ *                India reads, to a six-year-old, as "India is an island",
+ *                which is false and which nothing in the narration corrects.
+ *                Beneath `.base` in DOM order — SVG paints later siblings on
+ *                top — so India's own opaque land always wins where the two
+ *                would otherwise overlap; `build-world.mjs` also erases every
+ *                neighbour polygon against India's depicted boundary before
+ *                this ever reaches the browser, so that overlap should not
+ *                exist in the first place. It shares `.base`/`.hit`/`.glow`'s
+ *                viewBox and is a child of `.stage` for the same reason they
+ *                are: the camera commits a new viewBox onto every svg child
+ *                of the stage on a flight (see `camera.ts`'s `flyTo`), and a
+ *                layer outside that loop would drift out from under the
+ *                coastline the moment the child zoomed in.
+ *   3. `.base`   the visible art, with `pointer-events: none` on the group.
+ *   4. `.hit`    coarse invisible geometry, `fill="none" stroke="none"
  *                pointer-events="fill"`.
- *   4. `.glow`   one copy of the currently lit path. The CSS drop-shadow()
+ *   5. `.glow`   one copy of the currently lit path. The CSS drop-shadow()
  *                goes on this <svg> root, which is a replaced element and can
  *                composite, never on the path inside it or on an SVG
  *                <filter> — both of those are WebKit's CPU three-pass blur.
  *
- * The two SVG bodies are strings injected once with `dangerouslySetInnerHTML`.
- * Written as JSX they would be 269 KB of path data for React's reconciler to
- * walk on every render; `<use>` would be worse still, since `SVGUseElement`
- * deep-clones its target into a shadow tree.
+ * The SVG bodies are strings injected once with `dangerouslySetInnerHTML`.
+ * Written as JSX they would be hundreds of KB of path data for React's
+ * reconciler to walk on every render; `<use>` would be worse still, since
+ * `SVGUseElement` deep-clones its target into a shadow tree.
  *
- * The markup and the snapping both live in `hitLayer.ts`, so the headless
- * browser probe (`npm run probe:map`) measures this map and not a copy of it.
+ * The markup and the snapping both live in `hitLayer.ts` (and, for the sea,
+ * `sea.ts`), so the headless browser probe (`npm run probe:map`) measures
+ * this map and not a copy of it.
  */
 
 const VIEW_BOX = geo.viewBox.join(' ')
@@ -67,6 +88,7 @@ const names: Record<string, string> = Object.fromEntries(
  */
 let baseCache: { __html: string } | null = null
 let hitCache: { __html: string } | null = null
+let seaCache: { __html: string } | null = null
 let outlines: Outline[] | null = null
 
 /**
@@ -96,6 +118,7 @@ export function MapStage({ onPick }: Props) {
   // and a new object here means a new DOM.
   const base = useMemo(() => (baseCache ??= { __html: baseMarkup(geo.places) }), [])
   const hit = useMemo(() => (hitCache ??= { __html: hitMarkup(hits, names) }), [])
+  const sea = useMemo(() => (seaCache ??= { __html: seaMarkup(world.places) }), [])
 
   /**
    * Whether this iPad gets the glow at all, decided once at mount.
@@ -207,6 +230,7 @@ export function MapStage({ onPick }: Props) {
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
         >
+          <svg className="sea" viewBox={VIEW_BOX} aria-hidden="true" dangerouslySetInnerHTML={sea} />
           <svg className="base" viewBox={VIEW_BOX} aria-hidden="true">
             <g pointerEvents="none" dangerouslySetInnerHTML={base} />
           </svg>

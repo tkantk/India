@@ -8,6 +8,7 @@ import { camera } from './camera'
 import { useMapNodes } from './useMapNodes'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
+import world from '../data/world.json'
 
 const slugs = Object.keys(geo.places)
 const mount = (onPick = vi.fn()) => ({ onPick, ...render(<MapStage onPick={onPick} />) })
@@ -119,7 +120,7 @@ describe('MapStage', () => {
     // whichever one it is, the handler is above it.
     const { container } = mount()
     const host = container.querySelector(`.${PICK_ROOT}`)!
-    for (const layer of ['svg.base', 'svg.hit', 'svg.glow']) {
+    for (const layer of ['svg.sea', 'svg.base', 'svg.hit', 'svg.glow']) {
       const el = container.querySelector(layer)!
       expect(host.contains(el), `${layer} is outside the pick root`).toBe(true)
       expect(host, `the pick root must not BE ${layer}`).not.toBe(el)
@@ -134,7 +135,7 @@ describe('MapStage', () => {
     const map = container.querySelector('.map')!
     const root = map.querySelector(`:scope > .${PICK_ROOT}`)!
     expect([...root.children].map((el) => `${el.tagName}.${el.getAttribute('class')}`))
-      .toEqual(['svg.base', 'svg.hit', 'svg.glow'])
+      .toEqual(['svg.sea', 'svg.base', 'svg.hit', 'svg.glow'])
     expect(root.querySelector(':scope > svg.base > g')!.getAttribute('pointer-events')).toBe('none')
     // The credit is a SIBLING of .map, not a child of it (Task 4): .map gets
     // framed narrower than the stage to leave the read-along room, and a
@@ -142,6 +143,37 @@ describe('MapStage', () => {
     // with it. map.css's `.map + .credit` only matches if the DOM agrees.
     expect(container.querySelector(':scope > p.credit')).not.toBeNull()
     expect(map.querySelector('p.credit')).toBeNull()
+  })
+
+  /**
+   * TASK 5: THE SEA. Neighbouring land, drawn once beneath India so the map
+   * stops implying India is an island — see `build-world.mjs` and `sea.ts`
+   * for the fuller reasoning. Three properties only React can prove:
+   * `svg.sea` is actually mounted with real content, it sits BEFORE
+   * `svg.base` in DOM order (SVG paints later siblings on top, so this is
+   * what makes India's own opaque land always win a border it shares with a
+   * neighbour), and it never becomes a tap target — the CSS half of that is
+   * asserted from source, the same reason the filter and credit-pill tests
+   * below read `map.css` directly rather than trusting jsdom's styling,
+   * which it does not apply.
+   */
+  it('draws the neighbouring land beneath India, and never taps it', () => {
+    const { container } = mount()
+    const stage = container.querySelector(`.${PICK_ROOT}`)!
+    const sea = container.querySelector('svg.sea')!
+    const base = container.querySelector('svg.base')!
+    expect(sea, 'no svg.sea layer').not.toBeNull()
+    expect(sea.querySelectorAll('path').length).toBe(Object.keys(world.places).length)
+
+    const kids = [...stage.children]
+    expect(kids.indexOf(sea)).toBeGreaterThanOrEqual(0)
+    expect(kids.indexOf(sea), 'svg.sea must come before svg.base to paint beneath it')
+      .toBeLessThan(kids.indexOf(base))
+
+    const css = readFileSync('src/map/map.css', 'utf8')
+    const rule = css.match(/\.map \.sea\s*\{([^}]*)\}/)
+    expect(rule, 'no .map .sea rule in map.css').not.toBeNull()
+    expect(rule![1]).toMatch(/pointer-events:\s*none\s*;/)
   })
 
   it('picks from an event that arrives via a different layer', () => {
@@ -263,9 +295,11 @@ describe('MapStage', () => {
 
     const flown = container.querySelector('svg.base')!.getAttribute('viewBox')
     expect(flown).not.toBe(geo.viewBox.join(' '))
-    // All three, together. The hit layer is what a tap is tested against: if
-    // it kept the old viewBox the map would go dead the moment a child zoomed.
-    for (const layer of ['svg.base', 'svg.hit', 'svg.glow']) {
+    // All four, together. The hit layer is what a tap is tested against: if
+    // it kept the old viewBox the map would go dead the moment a child
+    // zoomed; the sea layer is what would visibly drift out from under
+    // India's own coastline if it kept the old one.
+    for (const layer of ['svg.sea', 'svg.base', 'svg.hit', 'svg.glow']) {
       expect(container.querySelector(layer)!.getAttribute('viewBox'), layer).toBe(flown)
     }
     await camera.home({ duration: 0 })
