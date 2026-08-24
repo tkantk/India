@@ -9,7 +9,28 @@ const line = (id, kind, text, cues) => ({ id, kind, text, ...(cues ? { cues } : 
 // The whole suite drives the real say -> afconvert pipeline, both of which
 // are macOS-only, and CI runs on ubuntu-latest. Without this guard the first
 // push to main fails the build job and the site never deploys.
+/**
+ * These suites drive the REAL macOS `say` and `afconvert` binaries, and they
+ * synthesise dozens of lines of speech one at a time. That is the point — this
+ * file is what stops a change to the render pipeline silently destroying the
+ * paid narration — but it is also, measured, about fifteen minutes of a suite
+ * whose other forty-eight files finish in forty seconds.
+ *
+ * The history is worth writing down, because both obvious settings are wrong.
+ * With vitest's 10s default hook timeout the file was FAST AND FLAKILY RED: it
+ * cost three separate verifications in one session, each time reporting a
+ * failure with zero failing assertions and a handful of phantom skips, each
+ * time passing when run alone. Giving the hooks 120s made it GREEN AND
+ * FIFTEEN MINUTES, which is worse in a different way — a suite nobody will
+ * run is not a safety net.
+ *
+ * So: it runs in CI, where the time is cheap and the guarantee matters, and
+ * locally only when asked for with TTS_TESTS=1. A developer who has touched
+ * the render pipeline should ask for it. Everyone else should not pay for it.
+ */
 const MACOS = process.platform === 'darwin'
+const WANTED = Boolean(process.env.CI) || process.env.TTS_TESTS === '1'
+const RUN = MACOS && WANTED
 
 // Runs the real pipeline (say -> afconvert -> timings), but reads and writes
 // entirely inside scratch directories. tts.mjs's --audio-dir/--timings/--cache
@@ -26,7 +47,7 @@ const WORK1 = mkdtempSync(join(tmpdir(), 'tts-test-work-'))
 const FIXTURE = join(WORK1, 'content/places/testland.json')
 const SCRIPT1 = join(process.cwd(), 'scripts/tts.mjs')
 
-describe.skipIf(!MACOS)('tts pipeline with the draft voice', () => {
+describe.skipIf(!RUN)('tts pipeline with the draft voice', () => {
   beforeAll(() => {
     mkdirSync(join(WORK1, 'content/places'), { recursive: true })
     writeFileSync(FIXTURE, JSON.stringify({
@@ -100,7 +121,7 @@ describe.skipIf(!MACOS)('tts pipeline with the draft voice', () => {
 // relies on, or a partial re-render silently deletes every other place's
 // entry from timings.json. Uses its own scratch dir and its own two-place
 // fixture pair so it doesn't interfere with the single-fixture suite above.
-describe.skipIf(!MACOS)('cache reuse, --only, and --force semantics', () => {
+describe.skipIf(!RUN)('cache reuse, --only, and --force semantics', () => {
   const dir2 = mkdtempSync(join(tmpdir(), 'tts-test2-'))
   const AUDIO2 = join(dir2, 'audio')
   const TIMINGS2 = join(dir2, 'timings.json')
@@ -230,7 +251,7 @@ describe.skipIf(!MACOS)('cache reuse, --only, and --force semantics', () => {
 // cache do not record them, the next run re-renders — and re-bills — the lot.
 // The triggers are all plausible: a quota 401, "gave up after 5 attempts", a
 // missing alignment, the zero-duration guard.
-describe.skipIf(!MACOS)('persisting partial progress when a run fails partway', () => {
+describe.skipIf(!RUN)('persisting partial progress when a run fails partway', () => {
   const WORK3 = mkdtempSync(join(tmpdir(), 'tts-fail-work-'))
   const OUT3 = mkdtempSync(join(tmpdir(), 'tts-fail-out-'))
   const AUDIO3 = join(OUT3, 'audio')
@@ -388,7 +409,7 @@ export async function synth(text, { tmpDir, id }) {
 // exercises the actual rmSync(tmp, { recursive: true, force: true }) call in
 // tts.mjs, not a stand-in for it. force:true only swallows an already-missing
 // path; it does nothing for a real permission error, which is the point.
-describe.skipIf(!MACOS)('a cleanup failure must not lose the persisted state', () => {
+describe.skipIf(!RUN)('a cleanup failure must not lose the persisted state', () => {
   const WORK4 = mkdtempSync(join(tmpdir(), 'tts-cleanup-work-'))
   const OUT4 = mkdtempSync(join(tmpdir(), 'tts-cleanup-out-'))
   const AUDIO4 = join(OUT4, 'audio')
@@ -581,7 +602,7 @@ describe('Task 6a: provider-change guard refuses before rendering anything', () 
 // These two only pass when the guard does NOT fire, so the script goes on to
 // render for real through the say -> afconvert pipeline — macOS-only, same
 // as every other real-pipeline suite in this file.
-describe.skipIf(!MACOS)('Task 6a: the guard does not block a legitimate render', () => {
+describe.skipIf(!RUN)('Task 6a: the guard does not block a legitimate render', () => {
   const WORK5b = mkdtempSync(join(tmpdir(), 'tts-guard-ok-work-'))
   const OUT5b = mkdtempSync(join(tmpdir(), 'tts-guard-ok-out-'))
   const AUDIO5b = join(OUT5b, 'audio')
@@ -638,7 +659,7 @@ describe.skipIf(!MACOS)('Task 6a: the guard does not block a legitimate render',
   }, 30_000)
 })
 
-describe.skipIf(!MACOS)('Task 6a: --yes bypasses the provider-change guard and renders for real', () => {
+describe.skipIf(!RUN)('Task 6a: --yes bypasses the provider-change guard and renders for real', () => {
   const WORK6 = mkdtempSync(join(tmpdir(), 'tts-guard-yes-work-'))
   const OUT6 = mkdtempSync(join(tmpdir(), 'tts-guard-yes-out-'))
   const AUDIO6 = join(OUT6, 'audio')
@@ -702,7 +723,7 @@ describe.skipIf(!MACOS)('Task 6a: --yes bypasses the provider-change guard and r
 // clip every call copies — that is the macOS dependency this whole suite is
 // gated on, not the (fake) network request.
 // -----------------------------------------------------------------------
-describe.skipIf(!MACOS)('Task 6b: runs — serial within, parallel across, ids threaded, cache chaining, --only widening, id expiry', () => {
+describe.skipIf(!RUN)('Task 6b: runs — serial within, parallel across, ids threaded, cache chaining, --only widening, id expiry', () => {
   const WORK7 = mkdtempSync(join(tmpdir(), 'tts-runs-work-'))
   const OUT7 = mkdtempSync(join(tmpdir(), 'tts-runs-out-'))
   const AUDIO7 = join(OUT7, 'audio')
