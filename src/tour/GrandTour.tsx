@@ -791,10 +791,15 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
 
   return (
     <>
-      {/* Task 1 scaffolding: a read-only `?debug=audio` readout of the audio
-          clock, for finding which WebKit bug is actually firing on the
-          iPad before Task 2 attempts any repair. Renders nothing without
-          the flag; Task 12 deletes it once the repair is verified. */}
+      {/* Scaffolding, not a feature: a read-only `?debug=audio` readout of
+          the audio clock and the gesture gate, for answering which WebKit
+          bug fires, whether `isCheap()` latched true, and which taps got
+          rejected — on the real device, not by reasoning. Renders nothing
+          without the flag. DELIBERATELY KEPT past Plan 5 Task 6: as of this
+          commit nobody has reported what it says on the father's iPad — see
+          `docs/handover.md`'s "the audio/gesture debug panel" for the three
+          open questions. Delete it (this line, the import, the file and its
+          test) once they are answered, and not before. */}
       <AudioDebugPanel />
 
       {/*

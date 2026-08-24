@@ -16,8 +16,13 @@ import type { CheapModeDiagnostics } from '../lib/cheapMode'
  * repair, once this readout has said which bug it is.
  *
  * Surfaced behind `#/?debug=audio` — a query the child cannot reach by
- * tapping — and mounted in `GrandTour.tsx`. Task 12 deletes this file once
- * the repair is verified; it is scaffolding, not a feature.
+ * tapping — and mounted in `GrandTour.tsx`. It is scaffolding, not a
+ * feature, and deleting it is a one-line change (drop this file, its test,
+ * the `<AudioDebugPanel />` mount and `recordTapRejection` call) — but NOT
+ * YET: as of Plan 5 Task 6, nobody has read what this panel says on the
+ * father's own iPad. `docs/handover.md` lists the three open questions only
+ * a device readout can answer; delete this file once they are, and not
+ * before.
  */
 
 /** One `statechange` event the context actually fired. */
