@@ -171,9 +171,22 @@ Three things the judges singled out, from all three candidates.
 
 **This task is why the plan can survive 32 more states.** Nothing else here is unusual engineering; this is.
 
-**4a — the document lied, and could not be caught.** `docs/fact-check.md` cites Britannica in **14 rows** where Britannica blocked every fetch and no page was ever read. That is not a mistake anyone was careless to make — it is what happens when the record of a check is prose that nothing re-runs.
+**4a — the record cannot be re-run, and two corrections to how this plan described it.**
 
-Move the table into data: for each claim, the line id, the assertion, the source URL, and **the exact quoted words the source is supposed to contain**. Then `scripts/fact-check.mjs` re-fetches every source and confirms the quote is still there. A blocked fetch is a **failure**, not a silent pass — that is the single rule that would have caught the Britannica rows.
+**First correction: the Britannica failure was already caught and is documented in the file's own preamble.** It says so plainly — fourteen rows cited Britannica, seven as the only source, while Britannica returned HTTP 403 to every automated fetch. Earlier drafts of this plan described that as an undetected lie. It was detected, by a previous pass, and confessed in the document. Credit where due.
+
+**Second correction, and it changes the shape of this task: the document contains ZERO URLs.** All 109 rows cite sources by publication title — *"Forest Survey of India, India State of Forest Report 2019 Vol. II: 342,239 km²"*. This plan's earlier text assumed a URL existed per row to re-fetch. **None does**, and for some sources none ever will: a volume-and-page citation in a printed government report is not fetchable, and pretending otherwise would just move the lie.
+
+So the goal is not "re-fetch everything". It is: **make the difference between a checked claim and an asserted one machine-visible**, and stop the next ~510 rows from inheriting the current format.
+
+Move the table into `content/fact-check.json`, where every row carries its line id, the assertion, and a **verification** that is exactly one of:
+- `fetched` — a URL plus the exact words the page must contain. `scripts/fact-check.mjs` re-opens it and confirms. **A blocked fetch is a failure, not a silent pass** — that is the rule that catches a Britannica.
+- `cited` — a source with no fetchable URL, plus the exact quoted words and where they appear. A script cannot confirm this; it can confirm the row is *complete* and can count how many rows rest on it.
+- `derived` — checkable from this repo's own data, e.g. neighbours from `geo.json`. The script recomputes it.
+
+**The gate prints the mix.** "84 fetched, 19 cited, 6 derived" is a fact about how much of the corpus is actually verifiable, and it is the number that should worry someone when it drifts the wrong way as 32 states are added.
+
+**Backfill scope: require the new format for every new row; convert the existing 109 opportunistically.** Retrofitting URLs onto four already-audited places is lower value than making the next 510 rows checkable, and pretending otherwise would delay the thing that matters. Report how many of the 109 converted to `fetched` and how many stayed `cited`.
 
 **4b — 17.8% of already-checked lines were still wrong.** Re-run the corrected process over the four existing places and fix what it finds.
 
