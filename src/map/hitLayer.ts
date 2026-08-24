@@ -68,10 +68,12 @@ export const PICK_ROOT = 'stage'
  *
  * This number is reasoned judgment anchored to the platform constants
  * above, not a citation for children's tap kinematics specifically — no
- * such source was pulled for this change. `?debug=audio` now logs every
- * rejected tap's actual drift and duration (see `diagnostics.ts`), so a
- * session on a real iPad with a real child can correct this number with
- * real data rather than more reasoning.
+ * such source was pulled for this change. A real device session (the
+ * father's iPad, `#/?debug=audio`, Plan 6) has since confirmed the
+ * judgment: zero rejected taps logged, so this threshold is not eating any
+ * of his son's real taps. See `docs/handover.md`'s "the audio/gesture
+ * debug panel" for the raw readout — the panel itself was deleted once it
+ * had answered this.
  */
 export const TAP_MOVE_PX = 20
 
@@ -88,9 +90,8 @@ export const TAP_MOVE_PX = 20
  * comfortable room to still be mid-tap where an adult gesture recognizer
  * would already have called it a long-press, while staying nowhere near a
  * length anyone would mistake for a deliberate hold. Same asymmetry
- * argument as `TAP_MOVE_PX`: reasoned judgment from the platform constant
- * above, not a citation, and instrumented in `?debug=audio` so real
- * rejected-tap durations can correct it later.
+ * argument as `TAP_MOVE_PX`, and confirmed the same way: a real device
+ * session logged zero rejected taps — see that constant's own comment.
  */
 export const TAP_MAX_MS = 900
 
@@ -99,9 +100,8 @@ export type PointerSample = { pointerId: number; x: number; y: number; t: number
 
 /** Why `describeTap` declined a gesture, and by how much — the numbers the
  *  chosen `TAP_MOVE_PX`/`TAP_MAX_MS` were reasoned judgment about, not a
- *  measurement of any real child's thumb. `MapStage` logs these to
- *  `?debug=audio` (see `diagnostics.ts`) so a session on a real iPad with a
- *  real child can correct the thresholds with real data. */
+ *  measurement of any real child's thumb, since confirmed by a real device
+ *  session — see `TAP_MOVE_PX`'s own comment. */
 export type TapVerdict =
   | { tap: true }
   | { tap: false; reason: 'pointer' | 'moved' | 'slow'; distancePx: number; durationMs: number }

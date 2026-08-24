@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  collectRuns, flattenRuns, legacyKey, chainedKey, keysForRun, selectRuns, planRun, planFromCache,
+  collectRuns, flattenRuns, legacyKey, chainedKey, keysForRun, selectRuns, planRun, planFromCache, applyBatching,
 } from './runs.mjs'
 
 const line = (id, text) => ({ id, kind: 'card', text })
@@ -69,6 +69,21 @@ describe('collectRuns: the grouping is derived from the content', () => {
     expect(ids.slice(10, 13)).toEqual(['tour.01', 'tour.02', 'tour.03'])
     expect(ids.slice(13)).toEqual(['ui.play', 'ui.pause'])
   })
+
+  // BATCHING (a rule distinct from conditioning — see this function's own
+  // comment): every place line needs to know which place it belongs to, so
+  // selectRuns() can widen a narrow match to the whole place and tts.mjs can
+  // force the whole place to render together once any one line does.
+  it("tags every place line with that place's own id, and tags no tour or ui line at all", () => {
+    const placeRuns = runs.filter((r) => r[0].id.startsWith('aaastate'))
+    for (const run of placeRuns) expect(run[0].place).toBe('aaastate')
+
+    const tourRun = runs.find((r) => r[0].id === 'tour.01')
+    for (const line of tourRun) expect(line.place).toBeUndefined()
+
+    const uiRuns = runs.filter((r) => r[0].id.startsWith('ui.'))
+    for (const run of uiRuns) expect(run[0].place).toBeUndefined()
+  })
 })
 
 describe('collectRuns against the real, shipped content', () => {
@@ -88,6 +103,36 @@ describe('collectRuns against the real, shipped content', () => {
     // bounded so this does not need updating every time a place is added.
     expect(singles.length).toBeGreaterThan(30)
     for (const run of singles) expect(run).toHaveLength(1)
+  })
+
+  // BATCHING against the real corpus: every one of a real place's ten lines
+  // (proven by Plan 6's own docs — species/short/lang — to be exactly intro
+  // + 4 card + 5 landmarks) must carry that SAME place id, and a different
+  // place's lines must never carry it, or a --only on one place could widen
+  // into another's.
+  it("every real place's own lines share one place id, and no two places share theirs", () => {
+    const runs = collectRuns()
+    const byPlace = new Map()
+    for (const run of runs) {
+      const place = run[0].place
+      if (place === undefined) continue
+      if (!byPlace.has(place)) byPlace.set(place, [])
+      byPlace.get(place).push(...run.map((l) => l.id))
+    }
+    expect([...byPlace.keys()].sort()).toEqual(['delhi', 'kerala', 'odisha', 'rajasthan'])
+    for (const [place, ids] of byPlace) {
+      expect(ids.length, `${place} does not have exactly 10 lines`).toBe(10)
+      for (const id of ids) expect(id.startsWith(`${place}.`), `${id} tagged with the wrong place`).toBe(true)
+    }
+  })
+
+  // The point of doing batching this way (see applyBatching's own comment):
+  // a place line's cache KEY must be untouched by any of this — only
+  // planning is affected. keysForRun is oblivious to `place` entirely.
+  it('a real place line still keys exactly like legacyKey — batching never changes the key format', () => {
+    const runs = collectRuns()
+    const delhiIntro = runs.find((r) => r[0].id === 'delhi.intro')
+    expect(keysForRun(delhiIntro, 'sig')).toEqual([legacyKey('sig', delhiIntro[0].text)])
   })
 })
 
@@ -186,6 +231,133 @@ describe('selectRuns: --only widens to the whole run, or errors', () => {
 
   it('throws rather than silently selecting nothing on a typo', () => {
     expect(() => selectRuns(runs, 'tour.99')).toThrow(/matched no lines/)
+  })
+})
+
+describe('selectRuns: BATCHING widens a place match to the whole place, distinctly from chaining', () => {
+  const placeLine = (id, place, text = 'x') => ({ id, kind: 'card', text, place })
+  const delhi = [
+    [placeLine('delhi.intro', 'delhi')],
+    [placeLine('delhi.card.animal', 'delhi')],
+    [placeLine('delhi.card.food', 'delhi')],
+    [placeLine('delhi.humayuns-tomb.line', 'delhi')],
+  ]
+  const kerala = [[placeLine('kerala.intro', 'kerala')], [placeLine('kerala.card.animal', 'kerala')]]
+  const tour = [line('tour.01', 'a'), line('tour.02', 'b')] // no `place` at all
+  const runs = [...delhi, ...kerala, tour]
+
+  it('matching one place line widens to every run sharing its place, not just the match', () => {
+    const selected = selectRuns(runs, 'delhi.card.animal')
+    expect(selected.flat().map((l) => l.id).sort()).toEqual(
+      ['delhi.card.animal', 'delhi.card.food', 'delhi.humayuns-tomb.line', 'delhi.intro'].sort(),
+    )
+  })
+
+  it('never pulls in a DIFFERENT place, even one that sorts next to it', () => {
+    const selected = selectRuns(runs, 'delhi.intro')
+    expect(selected.flat().some((l) => l.id.startsWith('kerala'))).toBe(false)
+  })
+
+  it('matching the whole place by its own prefix gives the identical result as matching one of its lines', () => {
+    const byPrefix = selectRuns(runs, 'delhi').flat().map((l) => l.id).sort()
+    const byOneLine = selectRuns(runs, 'delhi.card.food').flat().map((l) => l.id).sort()
+    expect(byPrefix).toEqual(byOneLine)
+  })
+
+  it('a run with no `place` at all (the tour) is untouched by this widening — chaining still owns that widening', () => {
+    const selected = selectRuns(runs, 'tour.01')
+    expect(selected).toHaveLength(1)
+    expect(selected[0].map((l) => l.id)).toEqual(['tour.01', 'tour.02'])
+  })
+})
+
+describe('applyBatching: a place renders as a whole the moment any one of its lines is EDITED', () => {
+  // `rendered` distinguishes the two ways a line can be stale: a real prior
+  // entry with a now-mismatched key (an EDIT — `rendered: true`) versus no
+  // entry at all (never rendered — a brand-new place's first render, or a
+  // line a failed run never reached; `rendered: false`). Only the first
+  // shape should ever pull a place's other, still-good lines along with it.
+  const placeItem = (id, place, effectiveStart, rendered = true) => ({
+    run: [{ id, place, text: id }],
+    keys: ['k'],
+    plan: { effectiveStart, seedIds: [] },
+    entries: [{ key: rendered ? 'some-previous-key' : undefined, requestId: undefined, renderedAt: undefined }],
+  })
+
+  it('a fully-cached place is left completely untouched — no plan object is replaced', () => {
+    const items = [placeItem('delhi.intro', 'delhi', 1), placeItem('delhi.card.animal', 'delhi', 1)]
+    const before = items.map((i) => i.plan)
+    applyBatching(items)
+    expect(items.map((i) => i.plan)).toEqual(before) // same objects, same values: nothing touched
+    for (const i of items) expect(i.plan.effectiveStart).toBe(1)
+  })
+
+  it('one EDITED line forces every OTHER line of the same place to render too, even though their own keys still match', () => {
+    const items = [
+      placeItem('delhi.intro', 'delhi', 1),        // cached
+      placeItem('delhi.card.animal', 'delhi', 0),  // the one edited line: was rendered before, key no longer matches
+      placeItem('delhi.card.food', 'delhi', 1),    // cached
+    ]
+    applyBatching(items)
+    expect(items.every((i) => i.plan.effectiveStart === 0)).toBe(true)
+    expect(items.every((i) => i.plan.seedIds.length === 0)).toBe(true)
+  })
+
+  // The regression this distinction exists to prevent (caught by
+  // scripts/tts.test.mjs's real-pipeline "does not re-render (re-bill) the
+  // completed lines on the next run" test the first time this shipped
+  // without it): a place recovering from a run that failed partway has
+  // several lines with NO prior entry at all, not an edited one. Those must
+  // never drag an already-good, already-cached sibling back into the render
+  // loop — that would silently re-bill a clip nothing is wrong with, every
+  // single time a failed render is retried.
+  it('a line that was simply never rendered (no prior entry) does NOT force its cached siblings to render', () => {
+    const items = [
+      placeItem('delhi.intro', 'delhi', 1),               // already rendered, still cached: fine
+      placeItem('delhi.card.animal', 'delhi', 1),          // already rendered, still cached: fine
+      placeItem('delhi.card.food', 'delhi', 0, false),     // never rendered at all — not an edit
+    ]
+    applyBatching(items)
+    expect(items[0].plan.effectiveStart).toBe(1) // untouched — still reused from cache
+    expect(items[1].plan.effectiveStart).toBe(1) // untouched — still reused from cache
+    expect(items[2].plan.effectiveStart).toBe(0) // renders anyway: it has nothing cached regardless
+  })
+
+  it('a place with EVERY line new (no prior entries anywhere) is not treated as "edited" — it is just a first render', () => {
+    const items = [
+      placeItem('newplace.intro', 'newplace', 0, false),
+      placeItem('newplace.card.animal', 'newplace', 0, false),
+    ]
+    const before = items.map((i) => i.plan)
+    applyBatching(items)
+    // Nothing forced anything — both were already going to render on their
+    // own merits (no cache entry at all), which is the correct outcome, not
+    // a coincidence: this proves the group-wide override never fired.
+    expect(items.map((i) => i.plan)).toEqual(before)
+  })
+
+  it('never crosses places — an edited line in one place does not touch a fully-cached different place (Odisha stays Odisha)', () => {
+    const items = [
+      placeItem('delhi.intro', 'delhi', 0),   // edited: was rendered before, key no longer matches
+      placeItem('odisha.intro', 'odisha', 1), // cached, unrelated place
+    ]
+    applyBatching(items)
+    expect(items[0].plan.effectiveStart).toBe(0)
+    expect(items[1].plan.effectiveStart).toBe(1) // untouched
+  })
+
+  it('ignores runs with no `place` at all (tour beats, ui lines) — they are not part of any batch', () => {
+    const items = [{ run: [{ id: 'ui.play', text: 'Play' }], keys: ['k'], plan: { effectiveStart: 0, seedIds: [] } }]
+    const before = items[0].plan
+    applyBatching(items)
+    expect(items[0].plan).toBe(before)
+  })
+
+  it('groups every run under its place id in the returned map, whether stale or cached', () => {
+    const items = [placeItem('delhi.intro', 'delhi', 0), placeItem('delhi.card.animal', 'delhi', 1)]
+    const { byPlace } = applyBatching(items)
+    expect([...byPlace.keys()]).toEqual(['delhi'])
+    expect(byPlace.get('delhi')).toHaveLength(2)
   })
 })
 

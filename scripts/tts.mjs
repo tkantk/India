@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { timingsFromAlignment, estimateTimings, cueTimes } from './lib/words.mjs'
 import { isCached, readCacheEntry, providerChanged, signatureFingerprint, billingVerdict } from './lib/cache.mjs'
-import { collectRuns, flattenRuns, keysForRun, selectRuns, planRun } from './lib/runs.mjs'
+import { collectRuns, flattenRuns, keysForRun, selectRuns, planRun, applyBatching } from './lib/runs.mjs'
 
 const flag = (name, def) => process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? def
 
@@ -113,8 +113,23 @@ const runPlans = runs.map((run) => {
   const matches = run.map((line, i) => isCachedLine(line, keys[i]))
   const entries = run.map((line) => readCacheEntry(cache[line.id]))
   const plan = planRun(run, { matches, entries, force, now: RUN_NOW })
-  return { run, keys, plan }
+  return { run, keys, plan, entries }
 })
+
+// ---------------------------------------------------- Task: the batching rule
+//
+// A DIFFERENT rule from conditioning (see runs.mjs's own comments at length)
+// — added after a real incident: three places had eight lines corrected for
+// factual accuracy and re-rendered a day after the other twenty-two, and
+// even with byte-identical settings the paid provider came back with an
+// audibly different take on the second day. It does not reproduce its own
+// previous output, so "only the line that changed" is not a safe scope for
+// a place's narration — the other nine lines must render again too, in the
+// same pass, purely so the whole place is one take. `applyBatching()` does
+// the deciding (see its own comment); it never touches `keysForRun`/the
+// cache key format, so an untouched place — Odisha, today — is never
+// re-billed by a change somewhere else in the corpus.
+const { byPlace } = applyBatching(runPlans)
 
 let preflightChars = null
 
@@ -137,6 +152,21 @@ if (providerName === 'elevenlabs') {
     console.log(
       `  ${run[0].id}..${run[run.length - 1].id} is one chained run (${run.length} lines): ` +
       `this pass renders ${scope}.`,
+    )
+  }
+
+  // Say the same thing for BATCHING, plainly, and separately, so it is never
+  // mistaken for the chained-run message above: editing one line of a place
+  // re-renders that place's ten lines, together, and here is what that
+  // costs — never chained to one another, still ten independent requests.
+  for (const [place, items] of byPlace) {
+    const stale = items.filter(({ plan }) => plan.effectiveStart === 0)
+    if (stale.length === 0) continue
+    const chars = stale.reduce((a, { run }) => a + run[0].text.length, 0)
+    console.log(
+      `  ${place}.* is a ${items.length}-line batch (never chained — each still its own request): ` +
+      `this pass renders all ${stale.length} of its ${items.length} lines, ` +
+      `${chars.toLocaleString()} characters, about $${(chars / 1000 * 0.10).toFixed(2)}.`,
     )
   }
 

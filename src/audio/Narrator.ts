@@ -284,12 +284,17 @@ export class Narrator {
   // -------------------------------------------------------- diagnostics-only
 
   /**
-   * Everything in this section exists only for `?debug=audio` (see
-   * `src/audio/diagnostics.ts`). Every member is read-only: nothing here may
-   * change what the engine does, only report it. A probe that could repair
-   * the bug it is measuring would destroy the evidence Task 1 exists to
-   * collect — that repair work is Task 2's, once the readout says which of
-   * the four bugs is actually firing.
+   * Everything in this section was built for `?debug=audio` (`src/audio/
+   * diagnostics.ts`, Plan 4-6), a read-only panel that answered which
+   * WebKit audio bug (if any) fires on a real device and whether the
+   * finger-tracing gesture actually mounts. A real device session (the
+   * father's iPad) confirmed the answers — no stuck clock, `isCheap()`
+   * false, nothing rejected — and the panel was deleted once it had; see
+   * `docs/handover.md`'s "the audio/gesture debug panel" for the raw
+   * readout. These getters are left in place, harmless and unused, in case
+   * a future device regression needs the same read-only instrumentation
+   * again. Every member is still read-only on principle: nothing here may
+   * change what the engine does, only report it.
    */
 
   /** Raw `ctx.state`, never coerced or interpreted. The panel's whole point

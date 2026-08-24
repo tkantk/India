@@ -282,19 +282,118 @@ new state.
 
 Why this matters for cost and editing: a run of one uses `legacyKey(signature,
 text)` — a plain hash of the line's own text — so **editing one place's
-`festival` line re-renders only that one line.** A run of more than one (the
-tour) uses `chainedKey(signature, text, nextText, prevKey)`, which folds in
-the *next* line's text and the *previous* line's own key — so **editing any
-one beat of the tour re-renders that beat and every beat after it in the
-chain**, because each key depends on the one before it. This is deliberate
-(ElevenLabs' `next_text` is a real prosody lookahead, not bookkeeping — it
-audibly affects the segment before it) but it is also why a one-word tour
-fix can cost a full tour re-render while a one-word place-card fix costs
-exactly one line. If a future state screen ever wants prosodic continuity
-across multiple lines (unlikely — a card is tapped independently, not read
-straight through), it would have to become a run of more than one on
-purpose; by default, keep every new line a run of one and get the cheap key
-for free.
+`festival` line changes only that one line's cache key.** A run of more than
+one (the tour) uses `chainedKey(signature, text, nextText, prevKey)`, which
+folds in the *next* line's text and the *previous* line's own key — so
+**editing any one beat of the tour re-renders that beat and every beat after
+it in the chain**, because each key depends on the one before it. This is
+deliberate (ElevenLabs' `next_text` is a real prosody lookahead, not
+bookkeeping — it audibly affects the segment before it) but it is also why a
+one-word tour fix can cost a full tour re-render while a one-word place-card
+fix changes only one key. If a future state screen ever wants prosodic
+continuity across multiple lines (unlikely — a card is tapped independently,
+not read straight through), it would have to become a run of more than one
+on purpose; by default, keep every new line a run of one and get the cheap
+key for free.
+
+**"Changes only that one line's cache key" is not the same claim as "costs
+only that one line's render"** — see the batching rule immediately below,
+added after this project's first real ElevenLabs re-render experience: a
+cheap key and a seamless-sounding place are different guarantees, and only
+one of them was ever actually made by runs-of-one on their own.
+
+### The batching rule — a place re-renders as a whole, and this is NOT conditioning
+
+Added 2026-08-24, after the father reported *"the voice is a bit different a
+bit more deep and someplaces its fine"* across the four seed places. The
+diagnosis: three of the four places (Delhi, Kerala, Rajasthan) had their
+clips split across **two different paid render sessions**, one day apart —
+eight lines, corrected for factual accuracy in an earlier plan
+(`delhi.card.festival`, `delhi.humayuns-tomb.line`, `delhi.intro`,
+`kerala.card.animal`, `kerala.card.hello`, `rajasthan.card.hello`,
+`rajasthan.chand-baori.line`, `rajasthan.intro`), were re-rendered a day
+after the other twenty-two. Odisha, whose ten lines all came from the same
+22 August session, is the one place he said sounds fine.
+
+**The settings did not drift.** `stability 0.55`, `similarity_boost 0.75`,
+`speed 0.85`, `use_speaker_boost true`, model `eleven_multilingual_v2`, and
+`elevenlabs.mjs`'s own `signature()` (which the cache key folds in) were all
+byte-identical across both sessions. The only change on the 23rd was adding
+`previous_request_ids`/`next_text` support, and both are empty for a place
+line, because places are runs of one (see above) — so neither line of the
+two sessions was ever conditioned on the other. **The same request, sent
+twice, produced an audibly different take.** ElevenLabs does not reproduce
+its own previous output for identical input. This is the whole finding, and
+it means a cheap cache key (runs-of-one, above) and a seamless-sounding place
+are different guarantees — getting the first one right, on its own, was
+never enough to promise the second.
+
+**The rule:** a place must re-render **as a unit** — all ten lines, in one
+script invocation — whenever any one of its lines changes. This is
+**BATCHING**, and it is deliberately a different rule from **CONDITIONING**
+(the runs-of-one section immediately above), even though both now live in
+the same two files (`scripts/lib/runs.mjs`, `scripts/tts.mjs`). Do not
+confuse them, and do not "simplify" one into the other:
+
+- **Conditioning** decides whether one line's *audio* is chained to
+  another's via `previous_request_ids`/`next_text` — whether the request
+  sent to the provider references a sibling request at all. This is what
+  makes a run a run of *one* versus *many*, and the reasoning for keeping
+  every place line a run of one is unchanged and still correct: chaining an
+  independently-tapped card line to whatever rendered before it would make
+  it open like the continuation of a sentence the child never heard.
+  **Batching must never start chaining place lines to fix a drift
+  problem** — that would reintroduce exactly the failure mode conditioning
+  was built to avoid, to fix a different failure mode entirely.
+- **Batching** decides which lines a render *pass* includes and actually
+  renders, so that a place's ten independent, unchained, single-line
+  requests all still happen in the same sitting. It never appears in a
+  request body and never changes a line's own cache key format.
+
+**How it is implemented, and why not the obvious way.** The first draft of
+this fix folded a hash of the whole place's text into every one of its
+lines' cache keys, so that editing any line changed every line's key at
+once. That is wrong, and was caught by `scripts/tts.test.mjs`'s own
+partial-failure regression suite before it shipped: changing the key
+*format* invalidates it for **every** place immediately, the day the change
+lands, including places nobody edited — Odisha would have been re-rendered
+(and re-billed) by this fix alone, which is the opposite of "leave Odisha
+alone." The actual implementation never touches `keysForRun` or the cache
+key format at all:
+
+1. `collectRuns()` tags every place line with a `place` field (that place's
+   own `id`) — a plain grouping label, not part of any key.
+2. `selectRuns()` widens a narrow `--only` match (`--only=delhi.card.food`)
+   to every run sharing that line's `place`, the same way it already widens
+   a matched tour beat to the whole chained run — so a place's other nine
+   lines are never left out of scope just because the edit was narrow.
+3. `applyBatching()` (`scripts/lib/runs.mjs`) is the actual trigger, run
+   once per pass in `scripts/tts.mjs` after every run's own cache state is
+   known: if any line in a place's group is **genuinely edited** — it *was*
+   rendered before (a cache entry exists) but its key no longer matches —
+   every line in that group is forced to render, `{ effectiveStart: 0 }`,
+   even the ones whose own key still matches perfectly.
+
+**The "genuinely edited" qualifier is load-bearing, not incidental.** A line
+with *no* prior cache entry at all — a brand-new place's first-ever render,
+or a line a previous run never reached because it failed partway through —
+does not count, even though it also needs rendering. The first shape of this
+fix treated "needs rendering" and "was edited" as the same signal and got
+this wrong: it forced a partially-failed run's already-good, already-cached
+lines to re-render (and re-bill) on every retry, which `scripts/tts.test.mjs`
+already had a named regression test for ("does not re-render (re-bill) the
+completed lines on the next run") — this is the test that caught it.
+`scripts/tts.test.mjs`'s own `batching:` describe block now drives the real
+pipeline end to end (edit one line, run unscoped, assert all ten lines of
+that place re-render while an untouched second place does not) specifically
+so this distinction cannot silently regress again.
+
+**What the preflight says.** `npm run tts:final` (dry, no `--yes`) prints a
+line per affected place — `"<place>.* is a N-line batch (never chained —
+each still its own request): this pass renders all N of its N lines, X
+characters, about $Y"` — deliberately worded differently from the existing
+chained-run message above it, so the two are never mistaken for each other
+on screen either.
 
 ### The parked tour position (`tourPosition.ts`) and the `invite` field
 
@@ -557,41 +656,48 @@ comments if you need the full argument.
 
 ---
 
-## The audio/gesture debug panel — deliberately retained
+## The audio/gesture debug panel — answered, and now deleted
 
 Plan 4 built `src/audio/diagnostics.ts` (`AudioDebugPanel`, behind
-`#/?debug=audio`) to answer three questions a real device test needs to
-answer before the panel can be safely deleted. **As of this task, all three
-are still open** — the father opened the debug URL during a device test but
-never reported back what it said, so nothing here was actually answered:
+`#/?debug=audio`) to answer three questions a real device test needed to
+answer before the panel could be safely deleted. **2026-08-24: all three are
+now answered**, from the father's own screenshot of `#/?debug=audio` on his
+iPad:
 
-1. **Which WebKit audio bug fires.** At least four different open WebKit
-   bugs (263627, 273511, 281566, 283419) can each produce the symptom
-   reported from the first device test ("Tap to carry on" appearing,
-   pausing unreliable). The panel's `clockAdvancing` reading — derived only
-   from comparing `currentTime` against wall-clock time, never from
-   `ctx.state`, because two of those bugs report `state === "running"`
-   while `currentTime` is frozen — is the only thing that can say which one
-   it actually is on his iPad.
-2. **Whether `isCheap()` latched `true`.** If it did, `Outline.tsx`'s
-   finger-tracing gesture (and every other `!isCheap()`-gated art effect,
-   including `Trace` itself) never mounts at all, and everything Plan 4
-   built to react to a traced finger is silently inert on his device.
-   Nobody has looked at the panel's `isCheap()` line to find out.
-3. **Which taps the gesture gate rejected, and by how much.**
-   `hitLayer.ts`'s `TAP_MOVE_PX` (20px) and `TAP_MAX_MS` (900ms) are
-   reasoned judgement — deliberately widened from adult platform defaults
-   for a six-year-old's less precise touch — not a measurement of any real
-   child's thumb. `MapStage.tsx` calls `recordTapRejection()` on every
-   rejected tap specifically so a real device session can replace the
-   reasoning with a reading; no session has done so yet.
+```
+isCheap()  false  (slow false, medianFrame 17.0ms, reducedMotion false)
+state      running     clockAdvancing true     stuck false
+resume()   settled in 82ms
+recent rejected taps: (none)
+```
 
-**Do not delete the panel or its test until a device session has actually
-reported these three readouts.** When it has, deleting it is exactly the
-one-line change both `diagnostics.ts`'s and `GrandTour.tsx`'s own comments
-describe: remove the `<AudioDebugPanel />` mount and its import in
-`GrandTour.tsx`, remove `recordTapRejection`'s call site in `MapStage.tsx`
-(and its import), and delete `src/audio/diagnostics.{ts,test.ts}`.
+1. **Which WebKit audio bug fires: none of them.** `state` is `running` and
+   `clockAdvancing` is `true` — the audio clock is genuinely advancing, not
+   one of the two bugs (263627, 283419) that report `state === "running"`
+   while `currentTime` sits frozen. `resume()` settled in 82ms, ruling out
+   bug 281566 (a `resume()` promise that never settles). `stuck` is `false`.
+   No sign of any of the four bugs this panel existed to distinguish between.
+2. **Whether `isCheap()` latched `true`: no — `false`.** The finger-tracing
+   gesture (`Outline.tsx`'s `Trace`, and every other `!isCheap()`-gated art
+   effect) genuinely mounts on his iPad; nothing Plan 4 built for a traced
+   finger is silently inert on his device. `medianFrame 17.0ms` is
+   comfortably inside a 60fps frame budget, and `reducedMotion` is off.
+3. **Which taps the gesture gate rejected: none.** "recent rejected taps:
+   (none)" — `hitLayer.ts`'s `TAP_MOVE_PX` (20px) and `TAP_MAX_MS` (900ms),
+   reasoned judgement widened from adult platform defaults for a
+   six-year-old's less precise touch, are not eating any of his son's real
+   taps. The reasoning did not need correcting.
+
+**The panel has been deleted** — `src/audio/diagnostics.{ts,test.ts}`, the
+`<AudioDebugPanel />` mount and import in `GrandTour.tsx`, and
+`recordTapRejection`'s call site and import in `MapStage.tsx` — exactly the
+one-line-each change its own comments described, now that the readout it
+existed to produce has actually been read. `Narrator.ts`'s `diag*` getters
+(`diagState`, `diagCurrentTime`, `diagStateChanges`, `diagResumeSettled`,
+`diagResumeMs`) were left in place, unused but harmless, in case a future
+device regression needs the same read-only instrumentation again — see that
+section's own updated comment. `hitLayer.ts`'s `TAP_MOVE_PX`/`TAP_MAX_MS`
+comments were updated to point here instead of the now-deleted file.
 
 ---
 

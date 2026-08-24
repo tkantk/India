@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { getNarrator } from '../audio/Narrator'
-import { AudioDebugPanel } from '../audio/diagnostics'
 import { camera, PLACE_PADDING } from '../map/camera'
 import { STAGGER_MS, useMapNodes } from '../map/useMapNodes'
 import type { MapApi } from '../map/useMapNodes'
@@ -791,17 +790,6 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
 
   return (
     <>
-      {/* Scaffolding, not a feature: a read-only `?debug=audio` readout of
-          the audio clock and the gesture gate, for answering which WebKit
-          bug fires, whether `isCheap()` latched true, and which taps got
-          rejected — on the real device, not by reasoning. Renders nothing
-          without the flag. DELIBERATELY KEPT past Plan 5 Task 6: as of this
-          commit nobody has reported what it says on the father's iPad — see
-          `docs/handover.md`'s "the audio/gesture debug panel" for the three
-          open questions. Delete it (this line, the import, the file and its
-          test) once they are answered, and not before. */}
-      <AudioDebugPanel />
-
       {/*
         `onPickState` is withheld — not merely a picker that does nothing —
         for as long as an invite is open. `TourStage` already falls back to

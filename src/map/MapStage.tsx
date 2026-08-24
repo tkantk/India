@@ -4,7 +4,6 @@ import geo from '../data/geo.json'
 import hitData from '../data/hit.json'
 import world from '../data/world.json'
 import { isCheap } from '../lib/cheapMode'
-import { recordTapRejection } from '../audio/diagnostics'
 import { bindCamera } from './camera'
 import { bindMapNodes } from './useMapNodes'
 import {
@@ -205,11 +204,7 @@ export function MapStage({ onPick }: Props) {
     down.current.delete(e.pointerId)
     if (!started) return
     const verdict = describeTap(started, sample(e))
-    if (verdict.tap) { pick(e); return }
-    // Not a repair — see `recordTapRejection`'s own docstring — only a
-    // record, for whoever is watching `?debug=audio` on the device where a
-    // real child's tap just missed the gate.
-    recordTapRejection(verdict.reason, verdict.distancePx, verdict.durationMs)
+    if (verdict.tap) pick(e)
   }
 
   /** The browser cancels ONE gesture out from under us — a native scroll

@@ -245,6 +245,100 @@ describe.skipIf(!RUN)('cache reuse, --only, and --force semantics', () => {
   }, 30_000)
 })
 
+// -----------------------------------------------------------------------
+// The batching rule (distinct from conditioning/chaining — see runs.mjs's
+// own comments at length). Added after a real incident: three places had
+// eight lines corrected for factual accuracy and re-rendered a day after
+// the other twenty-two, and even with byte-identical settings the paid
+// provider came back with an audibly different take on the second day — it
+// does not reproduce its own previous output. So a place's ten lines must
+// render together, in the SAME pass, the moment any ONE of them needs to —
+// not just the line that actually changed. This drives the real pipeline
+// end to end (unlike runs.test.mjs's unit tests of applyBatching/
+// selectRuns in isolation) specifically to prove the two compose correctly
+// through tts.mjs's own wiring.
+// -----------------------------------------------------------------------
+describe.skipIf(!RUN)('batching: editing one line of a place re-renders the whole place, together', () => {
+  const dirB = mkdtempSync(join(tmpdir(), 'tts-batch-'))
+  const AUDIO_B = join(dirB, 'audio')
+  const TIMINGS_B = join(dirB, 'timings.json')
+  const CACHE_B = join(dirB, 'cache.json')
+  const WORK_B = mkdtempSync(join(tmpdir(), 'tts-batch-work-'))
+  const SCRIPT_B = join(process.cwd(), 'scripts/tts.mjs')
+
+  const EDITED = 'batchplaceone'
+  const OTHER = 'batchplacetwo'
+  const fixturePath = (id) => join(WORK_B, 'content/places', `${id}.json`)
+
+  const place = (id, cap) => ({
+    id, name: id, type: 'state', capital: cap, ambience: 'plains',
+    intro: line(`${id}.intro`, 'intro', `${id} welcomes every visitor warmly today.`),
+    card: {
+      animal: line(`${id}.card.animal`, 'card', 'An animal lives here.'),
+      food: line(`${id}.card.food`, 'card', 'People eat well.'),
+      festival: line(`${id}.card.festival`, 'card', 'They celebrate often.'),
+      hello: line(`${id}.card.hello`, 'card', 'People say hello.'),
+    },
+    landmarks: Array.from({ length: 5 }, (_, i) => ({
+      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      line: line(`${id}.lm${i}.line`, 'landmark', `Spot number ${i} is nice.`),
+    })),
+  })
+
+  const run = (...args) => execFileSync('node', [
+    SCRIPT_B, '--provider=say',
+    `--audio-dir=${AUDIO_B}`, `--timings=${TIMINGS_B}`, `--cache=${CACHE_B}`,
+    ...args,
+  ], { encoding: 'utf8', cwd: WORK_B })
+
+  const idsOf = (id) => [
+    `${id}.intro`, `${id}.card.animal`, `${id}.card.food`, `${id}.card.festival`, `${id}.card.hello`,
+    ...Array.from({ length: 5 }, (_, i) => `${id}.lm${i}.line`),
+  ]
+  const mtimesOf = (id) =>
+    Object.fromEntries(idsOf(id).map((lineId) => [lineId, statSync(join(AUDIO_B, `${lineId}.m4a`)).mtimeMs]))
+
+  beforeAll(() => {
+    mkdirSync(join(WORK_B, 'content/places'), { recursive: true })
+    writeFileSync(fixturePath(EDITED), JSON.stringify(place(EDITED, 'Onepur')))
+    writeFileSync(fixturePath(OTHER), JSON.stringify(place(OTHER, 'Twopur')))
+    run() // render both places fully, once, so both start fully cached
+  }, 120_000)
+
+  afterAll(() => {
+    rmSync(WORK_B, { recursive: true, force: true })
+    rmSync(dirB, { recursive: true, force: true })
+  })
+
+  it(
+    "editing one line's text, then running UNSCOPED, re-renders every one of that place's ten lines " +
+    '— not just the edited one — while a second, untouched place is completely unaffected',
+    () => {
+      const beforeEdited = mtimesOf(EDITED)
+      const beforeOther = mtimesOf(OTHER)
+
+      const fixture = JSON.parse(readFileSync(fixturePath(EDITED), 'utf8'))
+      fixture.card.food.text = 'People eat something completely different now.'
+      writeFileSync(fixturePath(EDITED), JSON.stringify(fixture))
+
+      const out = run()
+      expect(out).toMatch(/10 rendered, 10 reused from cache/)
+
+      const afterEdited = mtimesOf(EDITED)
+      for (const id of idsOf(EDITED)) {
+        expect(afterEdited[id], `${id} was not re-rendered even though a sibling line changed`)
+          .not.toBe(beforeEdited[id])
+      }
+      const afterOther = mtimesOf(OTHER)
+      for (const id of idsOf(OTHER)) {
+        expect(afterOther[id], `${id} was re-rendered even though nothing in its own place changed`)
+          .toBe(beforeOther[id])
+      }
+    },
+    60_000,
+  )
+})
+
 // Every rendered line is already paid for on the paid provider. A failure
 // partway through a run must therefore never discard the lines that already
 // succeeded: their .m4a files are on disk, so if timings.json and the render
