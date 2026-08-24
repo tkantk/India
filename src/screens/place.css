@@ -458,8 +458,18 @@
     --floor: calc(var(--bar-over) + var(--credit-lane));
     --credit-floor: calc(var(--bar-over) + 4px);
 
-    /* Wider column, shorter lines: 400 characters wrap to four here. */
-    --say-lines: 4;
+    /* NOT SHORTER LINES — narrower ones, and the old value here had it
+       backwards. The rail claims 328px of width before the stage sees any
+       of it, so the caption's own column is actually NARROWER in landscape
+       than it is stacked full-width in portrait, even though the screen as
+       a whole is wider. Measured with `scripts/shot.mjs place.delhi` (the
+       400-character worst case) at every real landscape device in
+       `scripts/lib/devices.mjs`: 7 lines at 1024x768 (the narrowest, and
+       the one Task 1b of the state-screens plan caught this on — the
+       credit line was rendering underneath the caption's own text), 6 at
+       1180x704, 5 at 1366x868. 8 is the worst of those plus one line of
+       headroom, the same margin the portrait number above carries. */
+    --say-lines: 8;
     --landmark-h: 108px;
   }
 

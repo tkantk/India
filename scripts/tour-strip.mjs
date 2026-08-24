@@ -34,6 +34,7 @@
 import { execFileSync, spawn } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { setTimeout as sleep } from 'node:timers/promises'
+import { DEVICES } from './lib/devices.mjs'
 
 const CHROME = process.env.CHROME ?? [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -755,36 +756,10 @@ const collides = (l) =>
   || !/play-big/.test(String(l.idle.tapReaches.onThePlayButton))
 
 /**
- * WHAT A REAL DEVICE ACTUALLY GIVES A WEB PAGE.
- *
- * The first four are the old list, and three of them are fictional: no iPad
- * sold this decade is 768x1024, and NONE of them ever hands a page its full
- * point size in Safari, because the URL bar and the tab bar are above it.
- * An iPad Air 11" is 820x1180 points; open a tab in Safari and the page gets
- * 820x1024 or, with the tab bar showing, 820x984. Those hundred and fifty
- * missing pixels are exactly the ones the layout was quietly spending.
- *
- * So every iPad appears twice: the standalone height (added to Home Screen,
- * no chrome) and the Safari height (a tab, with chrome). The Safari rows are
- * the ones that fail; the standalone rows are why nobody noticed.
+ * The real-device viewports this measures at — see `lib/devices.mjs` for
+ * what each one is and why. `place-strip.mjs` (the place-screen gate) reads
+ * the same list, so the two never drift apart on what "a real iPad" means.
  */
-const DEVICES = [
-  ['phone', 390, 844],
-  ['small phone', 375, 812],
-  ['iPad mini standalone', 744, 1133],
-  ['iPad mini Safari', 744, 977],
-  ['iPad Air 11 standalone', 820, 1180],
-  ['iPad Air 11 Safari', 820, 1024],
-  ['iPad Air 11 Safari + tabs', 820, 984],
-  ['iPad Air 11 Safari landscape', 1180, 704],
-  ['iPad Pro 13 Safari', 1024, 1210],
-  ['iPad Pro 13 Safari landscape', 1366, 868],
-  // The two the gate has always run. Kept so a regression in them still
-  // shows, not because anything is this shape.
-  ['legacy iPad portrait', 768, 1024],
-  ['legacy iPad landscape', 1024, 768],
-]
-
 async function measureLayouts() {
   const out = []
   const shots = []

@@ -26,6 +26,7 @@
     "contact-sheet:art": "node scripts/contact-sheet-art.mjs",
     "contact-sheet:mor": "node scripts/contact-sheet-mor.mjs",
     "tour:strip": "node scripts/tour-strip.mjs",
+    "place:strip": "node scripts/place-strip.mjs",
     "shot": "node scripts/shot.mjs"
   },
   "dependencies": {

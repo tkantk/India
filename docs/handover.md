@@ -257,6 +257,56 @@ does not.**
   screen; look at the actual screenshots it writes to `build/tour/`, or use
   `probe:camera` below.
 
+- **`npm run place:strip`** — the same idea as `tour:strip`, aimed at
+  `/place/:slug` instead of the tour, because that route had zero layout
+  gating until Plan 6's Task 1b and is about to exist 36 times. Builds,
+  serves the production build, and for every place found in
+  `content/places/*.json` (derived, not hand-listed — a fifth place lands
+  under this gate with no second edit here), navigates straight to
+  `#/place/slug` (a real, first-class deep link — see `App.tsx`'s own routing
+  comment) at every real iPad viewport in `scripts/lib/devices.mjs` — the
+  exact list `tour:strip` uses, imported rather than retyped so the two gates
+  cannot silently disagree about what "a real iPad" means. **On its first
+  real run it failed 8 of 40 rows**, all landscape, on the exact defect this
+  task was inserted to catch: at 1024x768 landscape the licence credit sat
+  underneath the caption's own overflowing text (`--say-lines: 4` in
+  `place.css`'s landscape breakpoint was never actually measured at the
+  narrowest landscape width it covers — the true worst case there is 7
+  lines, not 4). The fix was one CSS constant (`--say-lines: 8`, "worst case
+  plus one," the same margin the portrait number already carried) plus a
+  corrected comment; re-run, 0 problems at 4 places x 10 devices.
+  It checks, per place per device: the credit legible and clear of the bar,
+  the caption and the name plate (no tile, card or text behind the bar —
+  checked per *tile*, not against the shelf's own outer box, which
+  deliberately reaches into the bar's padding by design and produced pure
+  noise the one time this gate measured it that way instead); every one of
+  the nine tiles a real 103.5px+ touch target on-screen with its own label's
+  box fully inside the tile's (`.tile` is `overflow: hidden`, so a label
+  that pokes out is not a rendering detail, it is invisible text — the
+  "Festival" -> "tival" failure mode the task brief that built this gate was
+  told about directly); and, learning the `tour:strip` lesson by name, the
+  state's own drawn shape (the one path carrying `.lit`, not the whole
+  visible country) not clipped by `.map`'s own box and above a **size**
+  floor (`fillFraction >= 0.10`, the larger of the shape's own
+  width/height as a fraction of the map box's) — real headroom under
+  Delhi's own measured 0.188-0.190 (every iPad viewport, three-decimal
+  precision — one decimal rounds Delhi to a flat 0.2 and makes any floor at
+  that number a permanent false failure on the smallest of the four places)
+  while still well above what a 2.5x-class shrink like the tour's own Delhi
+  flight would leave behind. **What it does NOT catch.** Phones: the two
+  phone rows in `devices.mjs` are excluded from this gate's own device list
+  (`IPAD_DEVICES`) on purpose — `place.css` has no phone breakpoint at all,
+  the app's own ruling is iPad-only, and gating a brand-new screen against a
+  shape nobody designed it for would have meant a shelf/tile redesign this
+  task was explicitly told not to do. The 32 places with no `content/`
+  file yet (`[data-empty]`, "we have not been to X yet") — the gate only
+  ever navigates to the four that exist. Whether a *finger* can actually
+  reach the hit layer — `probe:map` owns that; this gate reaches the screen
+  by URL, not by a real tap, because nothing it measures (a rect, a label's
+  own box, a drawn shape's size) depends on which door was used to arrive.
+  Whether the photographs load, whether a tile's animation looks right,
+  whether the narration is audible — none of that is a rect.
+
 - **`npm run probe:camera [-- --place=slug]`** — drives the *real*
   `src/map/camera.ts` (type-stripped and inlined, not reimplemented) in
   headless Chrome at three window shapes, and checks the things jsdom
