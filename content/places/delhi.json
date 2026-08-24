@@ -19,7 +19,8 @@
       "id": "delhi.card.animal",
       "kind": "card",
       "text": "The house sparrow is Delhi's own bird. It is small and brown and very noisy, and it likes to live close to people, in a hole in a wall or up under a roof.",
-      "sfx": "sparrow"
+      "sfx": "sparrow",
+      "species": "house-sparrow"
     },
     "food": {
       "id": "delhi.card.food",
@@ -35,13 +36,15 @@
       "id": "delhi.card.hello",
       "kind": "card",
       "text": "In Delhi people say Namaste. Put your palms together, fingers pointing up, and dip your head. That is the whole of it, and everyone understands.",
-      "script": "नमस्ते"
+      "script": "नमस्ते",
+      "lang": "hi"
     }
   },
   "landmarks": [
     {
       "id": "delhi.india-gate",
       "name": "India Gate",
+      "short": "India Gate",
       "photoQuery": "India Gate",
       "scene": "arch",
       "line": {
@@ -53,6 +56,7 @@
     {
       "id": "delhi.qutub-minar",
       "name": "Qutub Minar",
+      "short": "Qutub Minar",
       "photoQuery": "Qutb Minar",
       "scene": "minaret",
       "line": {
@@ -64,6 +68,7 @@
     {
       "id": "delhi.red-fort",
       "name": "Red Fort",
+      "short": "Red Fort",
       "photoQuery": "Red Fort",
       "scene": "fort-walls",
       "line": {
@@ -75,6 +80,7 @@
     {
       "id": "delhi.lotus-temple",
       "name": "Lotus Temple",
+      "short": "Lotus Temple",
       "photoQuery": "Lotus Temple",
       "scene": "lotus-building",
       "line": {
@@ -86,6 +92,7 @@
     {
       "id": "delhi.humayuns-tomb",
       "name": "Humayun's Tomb",
+      "short": "Humayun's Tomb",
       "photoQuery": "Humayun's Tomb",
       "scene": "domed-garden",
       "line": {

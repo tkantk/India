@@ -127,7 +127,10 @@ describe('PlaceScreen', () => {
     // the order the content lists them.
     expect(tiles().map((t) => t.textContent)).toEqual([
       'Animal', 'Food', 'Festival', 'Hello',
-      ...rajasthan.landmarks.map((l) => l.name),
+      // The tile shows `short`, the tile-length name — never `name`, which
+      // is written to be accurate, not to fit 129.6px. See PlaceScreen.tsx's
+      // own `Page.word`/`Page.alt` comment.
+      ...rajasthan.landmarks.map((l) => l.short),
     ])
 
     // The rule the control bar is held to, held to here as well: a mark is

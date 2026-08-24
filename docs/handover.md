@@ -24,6 +24,88 @@ it rather than re-discovering it. This section is written for a competent
 stranger who has never seen this code — plausibly a future session of me,
 after this conversation's context is gone. Read it before you write a line.
 
+### Three fields every place needs — `species`, `short`, `lang`
+
+`content/schema.ts` requires three fields, on every place, that did not
+exist before Plan 6's Task 2. All three are REQUIRED, not optional: a place
+file missing any one of them fails `npm run validate` immediately, by name,
+with the same "fail loudly at build time, never silently" spirit as
+`subject.ts`'s own `checkSubjectCoverage()`. They exist now, on the four seed
+places, specifically so none of the next 32 places has to be revisited to
+add them — adding a field after 32 places are authored means editing 32
+files; adding it before the first of them costs four.
+
+**`species`, on `card.animal`.** The precise animal a photo of this card
+should show, as ONE LOWERCASE TOKEN (`dromedary`, `asian-elephant`,
+`indian-roller`, `house-sparrow` — letters and hyphens only, enforced by a
+regex, not a convention). **This is not pedantry, and nobody should ever
+"simplify" it back to reusing the card's own English word.** The card's
+prose says "camel" because that is how a six-year-old is told the story; the
+photo fetcher (Task 5) needs to search for something a stock photo API can
+get right, and "camel" alone returns whichever camel it feels like —
+measured directly, a bare "camel" query surfaces a two-humped Bactrian, a
+species that does not live in Rajasthan and is not the one-humped dromedary
+the text is actually about. This is exactly the class of factual error this
+project has already been caught making three times, including one that
+taught a six-year-old for weeks that a camel's hump stores water (it stores
+fat — see the corrected line in `rajasthan.json` itself). `species` is the
+field that makes the eventual photo query CORRECT, not merely present. The
+four seed values, and why each is what it is, not the card's own English
+word:
+
+  - **`rajasthan` → `dromedary`.** The one this field exists for by name — a
+    bare "camel" fetches a two-humped Bactrian camel, which is not native to
+    Rajasthan or anywhere in India; the dromedary (Camelus dromedarius) is
+    the actual one-humped desert camel the Thar is home to.
+  - **`kerala` → `asian-elephant`.** "Elephant" alone is a coin flip between
+    two different genera — Asian (Elephas maximus, Kerala's real animal,
+    smaller ears, one "finger" on the trunk) and African (Loxodonta,
+    bigger ears, two "fingers") — and a photo API has no reason to prefer
+    the right continent.
+  - **`odisha` → `indian-roller`.** The bird is already named precisely in
+    the card's own text ("The Indian roller..."), so this is the same word,
+    just formalised as the query token — "bird" alone would return anything
+    with feathers.
+  - **`delhi` → `house-sparrow`.** Same reasoning as Odisha: the text already
+    names the species (Passer domesticus, Delhi's own state bird); `species`
+    just makes that the thing actually searched for, not "sparrow" in
+    general (there are dozens of sparrow species).
+
+**`short`, on every landmark.** The tile-length name a landmark's own shelf
+tile actually prints — never `name`, which stays the real, accurate title
+used for the photo's alt text and anywhere else the whole title matters.
+*"Chhatrapati Shivaji Maharaj Terminus"* is a real Indian landmark name and
+does not fit anywhere close to a shelf tile; a rejected candidate's own
+screenshots showed real text clipping to *"tival"* ("Festival") for exactly
+this reason. `content/schema.ts`'s `SHORT_BUDGET` (24 characters) is a
+MEASURED number, not a guess: `scripts/place-strip.mjs` — the real layout
+gate that drives a real headless Chrome over the real built CSS — puts the
+narrowest tile this app ever renders at 129.6x120px (an iPad mini in
+portrait, five tiles across a 744px screen; see that script's own
+`build/place-layout.json` output). A one-off calibration pass using the same
+technique (`getBoundingClientRect` on the real `.tile__word`, at that same
+narrowest tile) found the actual hazard is not total character count but a
+single unbroken word: `"Brihadeeswarar Temple"` (21 characters) clipped,
+because `"Brihadeeswarar"` alone (14 letters, no space to wrap on) is wider
+than the tile itself, while `"Ajanta and Ellora Caves"` (23 characters, four
+words) did not. Every `short` drafted for the four seed places tops out at 18
+characters (`"Athirappilly Falls"`); 24 gives that real worst case genuine
+headroom. **`SHORT_BUDGET` is a length guard, not a guarantee** — write
+`short` as an actual short phrase (two or three ordinary words), never one
+very long compound word, however few characters it totals.
+
+**`lang`, on `card.hello`.** The BCP-47 tag for the language `script` (the
+same card's native-script text — `खम्मा घणी`, `നമസ്കാരം`, `ନମସ୍କାର`,
+`नमस्ते`) is actually written in. `script` has held the text itself since
+Plan 2; nothing ever said what LANGUAGE it was in, which is exactly what
+eventually has to pick the right lettering (Devanagari for Hindi, the
+Malayalam script for Malayalam, the Odia script for Odia — three visibly
+different scripts already live in these four files with nothing
+distinguishing them programmatically). The four seed values: `rajasthan` →
+`raj` (Rajasthani has no ISO 639-1 code; `raj` is its BCP-47-valid ISO 639-3
+fallback), `kerala` → `ml` (Malayalam), `odisha` → `or` (Odia), `delhi` →
+`hi` (Hindi).
+
 ### The colour table — `src/tour/effects/subject.ts`
 
 One table, `SUBJECTS: Record<string, Subject>`, decides what colour every

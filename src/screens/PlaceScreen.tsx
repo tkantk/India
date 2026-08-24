@@ -77,8 +77,14 @@ type Page = {
   id: string
   /** Which clip in `timings.json` says this page out loud. */
   clipId: string
-  /** The word on the tile. A tile always carries one; that is the rule. */
+  /** The word on the tile. A tile always carries one; that is the rule. For
+   *  a landmark this is `short`, the tile-length name — never `name`, which
+   *  is written to be accurate, not to fit 129.6px. */
   word: string
+  /** The fuller text for the photo's own alt attribute. Only landmarks set
+   *  this (to their real `name`); falls back to `word` for a card, which has
+   *  no separate long form. */
+  alt?: string
   /** The mark beside it, for the four cards. */
   glyph?: GlyphName
   /** The photograph, for the five landmarks. */
@@ -174,7 +180,8 @@ function pagesFor(place: Place): Page[] {
     pages.push({
       id: landmark.id,
       clipId: landmark.line.id,
-      word: landmark.name,
+      word: landmark.short,
+      alt: landmark.name,
       photo: PHOTOS[landmark.id],
       sfx: landmark.line.sfx,
     })
@@ -455,7 +462,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
             there is not one animal among the twenty photographs that
             exist. */}
         <div className="place-plate">
-          {page?.photo && <Photograph key={page.id} word={page.word} credit={page.photo} />}
+          {page?.photo && <Photograph key={page.id} word={page.alt ?? page.word} credit={page.photo} />}
           {page?.script && <Greeting key={page.id} script={page.script} />}
         </div>
 

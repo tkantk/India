@@ -153,13 +153,13 @@ function place(dir, id, extraCues = []) {
       cues: [{ word: 0, do: 'highlightState', arg: id }, ...extraCues],
     },
     card: {
-      animal: { id: `${id}.card.animal`, kind: 'card', text: 'An animal lives here.' },
+      animal: { id: `${id}.card.animal`, kind: 'card', text: 'An animal lives here.', species: 'animal' },
       food: { id: `${id}.card.food`, kind: 'card', text: 'People eat well.' },
       festival: { id: `${id}.card.festival`, kind: 'card', text: 'They celebrate often.' },
-      hello: { id: `${id}.card.hello`, kind: 'card', text: 'People say hello.' },
+      hello: { id: `${id}.card.hello`, kind: 'card', text: 'People say hello.', lang: 'en' },
     },
     landmarks: Array.from({ length: 5 }, (_, i) => ({
-      id: `${id}.lm${i}`, name: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
+      id: `${id}.lm${i}`, name: `Spot ${i}`, short: `Spot ${i}`, photoQuery: `Spot ${i}`, scene: 'plains',
       line: { id: `${id}.lm${i}.line`, kind: 'landmark', text: `Spot number ${i} is nice.` },
     })),
   }))

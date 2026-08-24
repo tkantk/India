@@ -15,6 +15,31 @@ export const LINE_BUDGET = {
 
 export type LineKind = keyof typeof LINE_BUDGET
 
+/**
+ * The character ceiling for `Landmark.short` — the word a landmark tile
+ * actually shows, as opposed to `name` (the real, possibly long, title used
+ * for the photo's own alt text). MEASURED, not guessed, against the
+ * narrowest real tile this app ever renders: `place-strip.mjs`'s own
+ * `build/place-layout.json` puts that at 129.6x120px, an iPad mini in
+ * portrait (5 tiles across a 744px screen) — narrower than any landscape
+ * rail tile (159px, two columns of a fixed 328px rail).
+ *
+ * A one-off calibration pass (same technique `place-strip.mjs` itself uses:
+ * a real headless Chrome, the real built CSS, `getBoundingClientRect` on the
+ * real `.tile__word`) against that narrowest tile found the ACTUAL hazard is
+ * not total length but a single unbroken word: "Brihadeeswarar Temple" (21
+ * characters) clipped, because "Brihadeeswarar" alone (14 letters, no space
+ * to wrap on) is wider than the tile itself, while "Ajanta and Ellora Caves"
+ * (23 characters, four words) did not, and neither did "Chhatrapati Shivaji
+ * Rly" (23 characters). Every `short` drafted for the four seed places tops
+ * out at 18 ("Athirappilly Falls"); this ceiling gives that real worst case
+ * genuine headroom while still reading as a TILE label, not a landmark's
+ * full title. It is a length guard, not a guarantee — a `short` value still
+ * has to be an actual short phrase (two or three ordinary words), not one
+ * very long compound word, however few characters it totals.
+ */
+export const SHORT_BUDGET = 24
+
 /** The single definition of "a word", shared by the schema, the validator,
  *  the timing generator and the app. If these ever disagree, cues drift. */
 export function wordsOf(text: string): string[] {
@@ -99,9 +124,39 @@ export const AMBIENCE = [
   'desert', 'ocean', 'forest', 'mountain', 'river', 'city', 'plains', 'temple', 'island',
 ] as const
 
+/** One lowercase token (letters and hyphens only — "asian-elephant", not
+ *  "Asian elephant"), the same shape `content/vocab.json`'s own keys and
+ *  `scene`'s own values already use. Enforced here, not left to convention,
+ *  because the whole point of `species` is that it is precise enough to
+ *  drive a photo query correctly — "elephant" alone fetches whichever
+ *  elephant a search engine feels like today, continent included. */
+const SPECIES_RE = /^[a-z]+(-[a-z]+)*$/
+
+/** A permissive but real BCP-47 shape: a 2-3 letter primary subtag (covers
+ *  every ISO 639-1 code — "hi", "ml", "or" — and the ISO 639-3 codes BCP-47
+ *  falls back to when no 639-1 code exists, like Rajasthani's "raj"),
+ *  optionally followed by further subtags (region, script, variant). Not
+ *  the full RFC 5646 grammar — nothing here needs extension subtags or
+ *  private-use tags — just enough to reject "Hindi" or "hindi_IN" and
+ *  accept the handful of real tags this app actually uses. */
+const BCP47_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/
+
 const LandmarkSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9.-]*$/),
+  /** The real, full name — used for the photo's own alt text, and anywhere
+   *  else the whole title matters. NEVER what a tile shows: see `short`. */
   name: z.string().min(1),
+  /** What the landmark's own tile actually prints. A tile is 129.6x120px on
+   *  the narrowest real device this app renders (an iPad mini in portrait —
+   *  see `SHORT_BUDGET`'s own comment for how that was measured), and
+   *  `name` is not written to that constraint: "Chhatrapati Shivaji Maharaj
+   *  Terminus" is a real Indian landmark name and does not fit anywhere
+   *  close to it. `short` is the tile-length name authored alongside it,
+   *  on purpose, rather than truncated at render time. */
+  short: z.string().min(1).max(
+    SHORT_BUDGET,
+    `landmark short name exceeds its ${SHORT_BUDGET}-character tile budget`,
+  ),
   /** Fully qualified so the photo fetcher does not land on a disambiguation
    *  page — "Rock Garden" returns a botanical garden in the Netherlands. */
   photoQuery: z.string().min(1),
@@ -118,10 +173,31 @@ export const PlaceSchema = z.object({
   ambience: z.enum(AMBIENCE),
   intro: lineSchema('intro'),
   card: z.object({
-    animal: lineSchema('card'),
+    animal: lineSchema('card').extend({
+      /** The precise animal a photo of this card should show — "dromedary",
+       *  never "camel". See this field's own long note in `docs/handover.md`
+       *  for why: a bare "camel" photo query returns a two-humped Bactrian,
+       *  which does not live in Rajasthan, and this is exactly the class of
+       *  factual error this project has been caught making before. Required,
+       *  not optional, and checked at build time — a card with no `species`
+       *  must fail loudly here, not surface later as a wrong photograph with
+       *  nothing pointing back at why. */
+      species: z.string().regex(
+        SPECIES_RE,
+        'species must be a single lowercase token (e.g. "dromedary", not "camel" or "Camel")',
+      ),
+    }),
     food: lineSchema('card'),
     festival: lineSchema('card'),
-    hello: lineSchema('card'),
+    hello: lineSchema('card').extend({
+      /** The BCP-47 tag for the language `script` (this same card's native-
+       *  text field) is written in. `script` has always held the text
+       *  itself; nothing said what language it was in, which is exactly
+       *  what picks the right lettering (Devanagari for Hindi, the Malayalam
+       *  script for Malayalam, the Odia script for Odia) for whatever
+       *  eventually renders it. */
+      lang: z.string().regex(BCP47_RE, 'lang must be a BCP-47 language tag (e.g. "hi", "ml", "raj")'),
+    }),
   }),
   landmarks: z.array(LandmarkSchema).length(5, 'every place needs exactly five landmarks'),
 })

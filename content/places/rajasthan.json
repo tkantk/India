@@ -20,7 +20,8 @@
       "id": "rajasthan.card.animal",
       "kind": "card",
       "text": "The camel lives here. That big hump on his back is packed with fat, not water. It feeds him when there is nothing to eat, so he can cross the hot sand for days.",
-      "sfx": "camel"
+      "sfx": "camel",
+      "species": "dromedary"
     },
     "food": {
       "id": "rajasthan.card.food",
@@ -36,13 +37,15 @@
       "id": "rajasthan.card.hello",
       "kind": "card",
       "text": "In Rajasthan people say Khamma Ghani. It is Rajasthani, and it is a very polite hello, the kind you use for grown-ups and for guests.",
-      "script": "खम्मा घणी"
+      "script": "खम्मा घणी",
+      "lang": "raj"
     }
   },
   "landmarks": [
     {
       "id": "rajasthan.thar",
       "name": "The Thar Desert",
+      "short": "Thar Desert",
       "photoQuery": "Thar Desert",
       "scene": "dunes",
       "line": {
@@ -54,6 +57,7 @@
     {
       "id": "rajasthan.hawa-mahal",
       "name": "Hawa Mahal",
+      "short": "Hawa Mahal",
       "photoQuery": "Hawa Mahal",
       "scene": "hawa-mahal",
       "line": {
@@ -65,6 +69,7 @@
     {
       "id": "rajasthan.amber-fort",
       "name": "Amber Fort",
+      "short": "Amber Fort",
       "photoQuery": "Amer Fort",
       "scene": "fort",
       "line": {
@@ -76,6 +81,7 @@
     {
       "id": "rajasthan.chand-baori",
       "name": "Chand Baori",
+      "short": "Chand Baori",
       "photoQuery": "Chand Baori",
       "scene": "stepwell",
       "line": {
@@ -87,6 +93,7 @@
     {
       "id": "rajasthan.ranthambore",
       "name": "Ranthambore",
+      "short": "Ranthambore",
       "photoQuery": "Ranthambore National Park",
       "scene": "forest-fort",
       "line": {

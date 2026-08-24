@@ -18,7 +18,8 @@
       "id": "odisha.card.animal",
       "kind": "card",
       "text": "The Indian roller sits on a wire looking plain and brown. Then it opens its wings and flashes bright blue, as if a piece of the sky had gone flying past.",
-      "sfx": "indian-roller"
+      "sfx": "indian-roller",
+      "species": "indian-roller"
     },
     "food": {
       "id": "odisha.card.food",
@@ -34,13 +35,15 @@
       "id": "odisha.card.hello",
       "kind": "card",
       "text": "In Odisha people say Namaskar. You put your palms together in front of you and dip your head a little as you say it. Try it now.",
-      "script": "ନମସ୍କାର"
+      "script": "ନମସ୍କାର",
+      "lang": "or"
     }
   },
   "landmarks": [
     {
       "id": "odisha.konark",
       "name": "Konark Sun Temple",
+      "short": "Sun Temple",
       "photoQuery": "Konark Sun Temple",
       "scene": "chariot-wheel",
       "line": {
@@ -52,6 +55,7 @@
     {
       "id": "odisha.jagannath",
       "name": "Jagannath Temple, Puri",
+      "short": "Jagannath Temple",
       "photoQuery": "Jagannath Temple, Puri",
       "scene": "temple",
       "line": {
@@ -64,6 +68,7 @@
     {
       "id": "odisha.chilika",
       "name": "Chilika Lake",
+      "short": "Chilika Lake",
       "photoQuery": "Chilika Lake",
       "scene": "lagoon",
       "line": {
@@ -76,6 +81,7 @@
     {
       "id": "odisha.puri-beach",
       "name": "Puri Beach",
+      "short": "Puri Beach",
       "photoQuery": "Puri Beach",
       "scene": "beach",
       "line": {
@@ -87,6 +93,7 @@
     {
       "id": "odisha.udayagiri",
       "name": "Udayagiri Caves",
+      "short": "Udayagiri Caves",
       "photoQuery": "Udayagiri and Khandagiri Caves",
       "scene": "caves",
       "line": {

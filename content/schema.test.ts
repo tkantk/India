@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { PlaceSchema, LINE_BUDGET, wordsOf } from './schema'
+import { PlaceSchema, LINE_BUDGET, SHORT_BUDGET, wordsOf } from './schema'
 import type { Cue, Landmark, Line, Place, TourBeat } from './schema'
 
 const validLine = { id: 'raj.intro', kind: 'intro' as const, text: 'Rajasthan is a big state.' }
@@ -13,14 +13,21 @@ const validPlace = {
   ambience: 'desert' as const,
   intro: validLine,
   card: {
-    animal: { id: 'raj.card.animal', kind: 'card' as const, text: 'The camel lives here.', sfx: 'camel' },
+    animal: {
+      id: 'raj.card.animal', kind: 'card' as const, text: 'The camel lives here.', sfx: 'camel',
+      species: 'dromedary',
+    },
     food: { id: 'raj.card.food', kind: 'card' as const, text: 'Dal baati churma is crunchy.' },
     festival: { id: 'raj.card.festival', kind: 'card' as const, text: 'Teej is a swing festival.' },
-    hello: { id: 'raj.card.hello', kind: 'card' as const, text: 'People say Khamma Ghani.', script: 'खम्मा घणी' },
+    hello: {
+      id: 'raj.card.hello', kind: 'card' as const, text: 'People say Khamma Ghani.', script: 'खम्मा घणी',
+      lang: 'raj',
+    },
   },
   landmarks: Array.from({ length: 5 }, (_, i) => ({
     id: `raj.lm.${i}`,
     name: `Place ${i}`,
+    short: `Place ${i}`,
     photoQuery: `Place ${i}, Rajasthan`,
     scene: 'dunes',
     line: { id: `raj.lm.${i}.line`, kind: 'landmark' as const, text: 'It is very big and sandy.' },
@@ -69,6 +76,83 @@ describe('PlaceSchema', () => {
       intro: { ...validLine, cues: [{ word: n - 1, do: 'revealSymbol', arg: 'camel' }] },
     }
     expect(PlaceSchema.safeParse(ok).success).toBe(true)
+  })
+})
+
+/**
+ * Plan 6 / Task 2: three fields that must exist before any of the 32
+ * remaining places is written — see `docs/handover.md` for why each one is
+ * required rather than optional. Missing any of them must fail loudly here,
+ * at validation time, never surface later as a wrong photograph or a
+ * clipped tile with nothing pointing back at the cause.
+ */
+describe('species, short and lang — required before content scales', () => {
+  const withAnimal = (animal: Record<string, unknown>) => ({
+    ...validPlace,
+    card: { ...validPlace.card, animal: { ...validPlace.card.animal, ...animal } },
+  })
+  const withHello = (hello: Record<string, unknown>) => ({
+    ...validPlace,
+    card: { ...validPlace.card, hello: { ...validPlace.card.hello, ...hello } },
+  })
+  const withLandmark0 = (landmark: Record<string, unknown>) => ({
+    ...validPlace,
+    landmarks: validPlace.landmarks.map((l, i) => (i === 0 ? { ...l, ...landmark } : l)),
+  })
+
+  it('rejects an animal card with no species at all', () => {
+    const { species: _species, ...rest } = validPlace.card.animal
+    expect(PlaceSchema.safeParse({ ...validPlace, card: { ...validPlace.card, animal: rest } }).success).toBe(false)
+  })
+
+  it('rejects a species written as a sentence or with capitals — one lowercase token only', () => {
+    expect(PlaceSchema.safeParse(withAnimal({ species: 'Camel' })).success).toBe(false)
+    expect(PlaceSchema.safeParse(withAnimal({ species: 'a big camel' })).success).toBe(false)
+    expect(PlaceSchema.safeParse(withAnimal({ species: '' })).success).toBe(false)
+  })
+
+  it('accepts a single lowercase token, hyphenated compounds included', () => {
+    expect(PlaceSchema.safeParse(withAnimal({ species: 'dromedary' })).success).toBe(true)
+    expect(PlaceSchema.safeParse(withAnimal({ species: 'asian-elephant' })).success).toBe(true)
+  })
+
+  it('rejects a hello card with no lang at all', () => {
+    const { lang: _lang, ...rest } = validPlace.card.hello
+    expect(PlaceSchema.safeParse({ ...validPlace, card: { ...validPlace.card, hello: rest } }).success).toBe(false)
+  })
+
+  it('rejects a lang that is not a BCP-47 tag', () => {
+    expect(PlaceSchema.safeParse(withHello({ lang: 'Hindi' })).success).toBe(false)
+    expect(PlaceSchema.safeParse(withHello({ lang: 'hindi_IN' })).success).toBe(false)
+    expect(PlaceSchema.safeParse(withHello({ lang: '' })).success).toBe(false)
+  })
+
+  it('accepts real BCP-47 tags, including the ISO 639-3 fallback Rajasthani needs', () => {
+    for (const lang of ['hi', 'ml', 'or', 'raj']) {
+      expect(PlaceSchema.safeParse(withHello({ lang })).success).toBe(true)
+    }
+  })
+
+  it('rejects a landmark with no short name at all', () => {
+    const { short: _short, ...rest } = validPlace.landmarks[0]
+    expect(PlaceSchema.safeParse({ ...validPlace, landmarks: [rest, ...validPlace.landmarks.slice(1)] }).success).toBe(false)
+  })
+
+  it(`rejects a short name over the ${SHORT_BUDGET}-character tile budget`, () => {
+    expect(PlaceSchema.safeParse(withLandmark0({ short: 'x'.repeat(SHORT_BUDGET + 1) })).success).toBe(false)
+  })
+
+  it('accepts a short name exactly at the budget', () => {
+    expect(PlaceSchema.safeParse(withLandmark0({ short: 'x'.repeat(SHORT_BUDGET) })).success).toBe(true)
+  })
+
+  it('rejects the real "Chhatrapati Shivaji Maharaj Terminus" case that motivated this field', () => {
+    expect(PlaceSchema.safeParse(
+      withLandmark0({ name: 'Chhatrapati Shivaji Maharaj Terminus', short: 'Chhatrapati Shivaji Maharaj Terminus' }),
+    ).success).toBe(false)
+    expect(PlaceSchema.safeParse(
+      withLandmark0({ name: 'Chhatrapati Shivaji Maharaj Terminus', short: 'CST Station' }),
+    ).success).toBe(true)
   })
 })
 

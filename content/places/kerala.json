@@ -18,7 +18,8 @@
       "id": "kerala.card.animal",
       "kind": "card",
       "text": "The elephant is Kerala's own animal. He is enormous, but he walks quietly. He uses his trunk for everything: pulling down branches, drinking, and having a shower.",
-      "sfx": "elephant"
+      "sfx": "elephant",
+      "species": "asian-elephant"
     },
     "food": {
       "id": "kerala.card.food",
@@ -34,13 +35,15 @@
       "id": "kerala.card.hello",
       "kind": "card",
       "text": "In Kerala people say Namaskaram. The language here is Malayalam, and here is a funny thing: written in English letters, Malayalam reads the same backwards as forwards.",
-      "script": "നമസ്കാരം"
+      "script": "നമസ്കാരം",
+      "lang": "ml"
     }
   },
   "landmarks": [
     {
       "id": "kerala.backwaters",
       "name": "The Backwaters",
+      "short": "Backwaters",
       "photoQuery": "Kerala backwaters",
       "scene": "backwaters",
       "line": {
@@ -53,6 +56,7 @@
     {
       "id": "kerala.munnar",
       "name": "Munnar Tea Hills",
+      "short": "Munnar Hills",
       "photoQuery": "Munnar",
       "scene": "tea-hills",
       "line": {
@@ -64,6 +68,7 @@
     {
       "id": "kerala.athirappilly",
       "name": "Athirappilly Falls",
+      "short": "Athirappilly Falls",
       "photoQuery": "Athirappilly Falls",
       "scene": "waterfall",
       "line": {
@@ -75,6 +80,7 @@
     {
       "id": "kerala.chinese-nets",
       "name": "The Fishing Nets at Kochi",
+      "short": "Fishing Nets",
       "photoQuery": "Chinese fishing nets Kochi",
       "scene": "fishing-nets",
       "line": {
@@ -86,6 +92,7 @@
     {
       "id": "kerala.periyar",
       "name": "Periyar",
+      "short": "Periyar",
       "photoQuery": "Periyar National Park",
       "scene": "lake-forest",
       "line": {
