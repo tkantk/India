@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
 import { getNarrator } from '../audio/Narrator'
 import { camera } from '../map/camera'
@@ -46,6 +46,15 @@ import './place.css'
  * imported `content/places/*.json` before), nine rows in `subject.ts` and
  * four marks in `Glyph.tsx`.
  *
+ * TWO GRAFTS, added once three judged candidates existed to graft from (see
+ * `docs/handover.md` and that task's own brief). `PlaceTrail` — the ten
+ * beads reflecting `heard` — and the ending line, `ui.all-heard`, are from
+ * "guided-visit", with its own locked, sequential trail deliberately left
+ * behind: this screen still has no sequence, and a bead here means only
+ * "heard" or "not yet". The big picture arriving with its own words and
+ * clearing when they end (`!ended` gating `.place-plate`'s contents, and the
+ * bold name under a photograph) is from "poke-around".
+ *
  * THE TWO FIELDS THAT HAD NO READER UNTIL NOW. `ambience` is played, as the
  * looping bed `Narrator.ambient()` has always been able to play and nothing
  * ever asked it to — the handover's own ruling was that ambience is per
@@ -87,8 +96,26 @@ type Page = {
   alt?: string
   /** The mark beside it, for the four cards. */
   glyph?: GlyphName
-  /** The photograph, for the five landmarks. */
+  /** The photograph: for the five landmarks, and — once Task 5 has fetched
+   *  one — the animal card. Keyed by `species` for the animal (see
+   *  `pagesFor`'s own note); `PHOTOS` has no such entry yet, so this is
+   *  `undefined` for every seed place today, which is the correct, honest
+   *  state: the plate below renders nothing for a card whose photo does not
+   *  exist rather than a stand-in shape. */
   photo?: Credit
+  /** The drawn category mark this card's OWN big picture shows while its
+   *  line plays — `food`'s bowl, `festival`'s rangoli, the exact glyph the
+   *  tile beside it already carries (`CARDS`, below; `Glyph.tsx`'s own top
+   *  note calls both "deliberately generic"). Set on exactly the two cards
+   *  where a generic mark makes no claim the words could contradict: the
+   *  words name one dish or one festival, and a bowl or a rangoli commits to
+   *  neither — blown up, they still say only "this is about food" / "this
+   *  is about a festival." Never set for `animal`, where the words DO name
+   *  one exact species: see `photo`'s own note for why that card gets a
+   *  photograph or nothing, never a stand-in shape wearing the same
+   *  "generic mark" defence — that is the exact defence a rejected
+   *  candidate gave for a dog's paw print standing in for a camel. */
+  symbol?: GlyphName
   /** Native script to put on screen but never narrate — the `hello` card's
    *  own field in `content/schema.ts`. */
   script?: string
@@ -114,12 +141,28 @@ const GEO = geo.places as unknown as Record<string, GeoPlace>
  *  carries. `card` is an object with exactly these four keys in the schema,
  *  not an array, so the running order is a decision and lives here: the
  *  animal first because it is the one a six-year-old reaches for. */
-const CARDS: { key: CardKey; word: string; glyph: GlyphName }[] = [
+const CARDS: { key: CardKey; word: string; glyph: GlyphName; symbol?: GlyphName }[] = [
   { key: 'animal', word: 'Animal', glyph: 'animal' },
-  { key: 'food', word: 'Food', glyph: 'food' },
-  { key: 'festival', word: 'Festival', glyph: 'festival' },
+  { key: 'food', word: 'Food', glyph: 'food', symbol: 'food' },
+  { key: 'festival', word: 'Festival', glyph: 'festival', symbol: 'festival' },
   { key: 'hello', word: 'Hello', glyph: 'hello' },
 ]
+
+/**
+ * The interface line played once every one of a place's ten pages has
+ * actually been HEARD through to its own end — never merely tapped (see
+ * `heard`'s own note below). Already authored (`content/ui.json`) and
+ * already rendered (`timings.json`); nothing in the app called it until now.
+ *
+ * A judged candidate ("guided-visit") built a whole locked, sequential
+ * ten-stop tour around reaching this line, and lost for exactly that reason
+ * — it kept a child out of the tile he wanted for two and a half minutes
+ * (see `docs/handover.md` / that task's own brief). The ENDING was the one
+ * thing every judge agreed on; only the trail that gated it was the mistake.
+ * So here nothing is gated: whichever of the ten a child taps last, in
+ * whatever order, still ends in "well done."
+ */
+const ALL_HEARD = 'ui.all-heard'
 
 /**
  * How long the arrival flight takes.
@@ -172,8 +215,18 @@ function pagesFor(place: Place): Page[] {
       clipId: line.id,
       word: card.word,
       glyph: card.glyph,
+      symbol: card.symbol,
       script: line.script,
       sfx: line.sfx,
+      // The one card whose big picture is a photograph rather than a drawn
+      // mark or a script. Keyed by `species`, not by place: a photograph of
+      // a dromedary is a photograph of a dromedary regardless of which
+      // state is telling the story, so a future place that shares a species
+      // reuses the same fetch rather than paying for it twice. `PHOTOS` has
+      // no entry for any species today — Task 5 has not run — so this is
+      // `undefined` for all four seed places, which `Page.photo`'s own note
+      // says is the correct, honest state.
+      photo: card.key === 'animal' ? PHOTOS[place.card.animal.species] : undefined,
     })
   }
   for (const landmark of place.landmarks) {
@@ -263,11 +316,52 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    *  dead (Controls.tsx's own rule), and `resume()` no-ops with nothing left
    *  to resume, so the screen has to know which of the two it means. */
   const [ended, setEnded] = useState(false)
+  /** Whether `ui.all-heard` is the thing actually playing right now — the
+   *  caption below reads its clip instead of the open page's while this is
+   *  true, and the plate stays empty (already true: the last page's own
+   *  `ended` flip is what triggers this in the first place). */
+  const [celebrating, setCelebrating] = useState(false)
+  /** Guards the congratulation to once per visit. A plain ref, not state:
+   *  nothing on screen reads it directly, and `heard` never shrinks, so
+   *  there is nothing for a re-render to reflect. */
+  const celebratedRef = useRef(false)
 
   const subjectKey = subjectKeyForPlace(place?.ambience)
   const subject = subjectOf(subjectKey)
   const page: Page | undefined = pages[open]
   const clip = page ? CLIPS[page.clipId] ?? null : null
+
+  /**
+   * Everything that could be heard: the pages that actually have a rendered
+   * clip. Derived, exactly the reasoning a rejected candidate's own `total`
+   * used, and for the same reason — a place whose narration is not fully
+   * rendered yet must not make "you have heard everything here" permanently
+   * unreachable. All ten exist for the four seed places today.
+   */
+  const completable = useMemo(() => pages.filter((p) => CLIPS[p.clipId]), [pages])
+  const allHeard = Boolean(place) && completable.length > 0 && completable.every((p) => heard.has(p.id))
+
+  /**
+   * THE ENDING. Fires once, the instant `allHeard` turns true — which can
+   * only happen right after a natural end has just added the last unheard
+   * id to `heard`, so this never races the page-playing effect below for
+   * the engine's one `onEnd` slot: by the time this effect's dependency
+   * actually changes, that effect's own callback has already returned.
+   * Whichever tile is tapped next (`openPage`) clears `celebrating` itself,
+   * which is the only cleanup this needs — the child moving on IS the
+   * congratulation ending.
+   */
+  useEffect(() => {
+    if (!allHeard || celebratedRef.current) return
+    const line = CLIPS[ALL_HEARD]
+    if (!line) return
+    celebratedRef.current = true
+    setCelebrating(true)
+    let live = true
+    n.onEnd = () => { if (live) setCelebrating(false) }
+    void n.play(line).catch(() => { if (live) setCelebrating(false) })
+    return () => { live = false }
+  }, [allHeard, n])
 
   // ------------------------------------------------------------ arriving
 
@@ -397,7 +491,11 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
     // page; nothing else needs telling.
     if (!unlocked) { void n.unlock(); return }
     if (n.playing) { n.pause(); return }
-    if (ended && clip) { void n.play(clip); return }
+    // Said again from the top: the big picture — the photo, the greeting,
+    // the drawn mark — arrives with the words exactly as it did the first
+    // time, so `ended` (which is what hides it) has to clear here too, not
+    // only inside the page-playing effect above.
+    if (ended && clip) { setEnded(false); void n.play(clip); return }
     n.resume()
   }, [clip, ended, n, unlocked])
 
@@ -417,6 +515,11 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    *  touching Play would open a page that never gets a chance to speak. */
   const openPage = useCallback((index: number) => {
     if (!unlocked) void n.unlock()
+    // Moving on IS the congratulation ending — a tap here is always a
+    // deliberate choice to hear something specific, so the caption must
+    // stop reading "you have heard everything here" the moment it happens,
+    // whatever the celebration's own clip is doing.
+    setCelebrating(false)
     setOpen(index)
   }, [n, unlocked])
 
@@ -456,21 +559,42 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
           </p>
         )}
 
-        {/* Whatever the open page has to show: a real photograph, or the
-            greeting in its own script. Three of the four cards have no
-            picture at all, and that is the honest state of this project —
-            there is not one animal among the twenty photographs that
-            exist. */}
+        {/* A wordless "how much is left to hear" — ten beads, one per page,
+            reflecting `heard` and never `open`/tap alone. See `PlaceTrail`'s
+            own note for why this is scenery rather than a control, and why
+            it sits in the opposite corner from the name plate rather than
+            growing it. */}
+        {place && <PlaceTrail pages={pages} open={open} heard={heard} />}
+
+        {/* Whatever the open page has to show, arriving with its own words
+            and gone the instant they end — never a permanent fixture a
+            child has to find a close button for. A real photograph for a
+            landmark and (once Task 5 has fetched one) the animal card; the
+            greeting in its own script for `hello`; the same drawn mark the
+            tile already carries, larger, for `food`/`festival`. The intro,
+            and a card with nothing to show yet, show nothing: that is the
+            honest state of this project today, not a bug. */}
         <div className="place-plate">
-          {page?.photo && <Photograph key={page.id} word={page.alt ?? page.word} credit={page.photo} />}
-          {page?.script && <Greeting key={page.id} script={page.script} />}
+          {!ended && page?.photo && <Photograph key={page.id} word={page.alt ?? page.word} credit={page.photo} />}
+          {!ended && page?.script && <Greeting key={page.id} script={page.script} />}
+          {!ended && !page?.photo && !page?.script && page?.symbol && (
+            <CardMark key={page.id} name={page.symbol} word={page.word} />
+          )}
         </div>
 
         {/* The sentence being spoken, in the same strip, from the same
-            component, over the same subject-coloured band. */}
+            component, over the same subject-coloured band. `celebrating`
+            briefly points this at `ui.all-heard` instead of the open page's
+            own clip — the words on screen must always match what is
+            actually being said, and the open page's own sentence has
+            already finished by the time this fires. */}
         <div className="say-lane">
-          <div className="say" data-page={page?.id ?? ''} data-quiet={clip ? undefined : 'true'}>
-            <ReadAlong clip={clip} />
+          <div
+            className="say"
+            data-page={celebrating ? ALL_HEARD : (page?.id ?? '')}
+            data-quiet={(celebrating ? CLIPS[ALL_HEARD] : clip) ? undefined : 'true'}
+          >
+            <ReadAlong clip={celebrating ? CLIPS[ALL_HEARD] ?? null : clip} />
           </div>
         </div>
 
@@ -548,6 +672,79 @@ function Tile({
   )
 }
 
+/**
+ * WHERE WE HAVE GOT TO: one bead per page, in the running order the shelf
+ * itself lists them (intro, four cards, five landmarks — ten for a real
+ * place). Grafted from a rejected candidate's own trail, with the one thing
+ * that made it lose left behind: that candidate's beads tracked a LOCKED
+ * SEQUENCE and doubled as the thing keeping a child out of the tile he
+ * wanted for two and a half minutes. This screen has no sequence — any tile,
+ * any order, always — so a bead here means only "heard" or "not yet",
+ * against `heard` and never against `open`/a tap alone (a child who taps a
+ * tile and immediately taps another has not heard it, and this must not
+ * claim otherwise).
+ *
+ * SCENERY, NOT A CONTROL, for the same measurement `docs/handover.md`
+ * records for the candidate this was grafted from: ten real 104px targets
+ * do not fit across this screen at all, so shrinking them to fit would break
+ * the one rule this app holds hardest. `aria-hidden` and `pointer-events:
+ * none`; the honest count is real text instead, in `.visually-hidden`.
+ *
+ * Positioned as its own corner of the picture, opposite the name plate,
+ * rather than folded into it — the name plate's own measured height feeds
+ * `.place-plate`'s top padding (place.css), and growing it would mean
+ * re-measuring a number this task was told not to touch by accident.
+ */
+function PlaceTrail({
+  pages,
+  open,
+  heard,
+}: {
+  pages: Page[]
+  open: number
+  heard: ReadonlySet<string>
+}) {
+  if (pages.length <= 1) return null
+  return (
+    <>
+      <p className="visually-hidden">{heard.size} of {pages.length} heard</p>
+      <div className="place-trail" aria-hidden="true">
+        {pages.map((p, i) => (
+          <span
+            key={p.id}
+            className="place-bead"
+            data-state={heard.has(p.id) ? 'heard' : i === open ? 'now' : 'ahead'}
+          />
+        ))}
+      </div>
+    </>
+  )
+}
+
+/**
+ * The big picture for `food` and `festival`: the exact drawn mark the tile
+ * beside it already carries (`Glyph.tsx`), larger, on the same printed plate
+ * a photograph sits on. Honest specifically BECAUSE it is generic — see
+ * `Page.symbol`'s own note: a bowl commits to no dish, a rangoli commits to
+ * no single festival's own imagery (a chariot at Rath Yatra, a parade on
+ * Republic Day), so blown up to fill the plate it still claims nothing the
+ * words could contradict. This is deliberately NOT a new drawing borrowed
+ * from a rejected candidate's own animal/food/festival art — reusing the
+ * mark the tile already carries is the smaller, more honest change, and the
+ * one that cannot introduce a second shape for the same category to drift
+ * out of step with the first.
+ */
+function CardMark({ name, word }: { name: GlyphName; word: string }) {
+  return (
+    <div className="place-mark">
+      <span className="place-mark__glyph" aria-hidden="true">
+        <Glyph name={name} size="100%" />
+      </span>
+      <span className="place-mark__word">{word}</span>
+    </div>
+  )
+}
+
 /** Heard all the way through. Drawn rather than a character, for the same
  *  reason `Glyph.tsx` exists at all: a platform tick is a platform's
  *  drawing, in a book that has its own. */
@@ -562,7 +759,16 @@ function Tick() {
 }
 
 /**
- * The photograph, on a printed plate, with the credit under it.
+ * The photograph, on a printed plate, with its own name in bold beneath it
+ * and the credit under that.
+ *
+ * THE NAME IS NEW. A rejected candidate's own "big picture" put the name in
+ * bold beneath the photo and nothing else did — this screen's photo used to
+ * carry only the small credit line, with the tile's own word the only place
+ * a name appeared at all. Grafted here alongside the self-clearing plate it
+ * arrived with (`!ended` in the caller): together they are what makes this a
+ * picture arriving on its own page rather than a permanent fixture with a
+ * caption bolted to it.
  *
  * UNMODIFIED, AND FRAMED WITH CSS. The image is sized by `max-width` /
  * `max-height` and never cropped or overlaid: cropping or drawing on a CC
@@ -580,10 +786,13 @@ function Photograph({ word, credit }: { word: string; credit: Credit }) {
   return (
     <figure className="place-photo">
       <img className="place-photo__img" src={assetUrl(credit.file)} alt={word} />
-      <figcaption
-        className="place-photo__by"
-        dangerouslySetInnerHTML={{ __html: credit.attributionHtml }}
-      />
+      <figcaption className="place-photo__cap">
+        <span className="place-photo__name">{word}</span>
+        <span
+          className="place-photo__by"
+          dangerouslySetInnerHTML={{ __html: credit.attributionHtml }}
+        />
+      </figcaption>
     </figure>
   )
 }

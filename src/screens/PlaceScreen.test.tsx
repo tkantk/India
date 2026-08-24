@@ -310,5 +310,140 @@ describe('PlaceScreen', () => {
       const { container } = render(<PlaceScreen slug="gujarat" />)
       expect(container.querySelector('.place-shelf')).toBeNull()
     })
+
+    it('has no trail either — there is nothing yet to say "how much is left"', () => {
+      const { container } = render(<PlaceScreen slug="gujarat" />)
+      expect(container.querySelector('.place-trail')).toBeNull()
+    })
+  })
+
+  /**
+   * From candidate C ("poke-around"): a picture that arrives with its own
+   * sentence and takes itself away when the sentence ends, rather than
+   * sitting on screen until a different tile is tapped. Fixes candidate A's
+   * (the chosen screen's) too-small photograph and needs no close button —
+   * see task-3-brief.md.
+   */
+  describe('the big picture: arrives with the words, clears when they end', () => {
+    it('shows a real photograph, with its own name set in bold beneath it', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: 'Hawa Mahal' }))
+      expect(container.querySelector('.place-photo__img')).toBeInTheDocument()
+      expect(container.querySelector('.place-photo__name')?.textContent).toBe('Hawa Mahal')
+    })
+
+    it('clears itself the instant its own sentence ends — never a fixture waiting on a close button', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: 'Hawa Mahal' }))
+      expect(container.querySelector('.place-photo')).toBeInTheDocument()
+
+      act(() => { narrator.finish() })
+      expect(container.querySelector('.place-photo')).toBeNull()
+    })
+
+    it('never blocks a tap on anything else while it is up — the shelf stays live underneath it', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: 'Hawa Mahal' }))
+      // The picture is on screen (previous test) and every tile is still a
+      // real, working button underneath it.
+      await user.click(screen.getByRole('button', { name: 'Festival' }))
+      expect(played).toContain('audio/en/rajasthan.card.festival.m4a')
+    })
+  })
+
+  describe('the animal card', () => {
+    it('shows nothing at all for a species with no photograph fetched yet — never a generic stand-in', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: 'Animal' }))
+      // Exactly as a landmark's own plate degrades when it has no photo:
+      // nothing rendered, not a paw standing in for a dromedary.
+      expect(container.querySelector('.place-plate')?.children.length).toBe(0)
+    })
+  })
+
+  describe('food and festival: the tile\'s own drawn mark, larger', () => {
+    it('shows the same generic mark the tile already carries — no specific dish or festival claimed', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: 'Food' }))
+      expect(container.querySelector('.place-mark')).toBeInTheDocument()
+      expect(container.querySelector('.place-mark__word')?.textContent).toBe('Food')
+    })
+  })
+
+  /**
+   * From candidate B ("guided-visit"): a wordless row showing how much of
+   * the place is left to hear. Grafted WITHOUT candidate B's own locked
+   * sequence — any tile, any order, always live — so a bead here can only
+   * ever mean "heard" or "not yet," never "not reached yet."
+   */
+  describe('the trail: ten beads reflecting what has actually been HEARD', () => {
+    it('does not mark a bead heard on a tap alone — only once the line has actually ended', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      act(() => { narrator.finish() }) // the intro, on arrival
+
+      const before = container.querySelectorAll('.place-bead[data-state="heard"]').length
+      await user.click(screen.getByRole('button', { name: 'Food' }))
+      expect(container.querySelectorAll('.place-bead[data-state="heard"]')).toHaveLength(before)
+
+      act(() => { narrator.finish() })
+      expect(container.querySelectorAll('.place-bead[data-state="heard"]')).toHaveLength(before + 1)
+    })
+  })
+
+  /**
+   * From candidate B: "You have heard everything here. Well done!" — judged
+   * the thing that brings a child back for a second visit. Already authored
+   * and already rendered; nothing called it until this graft.
+   */
+  describe('the ending: "You have heard everything here"', () => {
+    it('says nothing extra until every one of the ten pages has actually been heard', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      act(() => { narrator.finish() }) // intro: 1 of 10
+
+      for (const name of ['Food', 'Festival', 'Hello']) {
+        await user.click(screen.getByRole('button', { name }))
+        act(() => { narrator.finish() })
+      }
+      // 4 of 10 heard — nowhere near the end.
+      expect(played).not.toContain('audio/en/ui.all-heard.m4a')
+    })
+
+    it('plays once the tenth page has been heard, whichever order they were opened in', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      act(() => { narrator.finish() }) // intro
+
+      const rest = ['Animal', 'Food', 'Festival', 'Hello', ...rajasthan.landmarks.map((l) => l.short)]
+      for (const name of rest) {
+        await user.click(screen.getByRole('button', { name }))
+        act(() => { narrator.finish() })
+      }
+      expect(played[played.length - 1]).toBe('audio/en/ui.all-heard.m4a')
+      // The caption must say what is actually playing — never a stale
+      // sentence left over from whichever tile was tapped last.
+      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('ui.all-heard')
+    })
+
+    it('does not trap the child in the congratulation — tapping any tile moves straight on', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      act(() => { narrator.finish() })
+      const rest = ['Animal', 'Food', 'Festival', 'Hello', ...rajasthan.landmarks.map((l) => l.short)]
+      for (const name of rest) {
+        await user.click(screen.getByRole('button', { name }))
+        act(() => { narrator.finish() })
+      }
+      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('ui.all-heard')
+
+      await user.click(screen.getByRole('button', { name: 'Food' }))
+      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('card.food')
+    })
   })
 })

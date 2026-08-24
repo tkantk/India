@@ -103,6 +103,52 @@
   color: var(--deep);
 }
 
+/* ------------------------------------------------------------ the trail */
+
+/* WHERE WE HAVE GOT TO — ten beads, one per page. See `PlaceTrail`'s own
+   note (PlaceScreen.tsx) for why this is scenery rather than a control.
+
+   Deliberately the OPPOSITE corner from `.place-name`, not folded into it:
+   `.place-plate`'s own top padding above is `.place-name`'s measured height
+   plus its offset, and growing that box would mean re-measuring a number
+   this task was told not to touch. A free-floating corner of its own, at
+   the same offset from the top, costs nothing anyone else depends on. */
+.place-trail {
+  position: absolute;
+  top: calc(var(--map-ceiling, 0px) + 12px);
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 45%;
+  pointer-events: none;
+}
+
+.place-bead {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+}
+
+/* Heard: filled with the page's own accent — the same colour the open
+   tile's own top band and the caption's top band already carry, so "done"
+   reads as one colour everywhere it appears. */
+.place-bead[data-state='heard'] {
+  background: var(--subject-accent, var(--deep));
+  border-color: var(--subject-accent, var(--deep));
+}
+
+/* The one open right now — a thin gold ring, the app's own "this one" mark
+   (`--highlight`), not a second colour competing with "heard"'s. */
+.place-bead[data-state='now'] {
+  box-shadow: 0 0 0 3px var(--highlight), var(--lift);
+}
+
 /* ------------------------------------------------------- what is on show */
 
 /* The slot the open page's picture lands in — the same rect as the map, so
@@ -153,22 +199,50 @@
    `34vmin`/`240px` was measured the same way: it still clears the tightest
    portrait case with room for the credit line under it, and grows further
    on every wider/taller viewport instead of sitting at the same fixed size
-   everywhere. */
+   everywhere.
+
+   TRIMMED BACK TO `31vmin`/`212px` when the bold name (`.place-photo__cap`)
+   was grafted in underneath the image: that caption used to be one 13px
+   credit line and is now a 24px name plus that same credit line, roughly
+   28px taller. Held to the SAME total footprint the 240px figure was
+   measured safe at, rather than growing the whole figure past a budget
+   nobody has re-measured with a real browser since — see this comment's own
+   history for why that measurement is not a number to guess at twice. */
 .place-photo__img {
   display: block;
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: min(34vmin, 240px);
+  max-height: min(31vmin, 212px);
   border-radius: 12px;
   margin: 0 auto;
 }
 
+/* The name and the credit, stacked under the picture. `--text` for the name
+   is the same size the tile's own word is set in — one graft's whole point
+   ("name in bold beneath") is that the picture finally carries its own
+   title, not only the credit an adult reads. */
+.place-photo__cap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.place-photo__name {
+  font-size: var(--text);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  text-align: center;
+}
+
 /* The credit, WITH the image and not only on the colophon page — which is
    what CC BY 3(a) actually asks for. Small: it is for an adult, like the
-   map's own credit line, and a six-year-old has the photograph. */
+   map's own credit line, and a six-year-old has the name above it. */
 .place-photo__by {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 13px;
   line-height: 1.35;
   color: var(--deep);
@@ -176,6 +250,39 @@
 }
 
 .place-photo__by a { color: var(--deep); }
+
+/* The `food`/`festival` big picture: the tile's own drawn mark, blown up, on
+   the same printed plate family as the photograph above. See `CardMark`'s
+   own note (PlaceScreen.tsx) for why a generic mark is the honest choice
+   here and not on the animal card. */
+.place-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 28px 34px;
+  border-radius: var(--plate-rx);
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+}
+
+.place-mark__glyph {
+  display: block;
+  width: min(30vmin, 190px);
+  height: min(30vmin, 190px);
+  /* The subject's own accent, not the app's default ink — the same colour
+     the caption's top band and the open tile's own band are already
+     printed in, so the mark, the tile and the sentence read as one thing. */
+  color: var(--subject-accent, var(--ink-line));
+}
+
+.place-mark__word {
+  font-size: var(--text);
+  font-weight: 700;
+  color: var(--ink);
+}
 
 /* THE TOUR'S OWN CUE ART, ON A SHORTER PLATE.
 
@@ -491,4 +598,25 @@
   }
 
   .place-shelf__row--cards > .tile { height: 104px; }
+
+  /* THE BIG PICTURE, RE-MEASURED FOR THE SHORTER BOX.
+     `--say-lines: 8` above reserves a lane tall enough for the narrowest
+     landscape device's own worst-case caption (see that rule's own note),
+     which leaves the picture only about 256px tall at 1180x704 — measured
+     directly with `scripts/shot.mjs place.rajasthan:6 --w=1180 --h=704`,
+     which is what caught this: the portrait-sized name and credit
+     (`.place-photo__cap`) pushed the figure's own bottom edge underneath
+     the caption strip, visibly overlapping it. `.place-plate`'s own 84px
+     top padding (for the name plate) and 10px bottom padding do not shrink
+     with orientation, so the whole figure has to fit inside what is left —
+     roughly 162px — not the ~240px+ it can use in portrait. Every number
+     below is smaller for that reason, not for taste, and was checked at
+     1180x704 (the narrowest), 1024x768 and 1366x868. */
+  .place-photo__img { max-height: min(15vmin, 96px); }
+  .place-photo__cap { gap: 1px; margin-top: 3px; }
+  .place-photo__name { font-size: 16px; }
+  .place-photo__by { font-size: 11px; }
+  .place-mark { padding: 12px 18px; gap: 6px; }
+  .place-mark__glyph { width: min(16vmin, 96px); height: min(16vmin, 96px); }
+  .place-mark__word { font-size: 16px; }
 }
