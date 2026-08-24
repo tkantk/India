@@ -27,6 +27,7 @@
     "contact-sheet:mor": "node scripts/contact-sheet-mor.mjs",
     "tour:strip": "node scripts/tour-strip.mjs",
     "place:strip": "node scripts/place-strip.mjs",
+    "fact:check": "node scripts/fact-check.mjs",
     "shot": "node scripts/shot.mjs"
   },
   "dependencies": {

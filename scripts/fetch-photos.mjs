@@ -21,6 +21,16 @@ const OVERRIDES = {
   // The Munnar article's lead image is the town, not the tea. The narration
   // is entirely about the tea bushes, so the picture has to show them.
   'Munnar': 'File:Munnar Tea Plantations-WUS07352.jpg',
+  // Task 4c: the article's lead image is a wide shot of the temple that
+  // never shows a wheel, while the line is entirely about the twenty-four
+  // carved wheels and the shadow that crosses one of them to tell the time.
+  'Konark Sun Temple': 'File:Wheel engraved in the 13th century built Konark Sun Temple in Orissa, India.jpg',
+  // The lead image is an empty landscape — neither a tiger nor the fort the
+  // line names, and the father's first device-test complaint was literally
+  // "the tiger and others are fake". The line's three sentences are about
+  // the tiger; this is the state's only real tiger photograph until Task 5
+  // builds a separate animal-photo pipeline, so it carries that weight here.
+  'Ranthambore National Park': 'File:Bengal tiger in Ranthambore National Park.jpg',
 }
 
 function landmarks() {

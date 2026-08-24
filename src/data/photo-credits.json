@@ -103,19 +103,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Periyar_National_Park.JPG",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Wouterhagens\" title=\"User:Wouterhagens\">Wouter Hagens</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Periyar_National_Park.JPG\">via Wikimedia Commons</a> (Public domain)"
   },
-  "odisha.konark": {
-    "file": "photos/odisha.konark.jpg",
-    "width": 960,
-    "source": "pageimages",
-    "fileTitle": "File:Konarka Temple.jpg",
-    "artist": "Subham9423",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Konarka_Temple.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Subham9423&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Subham9423 (page does not exist)\">Subham9423</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Konarka_Temple.jpg\">via Wikimedia Commons</a>"
-  },
   "odisha.jagannath": {
     "file": "photos/odisha.jagannath.jpg",
     "width": 960,
@@ -220,19 +207,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chand_Baori_perspective_panorama_(July_2022).jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Chainwit.\" title=\"User:Chainwit.\">Chainwit.</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Chand_Baori_perspective_panorama_(July_2022).jpg\">via Wikimedia Commons</a>"
   },
-  "rajasthan.ranthambore": {
-    "file": "photos/rajasthan.ranthambore.jpg",
-    "width": 960,
-    "source": "pageimages",
-    "fileTitle": "File:Ranthambore National Park.JPG",
-    "artist": "THerrington",
-    "licence": "cc-by-sa-3.0",
-    "licenceShort": "CC BY-SA 3.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Ranthambore_National_Park.JPG",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:THerrington&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:THerrington (page does not exist)\">THerrington</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Ranthambore_National_Park.JPG\">via Wikimedia Commons</a>"
-  },
   "delhi.humayuns-tomb": {
     "file": "photos/delhi.humayuns-tomb.jpg",
     "width": 960,
@@ -258,5 +232,31 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Munnar_Tea_Plantations-WUS07352.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Rainer_Halama\" title=\"User:Rainer Halama\">Rainer Halama</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Munnar_Tea_Plantations-WUS07352.jpg\">via Wikimedia Commons</a>"
+  },
+  "odisha.konark": {
+    "file": "photos/odisha.konark.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Wheel engraved in the 13th century built Konark Sun Temple in Orissa, India.jpg",
+    "artist": "Joydeep",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wheel_engraved_in_the_13th_century_built_Konark_Sun_Temple_in_Orissa,_India.jpg",
+    "attributionHtml": "<p><a href=\"https://commons.wikimedia.org/wiki/User:Joydeep\" title=\"User:Joydeep\">Joydeep</a>\n</p>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Wheel_engraved_in_the_13th_century_built_Konark_Sun_Temple_in_Orissa,_India.jpg\">via Wikimedia Commons</a>"
+  },
+  "rajasthan.ranthambore": {
+    "file": "photos/rajasthan.ranthambore.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Bengal tiger in Ranthambore National Park.jpg",
+    "artist": "Thomas Fuhrmann",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Bengal_tiger_in_Ranthambore_National_Park.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Thomas_Fuhrmann_Jakobsthal\" title=\"User:Thomas Fuhrmann Jakobsthal\">Thomas Fuhrmann</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Bengal_tiger_in_Ranthambore_National_Park.jpg\">via Wikimedia Commons</a>"
   }
 }

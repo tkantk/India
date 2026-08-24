@@ -1,0 +1,754 @@
+{
+  "about": "Machine-checkable replacement for the prose audit in docs/fact-check.md (Plan 6, Task 4a). Every row names the content line it backs and a verification of exactly one kind: fetched (a URL plus words scripts/fact-check.mjs re-opens and confirms — a 403, a timeout or a vanished quote is a FAILURE), cited (a real source with no fetchable URL, plus the exact or best-available quoted words and where they appear — the script can only confirm the row is complete, not that the words are true), or derived (recomputed from this repo's own data: src/data/geo.json's neighbour lists and path geometry, or the content files' own line ids). docs/fact-check.md keeps the narrative history of what was wrong and why; this file is what the gate actually runs.",
+  "excludedFromDocMd": "Three rows in docs/fact-check.md are marked \"(not stated)\" — claims that were considered and rejected before ever reaching the narration (odisha.jagannath.line's top-pot claim, kerala.intro's coconut etymology, kerala.chinese-nets.line's Chinese-origin claim). They assert nothing the child hears, so there is nothing here to verify; they remain documented only in docs/fact-check.md.",
+  "verbatimNote": "cited.verbatim is true only where docs/fact-check.md (or the source itself) recorded the source's own words in quotation marks. Where the original prose audit only ever recorded a paraphrase or a bare figure, verbatim is false — that gap is real and is reported by scripts/fact-check.mjs, not hidden by inventing a quotation mark.",
+  "rows": [
+    {
+      "id": "rajasthan.intro.area",
+      "line": "rajasthan.intro",
+      "claim": "Rajasthan is the largest state in India by area",
+      "verification": { "type": "derived", "check": "largestByArea", "among": "state", "place": "rajasthan" }
+    },
+    {
+      "id": "rajasthan.intro.desert",
+      "line": "rajasthan.intro",
+      "claim": "Much of Rajasthan is desert, and lots of it is sand",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Thar_Desert", "contains": "Much of the desert area is covered by sand dunes" }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.intro.neighbours",
+      "line": "rajasthan.intro",
+      "claim": "Gujarat and Punjab border Rajasthan",
+      "verification": { "type": "derived", "check": "neighbours", "place": "rajasthan", "of": ["gujarat", "punjab"] }
+    },
+    {
+      "id": "rajasthan.intro.capital",
+      "line": "rajasthan.intro",
+      "claim": "Jaipur is the capital; old Jaipur is painted pink",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Jaipur", "contains": "giving Jaipur a distinctive appearance and the epithet Pink City" }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.card.animal.hump",
+      "line": "rajasthan.card.animal",
+      "claim": "A camel's hump stores fat, not water",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://animals.sandiegozoo.org/animals/camel", "contains": "They store fat, not water." }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.card.animal.endurance",
+      "line": "rajasthan.card.animal",
+      "claim": "A camel can cross the desert for days without drinking",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://animals.sandiegozoo.org/animals/camel", "contains": "a week or more without water" }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.card.food.baati",
+      "line": "rajasthan.card.food",
+      "claim": "Baati is a hard baked wheat ball, cracked open and dipped in dal; dal is a lentil dish",
+      "verification": {
+        "type": "cited",
+        "source": "Incredible India (Ministry of Tourism), Udaipur cuisine page",
+        "quote": "Baati is a hard baked wheat ball cracked open and dipped in dal, a lentil dish",
+        "location": "Udaipur cuisine page, dal baati churma description",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "rajasthan.card.festival.pushkar",
+      "line": "rajasthan.card.festival",
+      "claim": "Camels are brought to Pushkar to be traded; owners groom and decorate them; some are shorn into patterns; there are races",
+      "verification": {
+        "type": "cited",
+        "source": "Rajasthan Tourism (official) Pushkar Fair page; Global InCH, Camel Hair; Rajasthan Animal Husbandry Department livestock counts",
+        "quote": "camel counts recorded at 15,460 in 2001 falling to 2,340 in 2021; Raika shearing designs documented by Global InCH",
+        "location": "Rajasthan Animal Husbandry Department census figures, cited alongside the Pushkar Fair page",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "rajasthan.card.hello.khamma-ghani",
+      "line": "rajasthan.card.hello",
+      "claim": "Khamma Ghani is a Rajasthani greeting, an honorific used toward elders and guests",
+      "verification": {
+        "type": "cited",
+        "source": "Abhishek Avtans (Indic languages, Leiden), Linguistica Indica",
+        "quote": "ghaṇī glossed as \"very much\"; khamā traced to Sanskrit kṣamā — an honorific greeting",
+        "location": "Linguistica Indica etymology note on khamā ghaṇī",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "rajasthan.thar.line.dunes",
+      "line": "rajasthan.thar.line",
+      "claim": "Thar dunes are moved by the wind, a little at a time",
+      "verification": {
+        "type": "cited",
+        "source": "ICAR-CAZRI sand mobilisation data; Journal of the Indian Society of Remote Sensing (2019)",
+        "quote": "parabolic dunes migrate 3-7 m/yr, barchan dunes up to roughly 30 m/yr; around 400,000 ha under dune stabilisation",
+        "location": "J. Indian Soc. Remote Sensing (2019), dune migration-rate figures",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "rajasthan.hawa-mahal.line.windows",
+      "line": "rajasthan.hawa-mahal.line",
+      "claim": "Hawa Mahal has 953 windows, and the wind through them keeps it cool",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/rajasthan/jaipur/hawa-mahal", "contains": "953 windows" }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.hawa-mahal.line.translation",
+      "line": "rajasthan.hawa-mahal.line",
+      "claim": "Hawa means wind, Mahal means palace",
+      "verification": {
+        "type": "cited",
+        "source": "Standard Hindi/Urdu dictionary gloss",
+        "quote": "hawa = wind; mahal = palace",
+        "location": "standard bilingual dictionary entries, not a single publication",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "rajasthan.amber-fort.line.hill-mirrors",
+      "line": "rajasthan.amber-fort.line",
+      "claim": "Amer Fort is on a hill; one hall is lined with thousands of tiny mirrors",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/rajasthan/jaipur/amber-fort", "contains": "thousands of tiny mirrors" }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.amber-fort.line.reflection",
+      "line": "rajasthan.amber-fort.line",
+      "claim": "Light in the mirror hall reflects back from everywhere",
+      "verification": {
+        "type": "cited",
+        "source": "Direct physical description — the optics of a mirror, not a claim any publication needs to make",
+        "quote": "a mirror reflects light back toward wherever it came from",
+        "location": "general optics; not a specific publication (the popular \"one candle lights the whole room\" claim was deliberately dropped as unsourced guide lore)",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "rajasthan.chand-baori.line.steps",
+      "line": "rajasthan.chand-baori.line",
+      "claim": "Chand Baori has about 3,500 steps down thirteen levels",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/rajasthan/jaipur/chand-baori", "contains": "3,500 narrow steps" }
+        ]
+      }
+    },
+    {
+      "id": "rajasthan.ranthambore.line.tigers-fort",
+      "line": "rajasthan.ranthambore.line",
+      "claim": "Wild tigers live in Ranthambore, and an old fort stands inside the park",
+      "verification": {
+        "type": "cited",
+        "source": "WWF India; UNESCO WHS 247, Hill Forts of Rajasthan",
+        "quote": "the fort is strategically located atop a 700 feet tall hill within the park; the dense forests at Ranthambore",
+        "location": "WWF India site page; UNESCO WHS 247 Tentative List text — the UNESCO half was read live via curl on 2026-08-24, but whc.unesco.org's bot protection intermittently 403s this script's own Node fetch (same host as odisha.konark.line.wheels; see that row's note), so it stays cited rather than fetched",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "odisha.intro.coastline",
+      "line": "odisha.intro",
+      "claim": "Odisha is on India's east coast on the Bay of Bengal, with hundreds of kilometres of coast",
+      "verification": {
+        "type": "cited",
+        "source": "Survey of India, Length of Coastline of India (2024 re-verification)",
+        "quote": "Odisha's coastline re-measured at 574.71 km in the 2024 exercise",
+        "location": "Survey of India 2024 coastline re-verification report, Odisha entry",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "odisha.intro.neighbours",
+      "line": "odisha.intro",
+      "claim": "West Bengal is one of Odisha's neighbours",
+      "verification": { "type": "derived", "check": "neighbours", "place": "odisha", "of": ["west-bengal"] }
+    },
+    {
+      "id": "odisha.intro.capital-temples",
+      "line": "odisha.intro",
+      "claim": "Bhubaneswar is the capital and is full of old stone temples",
+      "verification": {
+        "type": "cited",
+        "source": "Government of Odisha state profile; UNESCO Tentative List, Ekamra Kshetra; Britannica (not re-fetched); tourism pages",
+        "quote": "sources disagree on how many: \"about 30 ancient temples\" (Britannica, not re-fetched), 700 in the ASI-authored UNESCO Tentative List submission, an unsourced 7,000 on tourism pages",
+        "location": "range of figures across Britannica, the UNESCO Tentative List submission and tourism pages — the disagreement is the finding",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "odisha.card.animal.roller",
+      "line": "odisha.card.animal",
+      "claim": "The Indian roller is Odisha's state bird; brown at rest, brilliant blue in flight",
+      "verification": {
+        "type": "cited",
+        "source": "Odisha Review (Government of Odisha), Blue Jay: The State Bird of Orissa",
+        "quote": "the dark and pale blue colours in the wings show up as brilliant shining bands in flight",
+        "location": "Odisha Review article body",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "odisha.card.food.pakhala",
+      "line": "odisha.card.food",
+      "claim": "Pakhala is cooked rice left in water until it is cool and slightly sour, eaten with fried fish",
+      "verification": {
+        "type": "cited",
+        "source": "Odisha Review; Pakhala Dibasa observed 20 March since 2011",
+        "quote": "rice left to ferment in water until cool and slightly sour, traditionally served with fried fish",
+        "location": "Odisha Review article on Pakhala",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "odisha.card.festival.rath-yatra",
+      "line": "odisha.card.festival",
+      "claim": "Rath Yatra: three enormous wooden chariots, built new every year, pulled with ropes by thousands",
+      "verification": {
+        "type": "cited",
+        "source": "Government of Odisha official Rath Jatra portal",
+        "quote": "newly constructed every year",
+        "location": "official Rath Jatra portal, chariot-construction section",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "odisha.card.hello.namaskar",
+      "line": "odisha.card.hello",
+      "claim": "Namaskar, ନମସ୍କାର",
+      "verification": {
+        "type": "cited",
+        "source": "Unicode Standard, Oriya block character names; Odia phrasebook",
+        "quote": "ORIYA NA, ORIYA MA, ORIYA SA, ORIYA VIRAMA, ORIYA KA, ORIYA VOWEL SIGN AA, ORIYA RA",
+        "location": "Unicode Standard, Oriya code block character names, verified character by character",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "odisha.konark.line.wheels",
+      "line": "odisha.konark.line",
+      "claim": "Konark is carved as a giant chariot with twenty-four stone wheels and stone horses",
+      "verification": {
+        "type": "cited",
+        "source": "UNESCO WHS 246, Statement of Outstanding Universal Value",
+        "quote": "24 carved wheels, each about 3 m in diameter; twelve pairs of wheels drawn by seven horses",
+        "location": "UNESCO WHS 246 Statement of Outstanding Universal Value — read live via a browser-equivalent fetch (curl) on 2026-08-24, but whc.unesco.org's bot protection intermittently 403s this script's own Node fetch on retry (confirmed: two consecutive Node requests to the same URL returned 200 then 403 seconds apart, independent of User-Agent), so it cannot be marked fetched without an unreliable gate",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "odisha.konark.line.shadow-clock",
+      "line": "odisha.konark.line",
+      "claim": "Guides show how the shadow creeping across a wheel tells the time",
+      "verification": {
+        "type": "cited",
+        "source": "Bahinipati et al., F1000Research 13:1540 (2025); guide practice at the site",
+        "quote": "a wheel's spokes function as a sundial, demonstrated by guides at the site",
+        "location": "F1000Research 13:1540 (2025); neither UNESCO nor ASI states this, which is why the line attributes it to guides rather than the builders",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "odisha.jagannath.line.tower-height",
+      "line": "odisha.jagannath.line",
+      "claim": "The tower is as tall as a twenty-floor building",
+      "verification": {
+        "type": "cited",
+        "source": "Odisha Review (Government of Odisha)",
+        "quote": "vimana height 214 ft 8 in (about 65 m), equivalent to a twenty-storey building at 3.25 m a floor",
+        "location": "Odisha Review article on the temple's dimensions",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "odisha.jagannath.line.kitchen",
+      "line": "odisha.jagannath.line",
+      "claim": "One of the largest kitchens in the world; clay pots piled over a wood fire; thousands fed",
+      "verification": {
+        "type": "cited",
+        "source": "Odisha Review, The Kitchen of Srimandir",
+        "quote": "kitchen measuring 150 ft x 100 ft x 20 ft, staffed by about 600 cooks and 400 helpers",
+        "location": "Odisha Review article on the temple kitchen",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "odisha.chilika.line.lake-dolphins-birds",
+      "line": "odisha.chilika.line",
+      "claim": "Chilika is a huge shallow lake where river water and sea water mix; Irrawaddy dolphins; thousands of birds in winter, some pink",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/odisha/bhubaneswar/chilika-lake", "contains": "Irrawaddy dolphins" }
+        ]
+      }
+    },
+    {
+      "id": "odisha.puri-beach.line.sand",
+      "line": "odisha.puri-beach.line",
+      "claim": "Golden sand on the Bay of Bengal; people build huge sand sculptures there",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/odisha/puri/puri-beach", "contains": "Golden Beach" }
+        ]
+      }
+    },
+    {
+      "id": "odisha.udayagiri.line.caves",
+      "line": "odisha.udayagiri.line",
+      "claim": "Rooms cut into rock with hammers and chisels; monks lived in them; carved elephants by a doorway",
+      "verification": {
+        "type": "cited",
+        "source": "ASI, Udayagiri and Khandagiri Caves; UNESCO Tentative List, Ekamra Kshetra",
+        "quote": "originally meant for the Jain ascetics",
+        "location": "UNESCO Tentative List submission, Ekamra Kshetra, on the caves' original purpose",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "kerala.intro.geography",
+      "line": "kerala.intro",
+      "claim": "Kerala is a long thin state on India's west coast, sea one side and hills the other",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Kerala", "contains": "Kerala is primarily a strip of coastal plains sandwiched by the Western Ghats and the Laccadive Sea" }
+        ]
+      }
+    },
+    {
+      "id": "kerala.intro.rain",
+      "line": "kerala.intro",
+      "claim": "It rains a great deal in Kerala",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Climate_of_Kerala", "contains": "first state in India to receive rain from the Southwest monsoon" }
+        ]
+      }
+    },
+    {
+      "id": "kerala.intro.neighbours",
+      "line": "kerala.intro",
+      "claim": "Tamil Nadu is one of Kerala's neighbours",
+      "verification": { "type": "derived", "check": "neighbours", "place": "kerala", "of": ["tamil-nadu"] }
+    },
+    {
+      "id": "kerala.intro.capital",
+      "line": "kerala.intro",
+      "claim": "Thiruvananthapuram is the capital",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Kerala", "contains": "Thiruvananthapuram is the capital city" }
+        ]
+      }
+    },
+    {
+      "id": "kerala.card.animal.elephant",
+      "line": "kerala.card.animal",
+      "claim": "The elephant is Kerala's state animal",
+      "verification": {
+        "type": "cited",
+        "source": "Government of Kerala, General Administration Department, state emblem page",
+        "quote": "elephant designated the state animal",
+        "location": "state emblem / state symbols page",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "kerala.card.food.sadya",
+      "line": "kerala.card.food",
+      "claim": "Sadya: a feast on a banana leaf, about twenty small dishes, eaten with the right hand",
+      "verification": {
+        "type": "cited",
+        "source": "Kerala Tourism, Sadya",
+        "quote": "more than 20 dishes; a grand sadya runs to 26 or more",
+        "location": "Kerala Tourism Sadya page",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "kerala.card.festival.onam",
+      "line": "kerala.card.festival",
+      "claim": "Onam: flower patterns on the ground; long boats raced by nearly a hundred rowers",
+      "verification": {
+        "type": "cited",
+        "source": "Kerala Tourism, Onam; Nehru Trophy Boat Race official site",
+        "quote": "a chundan vallam is over 30 m long and carries around 100 rowers",
+        "location": "Nehru Trophy Boat Race official site, chundan vallam specification",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "kerala.card.hello.namaskaram",
+      "line": "kerala.card.hello",
+      "claim": "Namaskaram, നമസ്കാരം",
+      "verification": {
+        "type": "cited",
+        "source": "Wiktionary Malayalam entry; Shabdkosh Malayalam-English dictionary",
+        "quote": "conjunct consonants verified character by character against the dictionary entry",
+        "location": "Wiktionary / Shabdkosh Malayalam entries for namaskaram",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "kerala.card.hello.palindrome",
+      "line": "kerala.card.hello",
+      "claim": "\"Malayalam\" is spelled the same backwards as forwards, in English letters",
+      "verification": { "type": "derived", "check": "palindrome", "word": "Malayalam" }
+    },
+    {
+      "id": "kerala.backwaters.line.lakes-boats",
+      "line": "kerala.backwaters.line",
+      "claim": "Lakes and canals joined together for a long way; boats with woven palm roofs that people sleep on",
+      "verification": {
+        "type": "cited",
+        "source": "Kerala Tourism, backwaters overview",
+        "quote": "the backwater network runs roughly 900 km; a kettuvallam is built of jackwood stitched with coir rope",
+        "location": "Kerala Tourism backwaters page",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "kerala.munnar.line.plucking",
+      "line": "kerala.munnar.line",
+      "claim": "Tea bushes clipped flat on top; for the best tea only the bud and the two leaves below it are picked",
+      "verification": {
+        "type": "cited",
+        "source": "Kerala Tourism, Munnar; International Specialty Tea Association plucking standard",
+        "quote": "plucking table",
+        "location": "ISTA fine-plucking standard terminology for the bush's flat top, via Kerala Tourism's Munnar page",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "kerala.athirappilly.line.drop",
+      "line": "kerala.athirappilly.line",
+      "claim": "The water drops much further than a house is tall",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/kerala/thrissur/athirappilly-waterfalls", "contains": "80 feet (24 meters)" }
+        ]
+      }
+    },
+    {
+      "id": "kerala.chinese-nets.line.mechanism",
+      "line": "kerala.chinese-nets.line",
+      "claim": "A man's weight on the beam lowers the net; the men haul on ropes; the counterweight stones come down onto a platform one by one as the net rises",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Chinese_fishing_nets", "contains": "the weight of a man walking along the main beam is sufficient to cause the net to descend into the sea" },
+          { "url": "https://en.wikipedia.org/wiki/Chinese_fishing_nets", "contains": "some of the rocks one-by-one come to rest on a platform" }
+        ]
+      }
+    },
+    {
+      "id": "kerala.periyar.line.elephants-tigers",
+      "line": "kerala.periyar.line",
+      "claim": "You might see wild elephants at the lake edge from a boat; tigers are there but rarely seen",
+      "verification": {
+        "type": "cited",
+        "source": "Kerala Tourism, Periyar Tiger Reserve; Idukki District (Government of Kerala)",
+        "quote": "roughly 900-1,000 elephants and around 40 tigers in the reserve",
+        "location": "Idukki District population estimates, cited alongside the Periyar Tiger Reserve page",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "tour.03.states",
+      "line": "tour.03",
+      "claim": "India has twenty-eight states",
+      "verification": { "type": "derived", "check": "placeCount", "kind": "state", "expect": 28 }
+    },
+    {
+      "id": "tour.04.union-territories",
+      "line": "tour.04",
+      "claim": "India has eight union territories",
+      "verification": { "type": "derived", "check": "placeCount", "kind": "ut", "expect": 8 }
+    },
+    {
+      "id": "tour.04.governed",
+      "line": "tour.04",
+      "claim": "The government of the whole of India helps to look after the union territories",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Union_territory", "contains": "directly governed by the central government of India, as opposed to the states, which have their own state government systems" }
+        ]
+      }
+    },
+    {
+      "id": "tour.05.new-delhi",
+      "line": "tour.05",
+      "claim": "New Delhi is India's capital city, sitting inside the wider union territory of Delhi; India Gate is there",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/New_Delhi", "contains": "New Delhi is the seat of all three branches of the Government of India" }
+        ]
+      }
+    },
+    {
+      "id": "tour.06.flag",
+      "line": "tour.06",
+      "claim": "The flag is saffron on top, white, then green, with a navy-blue wheel of twenty-four spokes",
+      "verification": {
+        "type": "cited",
+        "source": "Embassy of India (MEA), National Symbols page; Flag Code of India, 2002",
+        "quote": "a wheel in navy blue with 24 spokes",
+        "location": "Embassy of India National Symbols page — live and quoted 2026-08-21; re-checked 2026-08-24 and now returns a dead/placeholder page, so this row cannot be upgraded to fetched (see docs/fact-check.md note)",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "tour.07.tiger",
+      "line": "tour.07",
+      "claim": "The tiger is the national animal",
+      "verification": {
+        "type": "cited",
+        "source": "Embassy of India (MEA), National Symbols page",
+        "quote": "the tiger",
+        "location": "Embassy of India National Symbols page — live and quoted 2026-08-21; now dead as of the 2026-08-24 re-check (see docs/fact-check.md)",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "tour.08.peacock",
+      "line": "tour.08",
+      "claim": "The peacock is the national bird, and he fans his tail in the rainy season",
+      "verification": {
+        "type": "cited",
+        "source": "Embassy of India (MEA), National Symbols page",
+        "quote": "peacock display (courtship) coincides with the monsoon breeding season",
+        "location": "Embassy of India National Symbols page — now dead as of the 2026-08-24 re-check (see docs/fact-check.md)",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "tour.09.symbols",
+      "line": "tour.09",
+      "claim": "The lotus is the national flower, the banyan the national tree, the mango the national fruit",
+      "verification": {
+        "type": "cited",
+        "source": "Embassy of India (MEA), National Symbols page",
+        "quote": "lotus / banyan / mango designated national flower / tree / fruit",
+        "location": "Embassy of India National Symbols page — now dead as of the 2026-08-24 re-check (see docs/fact-check.md)",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "tour.09.lotus-botany",
+      "line": "tour.09",
+      "claim": "A lotus starts in the mud at the bottom of a pond and grows up to the surface",
+      "verification": {
+        "type": "cited",
+        "source": "Standard botanical description of Nelumbo nucifera (sacred lotus)",
+        "quote": "rooted in the substrate, flowers held above the water surface",
+        "location": "general botany, not a single publication",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "tour.10.ganga",
+      "line": "tour.10",
+      "claim": "The Ganga begins in the snowy mountains and runs across the north of India to the sea",
+      "verification": {
+        "type": "cited",
+        "source": "National Mission for Clean Ganga, Ministry of Jal Shakti (declared National River, 2008)",
+        "quote": "declared a National River in 2008; source glacier and sea outfall not re-fetched",
+        "location": "National Mission for Clean Ganga institutional pages; the Gangotri-glacier source and Bay of Bengal outfall were never independently re-fetched, which is why the line names neither",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "tour.11.himalayas",
+      "line": "tour.11",
+      "claim": "The Himalayas run along the top of India and are the highest mountains in the world",
+      "verification": {
+        "type": "cited",
+        "source": "National Portal of India (india.gov.in), Physical Features page",
+        "quote": "Some of the highest peaks in the world are found in these ranges.",
+        "location": "National Portal of India, Physical Features page — live and quoted 2026-08-21; could not be reached again this pass (see docs/fact-check.md note on india.gov.in's URL structure)",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "tour.12.seas",
+      "line": "tour.12",
+      "claim": "The Arabian Sea is to the west, the Bay of Bengal to the east and the Indian Ocean to the south",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/India", "contains": "Bounded by the Indian Ocean on the south, the Arabian Sea on the southwest, and the Bay of Bengal on the southeast" }
+        ]
+      }
+    },
+    {
+      "id": "tour.13.greetings",
+      "line": "tour.13",
+      "claim": "People in India greet each other in many different ways; Namaste, Namaskar and Vanakkam are three of them",
+      "verification": {
+        "type": "cited",
+        "source": "Department of Official Language, MHA (22 scheduled languages); Merriam-Webster on namaste",
+        "quote": "namaste, namaskar (Hindi/Marathi/Bengali) and vanakkam (Tamil) are everyday greeting words in their respective languages",
+        "location": "Merriam-Webster namaste entry; MHA's list of scheduled languages",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "delhi.intro.union-territory",
+      "line": "delhi.intro",
+      "claim": "Delhi is a union territory, not a state; New Delhi, India's capital, is inside it; the national government has a big say in how Delhi is run",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Delhi", "contains": "a union territory of India containing New Delhi, the capital of India" },
+          { "url": "https://en.wikipedia.org/wiki/Union_territory", "contains": "directly governed by the central government of India, as opposed to the states, which have their own state government systems" }
+        ]
+      }
+    },
+    {
+      "id": "delhi.intro.neighbours",
+      "line": "delhi.intro",
+      "claim": "Haryana wraps around three sides of Delhi, and Uttar Pradesh borders the other side",
+      "verification": { "type": "derived", "check": "neighbours", "place": "delhi", "of": ["haryana", "uttar-pradesh"] }
+    },
+    {
+      "id": "delhi.intro.yamuna-metro",
+      "line": "delhi.intro",
+      "claim": "The Yamuna runs through Delhi; there are trains under the ground",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://en.wikipedia.org/wiki/Delhi", "contains": "Straddling the Yamuna river, but spread chiefly to the west" },
+          { "url": "https://en.wikipedia.org/wiki/Delhi_Metro", "contains": "a mix of underground, at-grade, and elevated stations" }
+        ]
+      }
+    },
+    {
+      "id": "delhi.card.animal.sparrow",
+      "line": "delhi.card.animal",
+      "claim": "The house sparrow is Delhi's state bird",
+      "verification": {
+        "type": "cited",
+        "source": "Delhi Parks and Gardens Society (Government of NCT of Delhi), sparrow conservation page",
+        "quote": "house sparrow declared Delhi's state bird in 2012",
+        "location": "sparrow conservation page",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "delhi.card.food.chole-bhature",
+      "line": "delhi.card.food",
+      "claim": "Chole bhature: spicy chickpeas with a fried bread that puffs up like a balloon",
+      "verification": {
+        "type": "cited",
+        "source": "Standard recipe references",
+        "quote": "bhatura is deep-fried leavened bread that puffs up when cooked",
+        "location": "general recipe references, not a single publication",
+        "verbatim": false
+      }
+    },
+    {
+      "id": "delhi.card.festival.republic-day",
+      "line": "delhi.card.festival",
+      "claim": "A yearly parade in Delhi with bands, dancers, camels and a flypast",
+      "verification": {
+        "type": "cited",
+        "source": "Press Information Bureau, Government of India, Republic Day Parade release",
+        "quote": "The Camel contingent of Border Security Force…",
+        "location": "PIB Republic Day Parade press release (30 tableaux, ~2,500 cultural artists, 29-aircraft flypast)",
+        "verbatim": true
+      }
+    },
+    {
+      "id": "delhi.india-gate.line.names",
+      "line": "delhi.india-gate.line",
+      "claim": "A stone arch far taller than a house, with names carved across it",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/delhi/delhi/india-gate", "contains": "names etched into its stone" }
+        ]
+      }
+    },
+    {
+      "id": "delhi.qutub-minar.line.materials",
+      "line": "delhi.qutub-minar.line",
+      "claim": "Mostly red sandstone with a band of white marble near the top; five sections each thinner than the last; hundreds of steps inside; closed to climbers",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/delhi/delhi/qutub-minar", "contains": "red sandstone and marble" }
+        ]
+      }
+    },
+    {
+      "id": "delhi.red-fort.line.walls",
+      "line": "delhi.red-fort.line",
+      "claim": "Walls about two and a half kilometres round; a covered street of shops inside; water once ran through the rooms",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/delhi/delhi/red-fort", "contains": "2.4-km-long ring" }
+        ]
+      }
+    },
+    {
+      "id": "delhi.lotus-temple.line.petals",
+      "line": "delhi.lotus-temple.line",
+      "claim": "Twenty-seven white marble petals, nine pools, anybody may come in",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/delhi/delhi/lotus-temple", "contains": "27 free-standing marble petals" }
+        ]
+      }
+    },
+    {
+      "id": "delhi.humayuns-tomb.line.taj",
+      "line": "delhi.humayuns-tomb.line",
+      "claim": "A domed building in a garden cut into squares by water channels, and the Taj Mahal looks like it",
+      "verification": {
+        "type": "fetched",
+        "sources": [
+          { "url": "https://www.incredibleindia.gov.in/en/delhi/delhi/humayuns-tomb", "contains": "inspiration for future architectural innovations" }
+        ]
+      }
+    }
+  ]
+}

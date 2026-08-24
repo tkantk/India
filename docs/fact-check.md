@@ -1,5 +1,37 @@
 # Fact check
 
+**Superseded as the source of truth by `content/fact-check.json`, checked by
+`npm run fact:check` (Plan 6, Task 4a).** This file's own preamble already
+confesses the reason: it cited Britannica in fourteen rows while Britannica
+403'd every automated fetch, and nothing here could be re-run to catch that —
+it was a record of intentions, not of checks. `content/fact-check.json` gives
+every row a `verification` of exactly one kind — `fetched` (a URL plus words
+the script re-opens and confirms; a 403 or a changed quote is a FAILURE),
+`cited` (a real source with no fetchable URL, plus the quoted words — the
+script can only confirm the row is complete), or `derived` (recomputed from
+this repo's own `src/data/geo.json` or content files) — and the gate prints
+the mix on every run.
+
+This document is kept as the narrative history of what was found wrong and
+why: the "could not be confirmed" and "not fact" tables below have no
+ongoing machine-checkable role but real value as institutional memory of
+what was rejected. Three rows below are marked "(not stated)" — claims that
+were rejected before ever reaching the narration — and have no counterpart
+in `content/fact-check.json` for exactly that reason: there is no shipped
+line to verify.
+
+**Two sources that were "live and quotable" on 2026-08-21 were not on
+2026-08-24, three days later — the exact kind of drift this file cannot
+catch and `fact:check` can.** `mea.gov.in/national-symbols.htm`, cited below
+for the flag, the tiger, the peacock and the lotus/banyan/mango, now returns
+a soft 404 (HTTP 200, "Page Not Found") — those four rows stayed `cited`
+rather than being upgraded to `fetched`. `whc.unesco.org`'s Konark (246) and
+Ranthambore (247) pages are real and were read live via `curl` on
+2026-08-24, but the site's bot protection intermittently 403s a plain
+Node `fetch` to the very same URL seconds apart, independent of User-Agent —
+confirmed by two consecutive requests returning 200 then 403 — so both stay
+`cited` too rather than shipping a gate that cries wolf on its own flakiness.
+
 Every checkable claim in the seed content, with the source it was checked
 against. The rule this file exists to enforce: **a slightly vaguer true
 sentence beats a precise false one.** Where a number could not be confirmed
