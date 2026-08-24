@@ -16,16 +16,22 @@ import { GrandTour } from '../tour/GrandTour'
  * is telling them out loud. The map, the tour and Mor take the whole screen
  * instead.
  *
- * `onPickState` is not wired to anything yet: the tour already stops, lights
- * the state and flies to it, which is as far as Plan 2 goes. Plan 3 is what
- * turns arriving somewhere into the state card, the landmarks and the
- * passport.
+ * `onPickState` IS THE ONLY PROP, AND IT IS OPTIONAL ON PURPOSE. A child
+ * tapping a state now turns to that state's own page (`PlaceScreen`), which
+ * means a route change — but `useNavigate` cannot be called anywhere in this
+ * subtree: `GrandTour`, `TourStage` and `MapStage` are all mounted with no
+ * Router at all by this file's own tests and by both headless probes, and
+ * `MapStage` uses a plain `<a href="#/credits">` rather than a `<Link>` for
+ * exactly that reason. So the navigation is INJECTED, from `App.tsx`, which
+ * is inside the Router; left out, this screen behaves exactly as it did
+ * before — the tour stops, lights the state and flies to it, and nothing
+ * else happens.
  */
-export function IndiaScreen() {
+export function IndiaScreen({ onPickState }: { onPickState?: (slug: string) => void }) {
   return (
     <main className="india">
       <h1 className="visually-hidden">Namaste India</h1>
-      <GrandTour />
+      <GrandTour onPickState={onPickState} />
     </main>
   )
 }

@@ -73,6 +73,8 @@ if (!targets.length) {
     tour.NN@W       beat NN at word W exactly
     end             the tour finished: the map shimmers, the button is back
     credits         #/credits
+    place.SLUG      a state's own page, arrived at by really tapping the map
+    place.SLUG:N    ...with tile N of the shelf open (1-4 cards, 5-9 landmarks)
 
   flags:
     --w= --h=       viewport in CSS px          (default 820x1024, iPad Air 11 in Safari)
@@ -404,6 +406,80 @@ for (const target of targets) {
     await chrome.eval(`window.__clock.speed(1)`)
     await sleep(600)
     note = `button="${s.playButton}" lit=${s.lit}`
+  } else if (/^place\./.test(id)) {
+    /**
+     * A state's page, reached the way a child reaches it: through the gate,
+     * onto the map, and then a REAL tap on the state itself — not
+     * `location.hash`, so the whole chain under test is the real one
+     * (`hitLayer`'s tap gate, `GrandTour`'s `pick`, `App`'s injected
+     * navigate, `PlaceScreen`'s own arrival flight).
+     *
+     * `press()` above cannot do it: it uses `el.click()`, which fires no
+     * pointer events at all, and `MapStage` only ever picks from a
+     * pointerdown/pointerup pair `describeTap` has judged. This is the same
+     * synthetic pair `scripts/probe-map-hits.mjs` dispatches, aimed at the
+     * place's own `pin` (hit.json) rather than its bbox centre, because a
+     * concave state's centre can fall outside its own fill.
+     */
+    // `place.rajasthan:5` opens tile 5; `@7` waits seven seconds after
+    // arriving, which is how a cue authored mid-line (Rajasthan's intro
+    // draws a dune at word 14) gets photographed.
+    const [slug, tile] = id.slice('place.'.length).split(':')
+    await toTheMap()
+    const tapped = await chrome.eval(`(() => {
+      const svg = document.querySelector('.map .hit')
+      const el = svg && svg.querySelector('[data-slug="${slug}"]')
+      if (!el) return 'no such state on the hit layer: ${slug}'
+      const box = el.getBoundingClientRect()
+      const x = box.x + box.width / 2, y = box.y + box.height / 2
+      const opts = { bubbles: true, clientX: x, clientY: y, pointerId: 1, pointerType: 'touch', isPrimary: true }
+      el.dispatchEvent(new PointerEvent('pointerdown', opts))
+      el.dispatchEvent(new PointerEvent('pointerup', opts))
+      return 'ok'
+    })()`, { gesture: true })
+    if (tapped !== 'ok') throw new Error(tapped)
+
+    await until(() => chrome.eval(`!!document.querySelector('.place')`), { what: `the ${slug} page` })
+    if (tile) {
+      // The shelf is in DOM order: four cards, then five landmarks.
+      await until(() => chrome.eval(`(() => {
+        const tiles = [...document.querySelectorAll('.place-shelf .tile')]
+        const el = tiles[${Number(tile)} - 1]
+        if (!el) return false
+        el.click()
+        return true
+      })()`, { gesture: true }), { what: `tile ${tile}` })
+    }
+    // Long enough for the 900ms arrival flight, the 2.2s border draw-on and
+    // the first words to light up — or however long `@W` asked for.
+    await sleep(w !== undefined ? Number(w) * 1000 : tile ? 2600 : 3600)
+    /**
+     * The numbers a photograph cannot be read for. `--say-lines` on this
+     * screen is a MEASURED constant that feeds `--say-lane`, `--map-floor`
+     * and therefore how the picture is framed, and every tile has to clear
+     * 104px in both dimensions — `tour:strip` checks that for the tour's
+     * five controls and has never seen this screen. Printed beside every
+     * shot so the measurement is in the log next to the picture it belongs
+     * to, rather than being something somebody has to go and re-derive.
+     */
+    note = await chrome.eval(`(() => {
+      const box = (s) => document.querySelector(s)?.getBoundingClientRect()
+      const round = (r, k) => (r ? Math.round(r[k]) : 0)
+      const say = box('.say'), map = box('.map')
+      const open = document.querySelector('.place-shelf .tile[data-open] .tile__word')
+      const tiles = [...document.querySelectorAll('.place-shelf .tile')]
+        .map((t) => Math.round(t.getBoundingClientRect().width) + 'x' + Math.round(t.getBoundingClientRect().height))
+      return [
+        'open=' + (open ? open.textContent : 'intro'),
+        'map=' + round(map, 'width') + 'x' + round(map, 'height'),
+        'say=' + round(say, 'height') + 'px',
+        'lit=' + document.querySelectorAll('svg.base path.lit').length,
+        'traceHits=' + document.querySelectorAll('[data-testid="trace-hit"]').length,
+        'tiles=' + (tiles.join(',') || 'none'),
+        'shelfBottom=' + round(box('.place-shelf'), 'bottom'),
+        'barTop=' + round(box('.controls'), 'top'),
+      ].join(' ')
+    })()`)
   } else if (/^tour\.\d\d$/.test(id)) {
     const word = w === undefined ? defaultWord(id) : Number(w)
     const s = await toBeat(id, word)

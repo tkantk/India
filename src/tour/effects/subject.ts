@@ -108,6 +108,35 @@ export const SUBJECTS: Record<string, Subject> = {
   // -- traceRiver: keyed by the river's own name (content/vocab.json) -----
   ganga: { page: C.matSky, ink: C.inkLine, accent: C.sea },
 
+  // -- a PLACE, keyed by the land it stands on (`place:<ambience>`) --------
+  //
+  // The 32 state screens need a colour each, and the obvious table — one row
+  // per slug — is 36 rows of hand-picking that nobody can hold in their head
+  // and `colour:check` can only check arithmetically. `content/schema.ts`
+  // already makes every place declare one of nine `ambience` values, and
+  // until now NOTHING read that field: `Narrator.ambient()` had no caller
+  // and no code anywhere else looked at it. So a place's colour is the
+  // colour of the land it stands on. Nine rows cover all 36 places, two
+  // desert states look like each other on purpose, and adding the 33rd
+  // place adds no row at all.
+  //
+  // Prefixed because `SUBJECTS` is ONE namespace shared with the symbol and
+  // river vocabulary: `temple` and `island` are ambiences, and `temple` is
+  // also a landmark scene in `content/vocab.json`. An unprefixed row would
+  // silently answer for both.
+  //
+  // `page` is still never the subject's own family (subject.ts's own rule):
+  // a desert page in matSand would put sand-coloured ink on sand.
+  'place:desert': { page: C.matSky, ink: C.inkLine, accent: C.sandDeep },
+  'place:ocean': { page: C.matSand, ink: C.inkLine, accent: C.sea },
+  'place:forest': { page: C.matSand, ink: C.inkLine, accent: C.leafDeep },
+  'place:mountain': { page: C.matSky, ink: C.inkLine, accent: C.stoneDeep },
+  'place:river': { page: C.matSand, ink: C.inkLine, accent: C.sea },
+  'place:city': { page: C.matTeal, ink: C.inkLine, accent: C.stoneDeep },
+  'place:plains': { page: C.matSun, ink: C.inkLine, accent: C.leafDeep },
+  'place:temple': { page: C.matTeal, ink: C.inkLine, accent: C.bark },
+  'place:island': { page: C.matSand, ink: C.inkLine, accent: C.peacockTeal },
+
   // -- verbs that are their own subject (VERB_SUBJECT_KEYS, above) --------
   unfurlFlag: { page: C.paper, ink: C.inkLine, accent: C.flagSaffron },
   countTo: { page: C.matSun, ink: C.inkLine, accent: C.saffron },
@@ -208,3 +237,13 @@ function checkSubjectCoverage() {
   }
 }
 checkSubjectCoverage()
+
+/**
+ * The subject key for a place, from the `ambience` it declares in
+ * `content/places/<slug>.json`. `undefined` — a place with no content
+ * authored yet, of which there are 32 — falls through `subjectOf` to
+ * `DEFAULT_SUBJECT`, which is the app's own colours and not an error.
+ */
+export function subjectKeyForPlace(ambience: string | undefined): string | undefined {
+  return ambience ? `place:${ambience}` : undefined
+}
