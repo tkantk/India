@@ -96,40 +96,52 @@ import { motion, useMotionValue, useReducedMotionConfig } from 'motion/react'
 import { isCheap } from '../../lib/cheapMode'
 import { useMapZoom } from './Reveal'
 import { buildTracePath, nearestOnPath, resamplePath, ringDelta } from './tracePath'
+import type { TracePath } from './tracePath'
 import { setTracing } from './tracing'
 import { PALETTE as C } from './art/palette'
 
 /**
- * Generous on purpose — a six-year-old's fingertip, not a stylus, and "the
- * feeling to aim for is it lights up when he moves his finger roughly along
- * the edge, not it rewards accuracy" (Task 6's brief). Raw viewBox units:
- * the map's home viewBox is ~1000 units across a screen that is itself
- * roughly that many CSS pixels wide in landscape, so this reads as "tens of
- * pixels" without a runtime CSS-to-viewBox conversion — and `useMapZoom`
- * keeps it that many CSS pixels at any camera position, the same trick
- * `Outline` and `River` use for their own stroke width.
+ * How many hit-circles the corridor is divided into, regardless of the
+ * traced shape's own size.
+ *
+ * THIS USED TO BE A FLAT 40 RAW VIEWBOX UNITS, tuned for INDIA'S OWN
+ * MAINLAND RING (~5184 units round) — "the map's home viewBox is ~1000
+ * units across... this reads as 'tens of pixels'" (that reasoning is still
+ * right; only WHERE it applies changed). `resamplePath` walks a path in
+ * fixed-size strides, so a 40-unit stride against a country-sized ring
+ * produced ~130 evenly-spaced, overlapping circles — generous, as
+ * intended. The exact same 40-unit stride against DELHI'S 70-unit border
+ * produced ONE OR TWO circles for the whole state: most of the loop was
+ * further than a stride from either one, which reads as dead, not
+ * generous, and Kerala's own longer-but-still-small coastline landed
+ * between the two — patchy. `Trace({ d })` is deliberately general (see
+ * this file's own top comment); a fixed number of RAW UNITS is not general
+ * at all, it is India-shaped.
+ *
+ * The fix ties the stride to a FRACTION of the shape's OWN perimeter
+ * instead, so the circle COUNT — not their raw-unit size — is what stays
+ * constant. 130 reproduces ~39.9 raw units per circle for India's own
+ * mainland ring specifically (5184 / 130), indistinguishable from the
+ * constant it replaces, so beat 2 of the tour is unaffected; the same 130
+ * circles spread over a small state's own (much shorter) border shrink
+ * WITH it, and — because that state's own camera flight (see
+ * `PlaceScreen.tsx`'s `ARRIVAL_MARGIN`) zooms in by roughly the same
+ * proportion a smaller shape needs — the two effects cancel out on screen:
+ * measured directly, Rajasthan, Kerala, Delhi, Goa and Sikkim all land
+ * within roughly 40-70 CSS px of touch reach at their own settled camera
+ * position, not the 0-2px stride Delhi's border got under the flat
+ * constant.
  */
-const TOLERANCE = 40
+const SEGMENTS = 130
 
-/** The invisible hit circles' spacing, equal to their own radius so two
- *  neighbours always overlap — no gap along the corridor a finger can fall
- *  through (see `tracePath.test.ts`'s "leaves no gap" test). */
-const SPACING = TOLERANCE
-
-/** How far, in raw path units, a finger must travel from where it first
- *  touched down before anything lights up. Well under `TOLERANCE`: this is
- *  "was that a deliberate small drag", not another helping of fingertip
- *  forgiveness — the fix for a stray, unmoving tap otherwise reading as a
- *  sudden mark on the map. */
-const ENGAGE_UNITS = TOLERANCE / 2
-
-/** The largest distance, in raw path units, the nearest point on the ring
- *  may plausibly move between two consecutive pointer samples. A single
- *  jump bigger than this is a geometry ambiguity, not a drag — two
- *  unconnected stretches of a convoluted coastline passing close in space,
- *  the shape `tracePath.test.ts`'s STAPLE models — and is ignored rather
- *  than lighting an arbitrary arc between two unrelated points. */
-const MAX_STEP_UNITS = TOLERANCE * 5
+/**
+ * The corridor's own reach for ONE traced path, in THAT path's own raw
+ * units — exported so a test (or a future caller) computes the exact same
+ * number `Trace` itself uses rather than hand-copying the formula above.
+ */
+export function toleranceFor(path: TracePath): number {
+  return path.total / SEGMENTS
+}
 
 /** Wrap a fraction back into 0..1. `ringDelta` already keeps deltas short;
  *  this is only for turning an anchor-minus-sweep back into a valid
@@ -182,7 +194,13 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
   const sweepHigh = useRef(0)
 
   const path = useMemo(() => buildTracePath(d), [d])
-  const hits = useMemo(() => resamplePath(path, SPACING), [path])
+  // This shape's own corridor reach — see `toleranceFor`'s own comment.
+  // Spacing equal to the radius is what guarantees no gap between
+  // neighbouring circles (`tracePath.test.ts`'s "leaves no gap" test), the
+  // same relationship the old flat constant kept, just now derived from
+  // the path actually being traced instead of a number sized for India.
+  const tolerance = useMemo(() => toleranceFor(path), [path])
+  const hits = useMemo(() => resamplePath(path, tolerance), [path, tolerance])
 
   // The published half of "a finger is down" must not outlive this
   // component: `Outline`'s `Reveal` unmounts this whole subtree the moment
@@ -226,12 +244,18 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
     // drag: this sample does not move the picture, but bookkeeping (`last`)
     // still advances above so the NEXT sample is judged against where the
     // finger actually is, not left comparing against a stale point forever.
-    if (distance > TOLERANCE * zoom) return
-    if (Math.abs(step) * path.total > MAX_STEP_UNITS) return
+    //
+    // Neither check is scaled by live camera zoom (`useMapZoom`) any more —
+    // `tolerance` is already sized for THIS shape at its own settled
+    // camera position (see `toleranceFor`'s comment); multiplying by a
+    // second, independently-varying zoom factor on top would decouple it
+    // from `hits`' own spacing again, the exact bug this replaces.
+    if (distance > tolerance) return
+    if (Math.abs(step) * path.total > tolerance * 5) return
 
     if (direction.current === 0) {
       const fromAnchor = ringDelta(fraction, anchor.current)
-      if (Math.abs(fromAnchor) * path.total < ENGAGE_UNITS) return
+      if (Math.abs(fromAnchor) * path.total < tolerance / 2) return
       direction.current = fromAnchor > 0 ? 1 : -1
       sweep.current = Math.abs(fromAnchor)
     } else if (Math.sign(step) === direction.current) {
@@ -277,7 +301,7 @@ export function Trace({ d, strokeWidth = 10 }: { d: string; strokeWidth?: number
             data-testid="trace-hit"
             cx={cx}
             cy={cy}
-            r={TOLERANCE * zoom}
+            r={tolerance}
             fill="none"
             pointerEvents="fill"
             onPointerDown={start}

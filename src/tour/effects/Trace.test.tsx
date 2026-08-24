@@ -1,16 +1,29 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { Trace } from './Trace'
+import { Trace, toleranceFor } from './Trace'
+import { buildTracePath } from './tracePath'
 import { isTracing, setTracing } from './tracing'
 
-/** Same shape tracePath.test.ts checks the geometry against: a 100x100
- *  square, perimeter 400, numbers a human can check by hand. */
-const SQUARE = 'M0,0L100,0L100,100L0,100Z'
+/**
+ * A 1300x1300 square, perimeter 5200 — thirteen times the 100x100 square
+ * `tracePath.test.ts` checks the geometry against, sized specifically so
+ * its own corridor tolerance (`Trace.tsx`'s `toleranceFor`, perimeter /
+ * 130) comes out to a round 40 raw units: the same number this file's
+ * tests were written against back when `TOLERANCE` was one flat constant
+ * shared by every shape. Every absolute distance below (10, 30, 60, 80,
+ * 200...) is unchanged from that version for exactly this reason; only the
+ * FRACTION-of-total assertions (`x / 5200`) had to move with the new
+ * perimeter.
+ */
+const SQUARE = 'M0,0L1300,0L1300,1300L0,1300Z'
 
-/** A bigger square, perimeter 1200, for the one test where SQUARE itself
- *  cannot demonstrate the point: SQUARE's own ring never puts two points
- *  more than 200 apart (half of 400) the short way round, which is exactly
- *  `MAX_STEP_UNITS` — so no jump on SQUARE can ever strictly exceed it. */
+/** A square with a smaller perimeter than SQUARE's, on purpose, so
+ *  `touchDown`/`moveTo` can reach a point genuinely far apart from the
+ *  anchor (in path-fraction terms) without the coordinates themselves
+ *  needing to track SQUARE's own — now much bigger — scale. Left at its
+ *  original 300x300 size: its own derived `maxStepUnits` (perimeter / 26,
+ *  about 46 raw units) is still comfortably smaller than the ~480-unit
+ *  jump the one test below that uses it makes. */
 const BIG_SQUARE = 'M0,0L300,0L300,300L0,300Z'
 
 /**
@@ -85,7 +98,7 @@ function flushMotionFrame(): Promise<void> {
 }
 
 /** A touch pointerdown at (x, y), on whichever hit circle is nearest it —
- *  good enough for a 100-unit square with circles every 40 units, where
+ *  good enough for a square whose own corridor stride is 40 units, where
  *  every point in play is well inside SOME circle's radius. Returns the
  *  element that captured the gesture, so a real drag's subsequent moves can
  *  be dispatched on the SAME element — exactly what `setPointerCapture`
@@ -128,8 +141,27 @@ describe('Trace', () => {
       expect(c.getAttribute('fill')).toBe('none')
       expect(c.getAttribute('pointer-events')).toBe('fill')
       // Tens of pixels, not the stroke width — a six-year-old's fingertip.
-      expect(Number(c.getAttribute('r'))).toBeGreaterThanOrEqual(20)
+      // SQUARE is sized so this is exactly `toleranceFor` of its own path.
+      expect(Number(c.getAttribute('r'))).toBeCloseTo(toleranceFor(buildTracePath(SQUARE)), 5)
     }
+  })
+
+  it('sizes the corridor to the traced shape, not a constant tuned for a bigger one', () => {
+    // The bug this replaces: a flat reach tuned for India's own ~5184-unit
+    // mainland ring, reused unchanged for a state a fraction of that size,
+    // left most of the smaller shape's own loop further from any hit-circle
+    // than the circle's own radius — "dead" on the smallest states (see
+    // Trace.tsx's `SEGMENTS` comment). A TENTH-scale square must therefore
+    // get a TENTH the corridor reach of the full-size one, not the same
+    // reach reused unchanged.
+    stubReducedMotion(false)
+    const TENTH = 'M0,0L130,0L130,130L0,130Z' // one tenth of SQUARE's own perimeter
+    const big = render(<Trace d={SQUARE} />)
+    const small = render(<Trace d={TENTH} />)
+    const rBig = Number(big.container.querySelector('[data-testid="trace-hit"]')!.getAttribute('r'))
+    const rSmall = Number(small.container.querySelector('[data-testid="trace-hit"]')!.getAttribute('r'))
+    expect(rBig).toBeCloseTo(40, 5)
+    expect(rSmall).toBeCloseTo(rBig / 10, 5)
   })
 
   it('is disabled entirely under prefers-reduced-motion', () => {
@@ -173,7 +205,7 @@ describe('Trace', () => {
       </svg>,
     )
     const circle = touchDown(container, 0, 0)
-    // 10 units — under ENGAGE_UNITS (20, half of the 40-unit TOLERANCE).
+    // 10 units — under SQUARE's own engage threshold (20, half of its own 40-unit tolerance).
     moveTo(circle, 10, 0)
     await flushMotionFrame()
     expect(litLength(container)).toBe(0)
@@ -188,10 +220,10 @@ describe('Trace', () => {
       </svg>,
     )
     const circle = touchDown(container, 0, 0)
-    // 30 of 400 units along the square's own perimeter — past ENGAGE_UNITS.
+    // 30 of 5200 units along the square's own perimeter — past ENGAGE_UNITS.
     moveTo(circle, 30, 0)
     await flushMotionFrame()
-    expect(litLength(container)).toBeCloseTo(30 / 400, 2)
+    expect(litLength(container)).toBeCloseTo(30 / 5200, 2)
   })
 
   it('never lets a drag show more than what was actually swept — no leap to an arbitrary fraction', async () => {
@@ -207,9 +239,9 @@ describe('Trace', () => {
     const circle = touchDown(container, 20, 0)
     for (const x of [35, 45, 55, 65, 80]) moveTo(circle, x, 0)
     await flushMotionFrame()
-    // Swept exactly (80 - 20) = 60 of 400 units, not the raw fraction of
+    // Swept exactly (80 - 20) = 60 of 5200 units, not the raw fraction of
     // wherever the finger ended up measured from the path's own start (0).
-    expect(litLength(container)).toBeCloseTo(60 / 400, 2)
+    expect(litLength(container)).toBeCloseTo(60 / 5200, 2)
   })
 
   it('is monotonic within a gesture: retracing shrinks the raw position but never the drawn line', async () => {
@@ -225,7 +257,7 @@ describe('Trace', () => {
     moveTo(circle, 60, 0)
     await flushMotionFrame()
     const peak = litLength(container)
-    expect(peak).toBeCloseTo(60 / 400, 2)
+    expect(peak).toBeCloseTo(60 / 5200, 2)
 
     // Retrace 20 units back towards the anchor.
     moveTo(circle, 40, 0)
@@ -236,7 +268,7 @@ describe('Trace', () => {
     // retrace in between.
     moveTo(circle, 70, 0)
     await flushMotionFrame()
-    expect(litLength(container)).toBeCloseTo(70 / 400, 2)
+    expect(litLength(container)).toBeCloseTo(70 / 5200, 2)
   })
 
   it('ignores a pointer path that wanders away from the outline mid-drag', async () => {
@@ -252,7 +284,7 @@ describe('Trace', () => {
     await flushMotionFrame()
     const before = litLength(container)
     // Deep in open water by this shape's scale — 500 units from the nearest
-    // edge, ten times TOLERANCE.
+    // edge, over ten times SQUARE's own 40-unit tolerance.
     moveTo(circle, 500, 500)
     await flushMotionFrame()
     expect(litLength(container)).toBe(before)
@@ -273,7 +305,7 @@ describe('Trace', () => {
     expect(before).toBeCloseTo(30 / 1200, 2)
     // (150, 300) sits exactly on the FAR edge — on the corridor, not an
     // off-path miss — but 480 units away along the ring's own shortest
-    // route, well past `MAX_STEP_UNITS` (200). A narrow strait putting two
+    // route, well past BIG_SQUARE's own maxStepUnits (~46). A narrow strait putting two
     // unconnected stretches of a real coastline this close in space is
     // exactly what this guards against (see `tracePath.test.ts`'s STAPLE).
     moveTo(circle, 150, 300)
@@ -371,14 +403,14 @@ describe('Trace', () => {
     // NOT assume).
     const circle = container.querySelector('[data-testid="trace-hit"]')!
     // Screen (50, 20) is path-space (0, 0); screen (80, 20) is path-space
-    // (30, 0) — 30 of 400 units along the square, same as the untranslated
+    // (30, 0) — 30 of 5200 units along the square, same as the untranslated
     // test above, but only reachable by actually inverting the CTM.
     circle.dispatchEvent(
       new PointerEvent('pointerdown', { bubbles: true, clientX: 50, clientY: 20, pointerType: 'touch' }),
     )
     moveTo(circle, 80, 20)
     await flushMotionFrame()
-    expect(litLength(container)).toBeCloseTo(30 / 400, 2)
+    expect(litLength(container)).toBeCloseTo(30 / 5200, 2)
   })
 })
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
 import { getNarrator } from '../audio/Narrator'
 import { camera } from '../map/camera'
@@ -207,6 +207,26 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
   const land = GEO[slug]
 
   /**
+   * Has a real gesture ever unlocked audio THIS SESSION.
+   *
+   * `/place/:slug` is the one route reachable with no gesture behind it at
+   * all (see App.tsx's own comment on the route: a grown-up reloading the
+   * iPad mid-visit must land here directly, not back at the start gate).
+   * Every OTHER screen — the map, the tour — is only ever reached after
+   * `StartGate`'s own "Show me India" tap has already called
+   * `Narrator.unlock()` once, so `unlocked` reads true immediately and
+   * nothing below changes for that, by far the more common, path. Cold —
+   * a deep link, or a reload while already here — it reads false, and nothing
+   * plays until it flips: `Controls.tsx`'s own rule ("no control may be
+   * pressable and produce no observable effect") applies to sound exactly
+   * as much as it does to a button, and an effect that called `n.play()`
+   * with no gesture behind it at all would set the engine's `playing` flag
+   * regardless of whether WebKit actually opened output — a Pause button
+   * over silence, the defect this guards against.
+   */
+  const unlocked = useSyncExternalStore(n.subscribe, () => n.everUnlocked)
+
+  /**
    * The pages of this place, or — for one of the 32 with nothing written —
    * a single page whose line is `ui.tap-state`, "Tap a state to visit it."
    *
@@ -266,10 +286,10 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    * lifts it again on its own.
    */
   useEffect(() => {
-    if (!place) return
+    if (!place || !unlocked) return
     void n.ambient(place.ambience)
     return () => { void n.ambient(null) }
-  }, [n, place])
+  }, [n, place, unlocked])
 
   /** Leaving this screen silences it. The engine outlives every component,
    *  so unmounting the screen does not stop the clip by itself — the same
@@ -298,7 +318,13 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
   }, [map, open, slug])
 
   useEffect(() => {
-    if (!page || !clip) return
+    // Nothing plays with no gesture behind it yet — see `unlocked`'s own
+    // comment. `playPause` and a tile's own `onOpen` are what call
+    // `n.unlock()` on the child's first tap; the instant that lands, this
+    // effect re-runs (it is `unlocked` itself), and plays the CURRENT page
+    // exactly as it would have on arrival — nothing here has to remember
+    // to retry, because the flip already re-ran it.
+    if (!page || !clip || !unlocked) return
 
     setEnded(false)
 
@@ -343,7 +369,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
       live = false
       if (n.onEnd === handleEnd) n.onEnd = null
     }
-  }, [clip, n, open, page, pages])
+  }, [clip, n, open, page, pages, unlocked])
 
   // ---------------------------------------------------------- the bar
 
@@ -355,10 +381,18 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    * file was written around.
    */
   const playPause = useCallback(() => {
+    // The one gesture this screen can guarantee it will get on a cold
+    // visit. Real work (`Narrator.unlock`'s own silent-sample trick and
+    // `audioSession.type`), started synchronously inside this very click —
+    // WebKit only honours a gesture for work begun before the first
+    // `await`, which is `unlock()`'s own opening line. The page-play effect
+    // above re-runs the instant `unlocked` flips and plays the current
+    // page; nothing else needs telling.
+    if (!unlocked) { void n.unlock(); return }
     if (n.playing) { n.pause(); return }
     if (ended && clip) { void n.play(clip); return }
     n.resume()
-  }, [clip, ended, n])
+  }, [clip, ended, n, unlocked])
 
   const goHome = useCallback(() => {
     n.stop()
@@ -369,6 +403,15 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
     if (next === slug) return
     onPick?.(next)
   }, [onPick, slug])
+
+  /** Open a tile. On a cold visit this is ALSO the child's first tap
+   *  anywhere on the screen, so it carries the same unlock `playPause`
+   *  does — otherwise a child who taps straight into a card without ever
+   *  touching Play would open a page that never gets a chance to speak. */
+  const openPage = useCallback((index: number) => {
+    if (!unlocked) void n.unlock()
+    setOpen(index)
+  }, [n, unlocked])
 
   // ------------------------------------------------------------- render
 
@@ -436,7 +479,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
                 page={p}
                 open={open === i + 1}
                 heard={heard.has(p.id)}
-                onOpen={() => setOpen(i + 1)}
+                onOpen={() => openPage(i + 1)}
               />
             ))}
           </div>
@@ -447,7 +490,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
                 page={p}
                 open={open === i + 1 + CARDS.length}
                 heard={heard.has(p.id)}
-                onOpen={() => setOpen(i + 1 + CARDS.length)}
+                onOpen={() => openPage(i + 1 + CARDS.length)}
               />
             ))}
           </div>

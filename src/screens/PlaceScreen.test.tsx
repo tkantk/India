@@ -22,6 +22,11 @@ import type { Bbox, Clip, Cue } from '../types'
  *     arrival framing is the numbers it is called with, and jsdom cannot
  *     see a flight; asserting the ARGUMENT is the only honest check
  *     available here (the pixels are `scripts/shot.mjs`'s job).
+ *  4. `everUnlocked` starts false and only `unlock()` flips it — never
+ *     `play()` or `resumeContext()`. The screen's whole cold-start fix
+ *     hangs on this exact distinction (see `PlaceScreen.tsx`'s own
+ *     `unlocked` comment); a double that let `play()` imply unlock would
+ *     make every test pass whether or not the real gate exists.
  */
 const played: string[] = []
 const ambient: (string | null)[] = []
@@ -33,6 +38,11 @@ const narrator = {
   stuck: false,
   loading: false,
   word: -1,
+  // Warm by default — the common path, a tap from the map, always lands
+  // after `StartGate`'s own unlock. Cold-start tests below set this false
+  // BEFORE rendering, which is the one thing that actually distinguishes
+  // "arrived from the map" from "opened this URL cold".
+  everUnlocked: true,
   onCue: (() => {}) as (cue: Cue) => void,
   onEnd: null as (() => void) | null,
   onAgain: null as (() => void) | null,
@@ -62,6 +72,7 @@ const narrator = {
   setRate: vi.fn(),
   setVolume: vi.fn(),
   resumeContext: vi.fn(async () => true),
+  unlock: vi.fn(async () => { narrator.everUnlocked = true; narrator.emit() }),
   scheduleAfter: vi.fn((seconds: number, cb: () => void) => {
     const t = setTimeout(cb, seconds * 1000)
     return () => clearTimeout(t)
@@ -102,6 +113,7 @@ beforeEach(() => {
   narrator.current = null
   narrator.word = -1
   narrator.onEnd = null
+  narrator.everUnlocked = true
   vi.clearAllMocks()
 })
 
@@ -221,6 +233,52 @@ describe('PlaceScreen', () => {
     await user.click(screen.getByRole('button', { name: /Home/ }))
     expect(narrator.stop).toHaveBeenCalled()
     expect(onHome).toHaveBeenCalled()
+  })
+
+  /**
+   * `/place/:slug` is reachable with no gesture behind it at all — a deep
+   * link, or a grown-up reloading the iPad mid-visit (App.tsx's own
+   * comment says so explicitly). The bug this guards: the arrival effect
+   * used to call `n.play()` unconditionally, which set the engine's
+   * `playing` flag regardless of whether a real gesture had ever reached
+   * WebKit — a Pause button over silence, "no control may be pressable and
+   * produce no observable effect" broken in a new place. `everUnlocked`
+   * starting false in this block, unlike every test above, is what makes
+   * these tests actually cold.
+   */
+  describe('a state page opened cold, before any gesture has unlocked audio', () => {
+    beforeEach(() => { narrator.everUnlocked = false })
+
+    it('says nothing on arrival, and leaves Play showing — never a Pause button lying about it', () => {
+      render(<PlaceScreen slug="rajasthan" />)
+      expect(played).toEqual([])
+      expect(narrator.play).not.toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: /Play/ })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Pause/ })).not.toBeInTheDocument()
+    })
+
+    it('does not even ask for the ambient bed until unlocked', () => {
+      render(<PlaceScreen slug="kerala" />)
+      expect(ambient).toEqual([])
+    })
+
+    it('unlocks on the first tap of Play, and only then says the intro', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: /Play/ }))
+      expect(narrator.unlock).toHaveBeenCalled()
+      // The SAME effect that plays on a warm arrival re-runs once `unlocked`
+      // flips — nothing here calls `play()` a second, different way.
+      expect(played).toEqual(['audio/en/rajasthan.intro.m4a'])
+    })
+
+    it('unlocks on a tile tap too, and says THAT tile\'s own line, not the intro', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      await user.click(screen.getByRole('button', { name: /Festival/ }))
+      expect(narrator.unlock).toHaveBeenCalled()
+      expect(played).toEqual(['audio/en/rajasthan.card.festival.m4a'])
+    })
   })
 
   /**

@@ -130,6 +130,17 @@ export class Narrator {
   private effects = new Map<string, AudioBuffer | null>()
   private ambientName: string | null = null
   private stuckFlag = false
+  /** True from the moment `unlock()` has run once this session — a plain
+   *  "has the one required gesture happened yet", never derived from
+   *  `ctx.state`. It has to be independent of that: at least two of the
+   *  four WebKit bugs the debug panel exists to diagnose report `state ===
+   *  "running"` while nothing is actually audible, so `ctx.state` cannot
+   *  stand in for "a real gesture unlocked this context" — this flag is
+   *  set synchronously, inside the one function documented to require
+   *  exactly that. See `PlaceScreen.tsx`, the one screen reachable with no
+   *  gesture behind it at all (`/place/:slug` sits outside the start
+   *  gate), for the caller this exists for. */
+  private everUnlockedFlag = false
   /** True for the span of `play()`'s own decode — a clip has been asked for
    *  and there is no buffer yet to play it with. Without this, the interval
    *  between a beat starting and its audio actually being decoded reads as
@@ -182,6 +193,14 @@ export class Narrator {
    * WebKit only honours the gesture for work started before the first await.
    */
   async unlock(): Promise<void> {
+    // Set synchronously, before any of the work below — a subscriber
+    // (`PlaceScreen`'s `useSyncExternalStore` on `everUnlocked`) has to see
+    // this the instant the gesture happens, not once the async resume below
+    // settles, so the play effect it gates can react in the same tick a
+    // real device would consider "already unlocked".
+    this.everUnlockedFlag = true
+    this.emit()
+
     const nav = navigator as Navigator & { audioSession?: { type: string } }
     // Since iOS 17. Without it Web Audio plays on the *ringer* channel, and an
     // iPad with the side switch set to silent produces absolutely nothing.
@@ -236,6 +255,13 @@ export class Narrator {
    * action at all, and a poll would never see that.
    */
   get stuck(): boolean { return this.stuckFlag }
+
+  /** True once `unlock()` has run at least once this session. See
+   *  `everUnlockedFlag`'s own comment for why this is a plain "did the
+   *  gesture happen" flag rather than anything read off `ctx.state`.
+   *  Reactive the same way `stuck` is: `useSyncExternalStore(n.subscribe,
+   *  () => n.everUnlocked)`. */
+  get everUnlocked(): boolean { return this.everUnlockedFlag }
 
   private onStateChange = () => {
     const state: string = this.ctx.state

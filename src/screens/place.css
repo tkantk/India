@@ -131,7 +131,7 @@
 .place-photo {
   margin: 0;
   padding: 12px 12px 8px;
-  max-width: min(62vmin, 460px);
+  max-width: min(78vmin, 560px);
   border-radius: var(--plate-rx);
   background: var(--paper);
   border: var(--rule) solid var(--ink-line);
@@ -143,13 +143,23 @@
    something. `max-width`/`max-height` with `height: auto` scales the whole
    frame instead: 18 of the 20 are CC BY or CC BY-SA, where a crop is an
    adaptation and would drag this app's own presentation under the same
-   licence. A tall photograph is simply tall. */
+   licence. A tall photograph is simply tall.
+
+   THE CAP WAS TOO TIGHT. `26vmin`/`210px` was measured at 264px of actual
+   room on the tightest supported viewport (a portrait iPad, `.place-plate`'s
+   own box minus the name plate's 84px and the figure's own padding/credit
+   line) and landed at barely 80% of it — on a landscape iPad, where the map
+   box is taller still, the same cap left less than 55% of the room used.
+   `34vmin`/`240px` was measured the same way: it still clears the tightest
+   portrait case with room for the credit line under it, and grows further
+   on every wider/taller viewport instead of sitting at the same fixed size
+   everywhere. */
 .place-photo__img {
   display: block;
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: min(26vmin, 210px);
+  max-height: min(34vmin, 240px);
   border-radius: 12px;
   margin: 0 auto;
 }

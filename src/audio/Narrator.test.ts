@@ -206,6 +206,40 @@ describe('Narrator', () => {
     expect(ctx.createBuffer).toHaveBeenCalled()
   })
 
+  /**
+   * `everUnlocked` is what `PlaceScreen.tsx` gates its cold-start play
+   * effect on — the fix for "a state page opened cold shows a Pause button
+   * over silence" (this engine used to let `play()` mark itself playing
+   * regardless of whether any gesture had ever reached the context). It
+   * has to be a plain "did the gesture happen" flag, not anything derived
+   * from `ctx.state`: `stuck` already covers "resumed but still not
+   * actually running" for a context that WAS unlocked once.
+   */
+  it('reports everUnlocked false until unlock() has actually run, then true', async () => {
+    expect(n.everUnlocked).toBe(false)
+    await n.unlock()
+    expect(n.everUnlocked).toBe(true)
+  })
+
+  it('flips everUnlocked synchronously, before unlock()\'s own await settles', () => {
+    // A subscriber reading this through useSyncExternalStore has to see it
+    // land in the SAME tick as the gesture, not once the async resume
+    // below has had a chance to run — `void n.unlock()` from a click
+    // handler never awaits the return value.
+    const seen = vi.fn()
+    n.subscribe(seen)
+    void n.unlock()
+    expect(n.everUnlocked).toBe(true)
+    expect(seen).toHaveBeenCalled()
+  })
+
+  it('never reports everUnlocked from playing, pausing or resuming alone — only unlock() sets it', async () => {
+    await n.play(CLIP)
+    n.pause()
+    n.resume()
+    expect(n.everUnlocked).toBe(false)
+  })
+
   it('reports a context that will not leave the interrupted state', async () => {
     ctx.state = 'interrupted'              // WebKit 263627: resume() is not enough
     await expect(n.resumeContext()).resolves.toBe(false)
