@@ -50,6 +50,19 @@
  * label's own box, a state's drawn size — depends on which door was used to
  * get here; `probe:map` already owns whether a real fingertip can reach the
  * hit layer.
+ *
+ * THE READ-ALONG CHECK IS DIFFERENT FROM EVERY OTHER ONE HERE, AND IT HAS TO
+ * BE. Every other measurement in `LAYOUT` is taken at rest, the instant the
+ * page has arrived, before a single word has ever played — which is exactly
+ * why none of them could ever have caught the phone caption losing its own
+ * highlight past the fold (`place.css:725`'s `overflow-y: auto` on
+ * `.say-lane`, with nothing ever taught to follow the word off it): word one
+ * is always current at that instant, always visible, on every device, fixed
+ * or broken. `measureReadAlong` (phone rows only) actually drives the real
+ * narration, with the same audio-clock shim `tour-strip.mjs`/`shot.mjs` use,
+ * until the highlight has genuinely gone past what a short lane can hold,
+ * and only then asks whether `[data-current]` is actually inside its own
+ * scroller's visible box.
  */
 import { execFileSync, spawn } from 'node:child_process'
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -182,6 +195,73 @@ async function until(check, { every = 100, limit = 30000, what = 'something' } =
   }
 }
 
+/**
+ * THE AUDIO HARDWARE, REPLACED, AND NOTHING ELSE — the exact technique
+ * `tour-strip.mjs` and `shot.mjs` both already use, vendored rather than
+ * imported for the same reason the DevTools client above is: it is generic
+ * boilerplate with nothing project-specific in it, unlike `lib/devices.mjs`
+ * (a table of real numbers, pulled into `lib/` specifically because two
+ * independent copies of THOSE could drift apart unnoticed). Headless Chrome
+ * has no audio output device, so `AudioContext.currentTime` freezes and an
+ * `AudioBufferSourceNode` never reaches `onended` — the narration engine
+ * takes its position from that clock on purpose, so with a frozen one this
+ * screen's own words would never advance past word one, which is exactly
+ * the beat this gate needs to reach PAST. `speed()` (shot.mjs's own
+ * addition over tour-strip.mjs's simpler version) is what lets this gate
+ * reach deep into a 400-character intro in seconds of real wall time rather
+ * than the ~30 real seconds the words actually take at their own pace.
+ */
+const CLOCK = `(() => {
+  const AC = window.AudioContext || window.webkitAudioContext
+  if (!AC) return
+  let base = 0, zero = performance.now(), speed = 1
+  const now = () => base + ((performance.now() - zero) / 1000) * speed
+  Object.defineProperty(AC.prototype, 'currentTime', { configurable: true, get: now })
+  window.__clock = { speed(next) { base = now(); zero = performance.now(); speed = next }, now }
+  const create = AC.prototype.createBufferSource
+  AC.prototype.createBufferSource = function () {
+    const ctx = this
+    const node = create.call(this)
+    const start = node.start.bind(node)
+    const stop = node.stop.bind(node)
+    let raf = 0
+    node.start = function (when, offset) {
+      start(when ?? 0, offset ?? 0)
+      if (node.loop || !node.buffer) return
+      const left = Math.max(0, node.buffer.duration - (offset ?? 0)) / (node.playbackRate.value || 1)
+      const endAt = ctx.currentTime + left
+      const tick = () => {
+        if (ctx.currentTime >= endAt) { raf = 0; if (node.onended) node.onended(new Event('ended')); return }
+        raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    node.stop = function (when) {
+      if (raf) cancelAnimationFrame(raf)
+      raf = 0
+      try { stop(when ?? 0) } catch (e) { /* already stopped */ }
+    }
+    return node
+  }
+})()`
+
+/**
+ * Find a button and press it in ONE evaluation — `tour-strip.mjs`'s own
+ * `press()`, copied for the same reason `CLOCK` above is: React commits
+ * asynchronously, so "wait for it, then click it" as two round trips can
+ * click a stale element between the poll and the call. `userGesture: true`
+ * is what makes it count as a real tap for the autoplay policy.
+ */
+function press(what, match) {
+  const expression = `(() => {
+    const el = [...document.querySelectorAll('button')].find((b) => ${match})
+    if (!el || el.disabled) return false
+    el.click()
+    return true
+  })()`
+  return until(() => chrome.eval(expression, { gesture: true }), { what: `a press on ${what}`, limit: 20000 })
+}
+
 // -------------------------------------------------------------- the harness
 
 let preview
@@ -247,6 +327,11 @@ async function open() {
   chrome = await Chrome.attach(target.webSocketDebuggerUrl)
   await chrome.send('Page.enable')
   await chrome.send('Runtime.enable')
+  // Before the app's first line, so the engine never sees the dead clock —
+  // same placement as tour-strip.mjs's own registration, and it applies to
+  // every navigation for the rest of this Chrome session, including the
+  // forced reloads `measureReadAlong` below does.
+  await chrome.send('Page.addScriptToEvaluateOnNewDocument', { source: CLOCK })
 }
 
 /** Straight to the place's own page — see the file header for why this,
@@ -440,13 +525,132 @@ const LAYOUT = `(() => {
   }
 })()`
 
+/**
+ * THE ONE THING `LAYOUT` ABOVE NEVER CHECKS: is the word actually being
+ * SPOKEN, right now, actually ON SCREEN? `place.css:725` makes `.say-lane`
+ * `overflow-y: auto` below 600px — reserving a SHORT lane and letting the
+ * two real outliers (an intro up to sixteen lines) scroll instead of paying
+ * for the true worst case up front (see that file's own note on why). But
+ * nothing taught the box to follow the word once it did — read-along
+ * highlighting, one of the four things the project was named for at the
+ * start, silently stops working past the fold on every phone. `LAYOUT`
+ * could not have caught this: it navigates and measures once, at rest,
+ * before a single word has ever been spoken (`unlocked` starts false — see
+ * `PlaceScreen.tsx`'s own comment on the one route reachable with no
+ * gesture behind it — so word one is always current, always visible, and a
+ * check run only there would pass this defect every single time). This one
+ * actually drives the narration, with the same audio-clock shim
+ * `tour-strip.mjs`/`shot.mjs` use, until the highlight has genuinely passed
+ * the fold, and then asks the real DOM the real question: is `[data-current]`
+ * actually inside `.say-lane`'s own visible box, or has it scrolled out of
+ * it?
+ */
+const READALONG_SNAPSHOT = `(() => {
+  const round = (n) => Math.round(n * 10) / 10
+  const box = (b) => b && {
+    top: round(b.top), bottom: round(b.bottom), left: round(b.left), right: round(b.right),
+  }
+  const spans = [...document.querySelectorAll('.read-along .word')]
+  const word = spans.findIndex((s) => s.hasAttribute('data-current'))
+  const wordEl = spans[word]
+  const lane = document.querySelector('.say-lane') ?? document.querySelector('.say')
+  const wordBox = wordEl ? box(wordEl.getBoundingClientRect()) : null
+  const laneBox = lane ? box(lane.getBoundingClientRect()) : null
+  const visible = !!wordBox && !!laneBox
+    && wordBox.top >= laneBox.top - 0.5 && wordBox.bottom <= laneBox.bottom + 0.5
+  return {
+    total: spans.length, word, saying: wordEl ? wordEl.textContent : null, wordBox, laneBox, visible,
+  }
+})()`
+
+// How hard to fast-forward the intro. shot.mjs's own default (6) is tuned
+// for a ~2:41 tour; a single intro is only 60-90 words, so 8 comfortably
+// clears its own real-time length (worst case, Delhi's 75 words at a slow
+// 0.85x rate, in a few real seconds instead of ~30).
+const READALONG_SPEED = 8
+
+/**
+ * Drive the real narration on a real, FRESHLY LOADED copy of the place's own
+ * page until the highlighted word has genuinely gone past what a short lane
+ * can hold without scrolling, then ask whether it is actually visible.
+ *
+ * A REAL RELOAD, not `gotoPlace`'s same-hash SPA navigation. This gate never
+ * reloads BETWEEN DEVICE ROWS for the rest of its own measurements (see
+ * `LAYOUT`'s own "RESET FIRST" note on the shelf's carried-over scrollTop
+ * for the same fact stated there) — and `Narrator.everUnlocked` is a
+ * session-wide engine flag, not a per-place one, so whichever row happens to
+ * run first in the whole gate would leave every later row's audio already
+ * unlocked. A genuine reload makes `unlocked` false every single time, which
+ * makes "click Play" mean exactly one thing every single time
+ * (`PlaceScreen.tsx`'s `playPause`, first branch: `if (!unlocked) {
+ * n.unlock(); return }`) — this gate does not have to guess whether a click
+ * would pause, resume or replay instead.
+ */
+async function measureReadAlong(slug) {
+  await chrome.send('Page.navigate', { url: 'about:blank' })
+  await chrome.send('Page.navigate', { url: `http://127.0.0.1:${PORT}/#/place/${slug}` })
+  await until(() => chrome.eval(`!!document.querySelector('.place')`), { what: `${slug}'s page (read-along check)` })
+  await sleep(1300) // the arrival flight, the same margin gotoPlace gives it
+
+  await press(`${slug}'s Play`, `b.classList.contains('control') && /play/i.test(b.textContent)`)
+  await chrome.eval(`window.__clock.speed(${READALONG_SPEED})`)
+
+  // A flat FRACTION of the intro's own word count, not a hand-picked word
+  // index per place: every one of the four written intros (294-387
+  // characters) is already several times taller than the six real lines
+  // `place.css`'s phone rule reserves without scrolling, so 70% of the way
+  // through any of them is well past the fold on every one of them, with
+  // nothing here to keep in sync if a fifth place's intro is a different
+  // length.
+  const snap = await until(async () => {
+    const s = await chrome.eval(READALONG_SNAPSHOT)
+    return s.total > 0 && s.word >= Math.floor(s.total * 0.7) ? s : null
+  }, { every: 100, limit: 20000, what: `${slug}'s intro to reach word 70%` })
+
+  /**
+   * LEAVE NO TRACE. Measured directly, the hard way: an intro names its
+   * neighbours as it goes (`lightNeighbour`), and `useMapNodes.ts`'s
+   * `highlight()` only ever ADDS the `.lit` class — nothing here or in
+   * `cues.ts`'s own `highlightOne` ever clears a PREVIOUS neighbour when the
+   * next one lights (only opening a DIFFERENT page does, PlaceScreen.tsx's
+   * own per-page effect). So by the time this check has run an intro two
+   * thirds of the way through, several states are legitimately `.lit` at
+   * once — real app behaviour, not an artefact of the speed-up. Left alone,
+   * that pile-up would still be sitting in the DOM for the NEXT device row's
+   * own `gotoPlace` (a same-hash no-op — see that function's own note, and
+   * `LAYOUT`'s "RESET FIRST" comment on the shelf's carried scrollTop for
+   * the same fact), and `LAYOUT`'s own `ink` measurement requires EXACTLY
+   * one lit path — it read `litPaths.length !== 1` as "the state's own
+   * shape is not drawn" on every row after this one the first time this was
+   * missed. A real reload, the same one this function opened with, hands the
+   * next row back the pristine, never-played arrival state every other row
+   * already assumes.
+   */
+  await chrome.eval(`window.__clock.speed(1)`)
+  await chrome.send('Page.navigate', { url: 'about:blank' })
+  await chrome.send('Page.navigate', { url: `http://127.0.0.1:${PORT}/#/place/${slug}` })
+  await until(() => chrome.eval(`!!document.querySelector('.place')`), { what: `${slug}'s page (post-check reset)` })
+  await sleep(1300)
+
+  return snap
+}
+
 async function measure(slug, deviceName, w, h) {
   await chrome.viewport(w, h)
   await gotoPlace(slug)
   const data = await chrome.eval(LAYOUT)
   const file = `${FRAMES}/${slug}-${w}x${h}.png`
   await chrome.shot(file)
-  return { slug, device: deviceName, w, h, file, ...data }
+
+  // READ-ALONG VISIBILITY, PHONE ROWS ONLY. `.say-lane` never overflows
+  // above 600px — every wider breakpoint in place.css reserves its own true
+  // worst case (see `--say-lines: 7`/`8` there) — so this can only ever have
+  // something to catch on the two rows place.css actually gives a scrolling
+  // caption to. Driving real narration is not free (a forced reload plus a
+  // sped-up clock per row), so it is spent only where it can find anything.
+  const readAlong = w <= 600 ? await measureReadAlong(slug) : null
+
+  return { slug, device: deviceName, w, h, file, readAlong, ...data }
 }
 
 // -------------------------------------------------------------- the checks
@@ -504,6 +708,17 @@ function problems(row) {
       out.push(`the drawn state fills only ${row.ink.fillFraction} of the map box (floor ${MIN_FILL_FRACTION})`)
     }
   }
+
+  // Checked at a beat where the highlight has genuinely passed the fold —
+  // see `measureReadAlong`'s own note on why word one (or a check that never
+  // plays anything at all) would pass this every time regardless of whether
+  // the caption actually follows the word.
+  if (row.readAlong && !row.readAlong.visible) {
+    out.push(
+      `the lit word ("${row.readAlong.saying}", ${row.readAlong.word}/${row.readAlong.total}) `
+      + `is off-screen: word ${JSON.stringify(row.readAlong.wordBox)} vs lane ${JSON.stringify(row.readAlong.laneBox)}`,
+    )
+  }
   return out
 }
 
@@ -523,6 +738,7 @@ for (const slug of PLACES) {
       `  credit ${row.credit ? (row.credit.visible ? 'ok' : 'BAD') : 'MISSING'}` +
       `  tiles ${row.tiles.filter((t) => t.bigEnough && t.onScreen && t.clearOfBar && !t.labelClipped).length}/${row.tiles.length} ok` +
       `  ink ${row.ink ? `${row.ink.box.w}x${row.ink.box.h} (${Math.round((row.ink.fillFraction ?? 0) * 100)}% of map)` : 'MISSING'}` +
+      `  readAlong ${row.readAlong ? (row.readAlong.visible ? `ok (${row.readAlong.word}/${row.readAlong.total})` : 'BAD') : 'n/a'}` +
       (bad.length ? `\n      ${bad.join('\n      ')}` : ''),
     )
   }
@@ -590,7 +806,8 @@ sheet(
     caption: `<b>${esc(r.slug)}</b> — ${esc(r.device)} ${r.w}x${r.h}<br>`
       + `credit ${r.credit?.visible ? 'ok' : 'BAD'} · `
       + `tiles ${r.tiles.filter((t) => t.bigEnough && t.onScreen && t.clearOfBar && !t.labelClipped).length}/${r.tiles.length} ok · `
-      + `ink ${r.ink ? `${Math.round((r.ink.fillFraction ?? 0) * 100)}%` : 'MISSING'}`,
+      + `ink ${r.ink ? `${Math.round((r.ink.fillFraction ?? 0) * 100)}%` : 'MISSING'}`
+      + (r.readAlong ? ` · readAlong ${r.readAlong.visible ? 'ok' : 'BAD'}` : ''),
   })),
   4,
   300,

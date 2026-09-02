@@ -720,11 +720,27 @@
      over-height grid item and then scrolling it is a real CSS trap — the
      scrollable range ends up straddling both edges of the content, and the
      FIRST line can end up unreachable by scrolling down from the top. Start
-     alignment keeps scrollTop 0 at the actual first word, always. */
+     alignment keeps scrollTop 0 at the actual first word, always.
+
+     `pointer-events: auto`, OVERRIDING base.css's own `.say`/`.say-lane`
+     default of `none` ("text over a map, never a target: a child reaching
+     for Kerala through the words must reach Kerala"). That reasoning does
+     not hold here, and it is worth being precise about why: `.say-lane`'s
+     own box sits BELOW `--map-floor` — the exact line `.map` and
+     `.place-plate` are both inset to stop at (tourStage.css, `.place-plate`
+     above) — so this rectangle never has a state's own tap target under it
+     on THIS screen at all; nothing a finger could be reaching past. Without
+     this, `overflow-y: auto` two lines up is dead: `pointer-events: none`
+     blocks a touch scroll gesture exactly as it blocks a tap, so the box
+     could not be scrolled by a finger even though it LOOKED scrollable —
+     measured directly before this line existed. This is also what makes
+     `ReadAlong.tsx`'s own "the child is allowed to scroll it himself, and
+     nothing snaps him back" decision a real one rather than a moot one. */
   .place .say-lane {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     align-content: start;
+    pointer-events: auto;
   }
 
   /* THE SHELF SCROLLS TOO, AND IS SIZED TO SHOW ONE ROW OF IT. `flex: 0 0
