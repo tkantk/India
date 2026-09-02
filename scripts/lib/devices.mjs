@@ -19,9 +19,27 @@
  * no chrome) and the Safari height (a tab, with chrome). The Safari rows are
  * the ones that fail; the standalone rows are why nobody notices.
  *
- * The two phone rows are kept even though the app is iPad-only by ruling
- * (see docs/handover.md) — so a regression in them still shows on a run,
- * not because either gate targets a phone.
+ * THE TWO PHONE ROWS ARE NO LONGER A REGRESSION-ONLY AFTERTHOUGHT.
+ * `docs/handover.md` used to rule this app iPad-only; it no longer does —
+ * see that document's own record of why the original ruling was wrong (it
+ * was made by looking at the map screen, before the place screen existed).
+ * Both gates that import this file now measure both rows for real: every
+ * place must render on a 390px and a 375px phone exactly as strictly as it
+ * must on an iPad. Together they satisfy the two shapes a real phone
+ * ships in — a small width (either row sits inside the common 360-390px
+ * band) and, between them, the taller of the two (`'phone'`, 844 against
+ * `'small phone'`'s 812).
+ *
+ * PHONE LANDSCAPE IS DELIBERATELY NOT HERE. A phone on its side in this
+ * size class is roughly 390x844 rotated, i.e. about 844 WIDE and 390 TALL
+ * — wide enough to miss `place.css`'s own `max-width: 600px` phone rule
+ * entirely, and short enough (390px) to fail the existing tablet-landscape
+ * rule's own `min-width: 900px` floor too, so it would fall through to
+ * neither of this app's two hand-measured layouts and land on whichever one
+ * the cascade happens to leave standing — not a state anyone has designed
+ * for. Building a genuine third layout for it is real, separate work this
+ * round did not scope; it is carried, not silently dropped — see
+ * docs/handover.md.
  */
 export const DEVICES = [
   ['phone', 390, 844],

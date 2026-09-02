@@ -12,8 +12,22 @@
    read here (Mor's floor, the play button and `.say` below all consume
    them) via ordinary inheritance; only their DEFINITIONS moved. What stays
    here is genuinely tour-only: nothing that is not the tour has a Mor, a
-   play button, or (yet) a `.say`. */
-.india {
+   play button, or (yet) a `.say`.
+
+   `.india.tour`, NOT bare `.india` — found the hard way, fixing the phone
+   layout for `PlaceScreen`. Vite ships every screen's CSS in one bundle, so
+   a plain `.india` selector here matches `PlaceScreen`'s root too the
+   moment it exists, regardless of which route is actually on screen. Most
+   of what this file sets is harmless there — `place.css`'s own `.india.place`
+   rules already out-specify a bare `.india` (two classes beat one, in any
+   file, in any order) — but `--map-ceiling`/`--map-floor` themselves are
+   only ever COMPUTED by base.css's zero-specificity formula, never set
+   directly by either screen, so a bare `.india` rule that assigns them
+   outright was the ONLY specificity in the cascade that touched them at
+   all — and it silently overwrote the place screen's own phone framing with
+   the tour's. `.tour` on `IndiaScreen`'s own root (see that file's comment)
+   closes it the same way `.place` already closes the reverse case. */
+.india.tour {
   /* The button is 2 x --tap, the size the plan promises: 208px of gold that a
      six-year-old cannot miss. --tap is 2cm on a 264ppi iPad, four times the
      adult recommendation, so twice that is a target for a hand that has not
@@ -48,7 +62,7 @@
    stays here because it is `.say`'s own measured breakpoint, not a general
    framing default a screen with no caption would need. */
 @media (min-width: 792px) {
-  .india { --say-lines: 4; }
+  .india.tour { --say-lines: 4; }
 }
 
 /* ------------------------------------------------------------ the sentence */
@@ -146,7 +160,7 @@
    is left of the middle, and the sentence has nowhere near enough room beside
    Mor. Two things move. */
 @media (max-width: 600px) {
-  .india {
+  .india.tour {
     /* The credit wraps to two lines in this width. */
     --credit-lane: 56px;
 

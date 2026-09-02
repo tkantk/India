@@ -502,19 +502,30 @@ does not.**
   precision — one decimal rounds Delhi to a flat 0.2 and makes any floor at
   that number a permanent false failure on the smallest of the four places)
   while still well above what a 2.5x-class shrink like the tour's own Delhi
-  flight would leave behind. **What it does NOT catch.** Phones: the two
-  phone rows in `devices.mjs` are excluded from this gate's own device list
-  (`IPAD_DEVICES`) on purpose — `place.css` has no phone breakpoint at all,
-  the app's own ruling is iPad-only, and gating a brand-new screen against a
-  shape nobody designed it for would have meant a shelf/tile redesign this
-  task was explicitly told not to do. The 32 places with no `content/`
+  flight would leave behind. **UPDATE, phone plan: phones are no longer
+  excluded.** This gate used to skip the two phone rows in `devices.mjs`
+  (`IPAD_DEVICES`, since deleted) because `place.css` had no phone breakpoint
+  at all and the app's own ruling was iPad-only. Both premises are gone —
+  see "The app is responsive, deliberately, as of the phone plan" below —
+  and this gate now measures every device in `devices.mjs`, phones included,
+  with no separate list. Its very first real run against the new phone rows
+  failed all eight (four places x two phones): the four/five-across tile row
+  gave every tile under half the 103.5px floor. `place.css`'s phone rule (a
+  stacked layout — the map keeps a real floor, the shelf becomes a scrolling
+  `auto-fit` grid instead of a fixed column count) is what made it pass; see
+  that file's own comments for the numbers and why each one is what it is.
+  **What it still does not catch.** The 32 places with no `content/`
   file yet (`[data-empty]`, "we have not been to X yet") — the gate only
-  ever navigates to the four that exist. Whether a *finger* can actually
-  reach the hit layer — `probe:map` owns that; this gate reaches the screen
-  by URL, not by a real tap, because nothing it measures (a rect, a label's
-  own box, a drawn shape's size) depends on which door was used to arrive.
-  Whether the photographs load, whether a tile's animation looks right,
-  whether the narration is audible — none of that is a rect.
+  ever navigates to the four that exist (though `place.css`'s own phone rule
+  covers that page too — see its "the empty page scrolls" comment, added
+  after actually looking at one and finding it broken the same way). Whether
+  a *finger* can actually reach the hit layer — `probe:map` owns that; this
+  gate reaches the screen by URL, not by a real tap, because nothing it
+  measures (a rect, a label's own box, a drawn shape's size) depends on
+  which door was used to arrive. Whether the photographs load, whether a
+  tile's animation looks right, whether the narration is audible — none of
+  that is a rect. Phone LANDSCAPE — see `devices.mjs`'s own comment on why
+  it is carried, not covered, this round.
 
 - **`npm run probe:camera [-- --place=slug]`** — drives the *real*
   `src/map/camera.ts` (type-stripped and inlined, not reimplemented) in
@@ -703,13 +714,11 @@ comments were updated to point here instead of the now-deleted file.
 
 ## Decisions from Plan 5, recorded so they are not re-opened by accident
 
-**iPad-only.** Already ruled and written up in "Rulings that should not be
-re-opened" below (Plan 5 Task 4) — recorded here again only so it is not
-missed: a phone gets an honest warning on the cover screen, not a fixed
-layout, because the map screen's own framing has too many measured
-constants to re-verify without the very `tour:strip` run that task was
-told to run at most once. Revisit only if a future plan actually commits to
-a phone-first layout for the map screen.
+**REVERSED — the app is responsive now, not iPad-only.** This was ruled in
+Plan 5 Task 4 and overturned in the phone plan that follows Plan 6; see "The
+app is responsive, deliberately, as of the phone plan" below, in "Rulings
+that should not be re-opened," for the full reasoning and why the original
+ruling does not re-derive from the same premises any more.
 
 **The tour is 3:32, not 4:05.** The paid ElevenLabs re-render normalised the
 narration's pace for prosodic continuity (the chained-cache-key work
@@ -857,8 +866,85 @@ nobody deliberately taps a border sliver. Measured: the deepest intrusion
 reaches 58% of the victim's body radius at worst and nothing reaches an inner
 fifth.
 
-**The app is iPad-only. A phone gets an honest warning, not a fixed layout.**
-Plan 5 Task 4's colour gate made a pre-existing problem visible rather than
+**The app is responsive, deliberately, as of the phone plan.** This reverses
+Plan 5 Task 4's "iPad-only" ruling (below, kept struck through rather than
+deleted, because the reasoning that replaced it matters as much as the
+reversal itself), at the owner's own direct request: *"I saw this does not
+open well in Phones. I know this cannot be intented towards phones but kids
+can click right. We have to make it responsive enough."* He was right, and
+it is worth being precise about **why the original ruling was wrong**, not
+just that it was: **it was made by looking at the map screen, before the
+place screen existed.** Task 4 measured the map screen's own gold button at
+`390x844`, judged it "visually snug" (correctly — the button still worked,
+it was merely tight), and extrapolated iPad-only for the whole app from that
+one screen. Nobody had built the place screen yet, so nobody could have
+looked at it, and when it was finally measured on a phone — `node
+scripts/shot.mjs place.rajasthan --w=390 --h=844` — it was not snug, it was
+unusable: `map=334x46 say=403px shelfBottom=844 barTop=618`. A 46px sliver
+of map, a 403px caption overlapping four rows of tiles, the name plate and
+the trail beads floating on top of the words. The old ruling's own
+reasoning ("the button still fully works, it is just visually snug") never
+applied to this screen at all; it was re-derived onto it by accident,
+because a phone user would obviously hit BOTH screens.
+
+**What changed, concretely.** `src/screens/place.css` and
+`src/tour/grandTour.css` now carry real `@media (max-width: 600px)` phone
+layouts — not a shrunk copy of the iPad one, a genuinely different
+arrangement for a tall narrow screen: the map keeps a real, stated minimum
+(see `place.css`'s own "the phone" section — 160px stated and defended,
+167-199px actually measured on the two phone rows this app gates on, in the
+same range, 166-195px, the tour's own phone map already shipped at), the
+caption's lane is sized for the SHORT case and scrolls internally for the
+two outliers (a 400-character intro can be sixteen lines at this width — see
+that section's own measurements — and reserving the true worst case would by
+itself cost more of the screen than the map is being given), and the shelf
+of nine tiles becomes a CSS Grid (`auto-fit`, `minmax`) that fits as many
+104px-or-wider columns as the real width allows and scrolls for the rest,
+rather than the iPad's fixed four/five-across rows. Touch targets did not
+shrink anywhere — `--tap` is still 104px, checked by the gate at 103.5px on
+every device including both phones.
+
+**One bug this surfaced, fixed at its root rather than patched around.**
+`grandTour.css`'s phone rule set `--map-ceiling`/`--map-floor` on a BARE
+`.india` selector — correct while `IndiaScreen` was the only screen carrying
+that class, and silently wrong the moment `PlaceScreen` existed too, because
+Vite bundles every screen's CSS into one stylesheet loaded on every route
+regardless of which one is on screen, and a bare `.india` rule has enough
+specificity to beat base.css's `:where(.india)` formula on the OTHER
+screen's own root. `IndiaScreen`'s root is now `className="india tour"` and
+`grandTour.css`'s own rules are `.india.tour`, the same two-class shield
+`.place` already used for the reverse case — see `IndiaScreen.tsx`'s own
+comment for the full account. This had been silently true since the first
+day both screens' CSS shipped in one bundle; nothing surfaced it until a
+phone breakpoint on `place.css` gave it something to actually corrupt.
+
+**The gates changed too, and this is not optional.** `scripts/lib/devices.mjs`
+is the single viewport list both `tour:strip` and `place:strip` import.
+`place:strip` used to filter its own two phone rows out
+(`IPAD_DEVICES`, since deleted) specifically because this ruling made phones
+out of scope; `tour:strip` measured them all along (the tour's own phone
+layout already existed and already passed). Both gates now measure every
+device in the shared list, phones included, with no separate list — the
+exemption dies with the ruling it depended on. `place:strip`'s first real
+run against the new phone rows failed all eight (four places x two phones):
+the tile grid alone gave every tile under half the required floor. Fixing
+`place.css` is what turned that green; see `build/place-layout.json` for the
+full measurement.
+
+**Phone landscape is carried, not covered, this round** — a phone on its
+side at this size class is wide enough to miss `place.css`'s own
+`max-width: 600px` phone rule and short enough to miss the existing
+`min-width: 900px` tablet-landscape rule too, so it would fall through to
+neither hand-measured layout. See `devices.mjs`'s own comment for the full
+reasoning. A genuine third layout for it is real, separate work; nobody
+using this app in portrait (which is how the father actually holds a phone,
+and how a six-year-old is handed one) is affected by leaving it for later.
+
+~~**The app is iPad-only. A phone gets an honest warning, not a fixed
+layout.**~~ Struck through, not deleted — Plan 5 Task 4's original ruling and
+its reasoning, both now superseded above:
+
+~~Plan 5 Task 4's colour gate made a pre-existing problem visible rather than
 new: at `390x844` the map screen's gold "Show me India" button (`--big`,
 208px — deliberately, "shrinking the button is not on the table" per
 grandTour.css) sits over almost the whole drawn country, because the map
@@ -869,7 +955,7 @@ button (off the table — it is the tap target for a hand that has not learned
 to aim, and the map's own framing is a web of other measured constants this
 task could not re-verify without the very tour:strip run it was told to run
 at most once), or accept the phone was never the target device and say so.
-**Ruling: iPad-only**, matching how the father actually tests this app.
+Ruling: iPad-only, matching how the father actually tests this app.
 `src/screens/StartGate.tsx`/`startGate.css` now show a short, honest line —
 "Namaste India is built for a tablet..." — on the cover screen below 600px,
 CSS-only (`display: none` above it), so the iPad experience is byte-for-byte
@@ -877,7 +963,9 @@ unchanged. The map screen itself (`grandTour.css`) was deliberately left
 alone: the button still fully works on a phone, it is just visually snug, and
 that is now a documented choice rather than an accident. Revisit only if a
 future plan actually commits to a phone-first layout for the map screen —
-that is a real redesign, not a CSS tweak.
+that is a real redesign, not a CSS tweak.~~ (The cover screen's own phone
+paragraph — `.gate__phone-note` — has been deleted along with this ruling;
+leaving it in place would have been actively wrong now, not honest.)
 
 ## Parked, with rulings
 

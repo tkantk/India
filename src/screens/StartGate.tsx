@@ -66,26 +66,16 @@ export function StartGate({ onReady, unlock, playTestSound }: Props) {
           <h1 className="gate__title">Namaste!</h1>
           <p className="gate__sub">Shall we go and see India?</p>
 
-          {/* THE 4b DECISION, WRITTEN DOWN: this app is built for a tablet,
-              and a phone is a documented, honestly-degraded fallback rather
-              than a silently broken one — see docs/handover.md. `npm run
-              tour:strip`'s 390x844 pass shows why: the map screen's own
-              play button is `--big` (208px, deliberately — "shrinking the
-              button is not on the table", grandTour.css), and a map framed
-              into the little room left beside a phone's control bar and
-              caption is not much taller than that button is. Beige used to
-              hide how little of the country was left showing round it;
-              colour does not. Rather than shrink the one button a
-              six-year-old cannot miss, or re-tune a map framing several
-              other measured constants depend on, the adult holding the
-              phone is told the truth before they ever reach that screen —
-              CSS-only, `display: none` above 600px, so nothing about the
-              iPad experience the father actually tests on changes at all. */}
-          <p className="gate__phone-note">
-            Namaste India is built for a tablet. On a phone, the big button
-            on the map is a snug fit — everything still works, just cosier
-            on a bigger screen.
-          </p>
+          {/* THE 4b DECISION IS REVERSED — see docs/handover.md, "The app is
+              responsive, deliberately, as of the phone plan." This paragraph
+              used to tell an adult holding a phone that the app was built
+              for a tablet and things would be "cosier" there; that stopped
+              being true the day `place.css` and `grandTour.css` got real
+              phone layouts, gated by `place:strip`/`tour:strip` at
+              `scripts/lib/devices.mjs`'s own phone rows. Leaving the old
+              line in place would now be actively wrong, not honest — the
+              whole reason it existed was to tell the truth before the
+              screen after this one. */}
 
           {/* He arrives on one of the eight pages, exactly the way every
               reveal in the tour does — and on `--mat-sun`, the same page

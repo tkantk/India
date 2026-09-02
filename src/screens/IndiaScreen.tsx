@@ -16,6 +16,21 @@ import { GrandTour } from '../tour/GrandTour'
  * is telling them out loud. The map, the tour and Mor take the whole screen
  * instead.
  *
+ * `className="india tour"`, NOT bare `"india"`. Found the hard way, fixing
+ * the phone layout for `PlaceScreen`: `grandTour.css`'s own phone rule sets
+ * `--map-ceiling`/`--map-floor` directly, as an ordinary `.india` selector —
+ * correct while this was the ONLY screen carrying that class, and silently
+ * wrong the moment a second one did, because Vite ships every screen's CSS
+ * in one bundle regardless of which route is on screen. `PlaceScreen`'s own
+ * `.india.place` rules already out-specify a bare `.india` (two classes beat
+ * one, in any file, in any order — the same reason `place.css` uses that
+ * compound selector at all), but `--map-ceiling`/`--map-floor` themselves are
+ * only ever COMPUTED, never set directly, by either screen — so grandTour's
+ * plain `.india` rule was the only one with any specificity on them at all,
+ * and it does not know a second screen exists. `.tour` gives this screen the
+ * same two-class shield `.place` already has; `grandTour.css`'s own
+ * `.india { ... }` rules are now `.india.tour { ... }` for the same reason.
+ *
  * `onPickState` IS THE ONLY PROP, AND IT IS OPTIONAL ON PURPOSE. A child
  * tapping a state now turns to that state's own page (`PlaceScreen`), which
  * means a route change — but `useNavigate` cannot be called anywhere in this
@@ -29,7 +44,7 @@ import { GrandTour } from '../tour/GrandTour'
  */
 export function IndiaScreen({ onPickState }: { onPickState?: (slug: string) => void }) {
   return (
-    <main className="india">
+    <main className="india tour">
       <h1 className="visually-hidden">Namaste India</h1>
       <GrandTour onPickState={onPickState} />
     </main>

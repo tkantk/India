@@ -84,20 +84,21 @@ const PLACES = readdirSync('content/places')
   .map((f) => f.replace(/\.json$/, ''))
   .sort()
 
-// The task brief that authors this gate says it in so many words: "every
-// real iPad viewport". `lib/devices.mjs`'s two phone rows exist for
-// tour-strip.mjs's own regression visibility on a screen the tour was
-// already made to fit; `place.css` carries no phone breakpoint at all — no
-// `max-width` media query anywhere in it, unlike `grandTour.css`'s explicit
-// one — because the app's own standing ruling is iPad-only (docs/handover.md,
-// "Rulings that should not be re-opened"). Gating a brand-new screen on a
-// shape nobody has designed it for is not "fix what the gate legitimately
-// catches, minimally" (this task's own instruction); it is a phone redesign
-// wearing a gate's clothes. Measured directly: a first real run of this gate
-// against all twelve devices found the tile grid alone giving every tile on
-// a 390px phone less than half the required 104px side — a wholesale
-// redesign, not a bug in this task's scope.
-const IPAD_DEVICES = DEVICES.filter(([name]) => !/phone/i.test(name))
+// THIS USED TO BE IPAD_DEVICES, FILTERING THE TWO PHONE ROWS OUT. That
+// exemption is gone with the ruling it depended on: docs/handover.md no
+// longer says this app is iPad-only, and the reason the old ruling does not
+// hold any more is recorded there in full (it was made by looking at the map
+// screen, before this one existed). `place.css` now carries a real phone
+// breakpoint — a stacked layout with a scrolling shelf, not a shrunk copy of
+// the iPad one — and this gate measures it exactly as strictly as every
+// other device: every check below (a real 104px target, a credit that clears
+// the bar, a state drawn at a sane size, no clipped label) applies uniformly.
+// Measured directly with the iPad row layout still in force (`node
+// scripts/shot.mjs place.rajasthan --w=390 --h=844`): every card tile came
+// out 76x104 and every landmark 59x120 — both short of the 103.5px floor on
+// their narrow side, on the one dimension the four/five-across row layout
+// could never fix by itself — which is exactly why place.css no longer lays
+// phone tiles out in the iPad's fixed four/five-across rows.
 
 if (PLACES.length === 0) {
   console.error('No files in content/places — nothing to gate.')
@@ -289,7 +290,20 @@ const LAYOUT = `(() => {
 
   const bar = r('.controls')
   const credit = r('.map + .credit')
-  const say = r('.say')
+  // '.say-lane', NOT '.say' itself. Below 600px (place.css's own phone
+  // rule) '.say-lane' clips/scrolls '.say' rather than reserving room for
+  // its full worst-case height (see that file's own note on why: the same
+  // text that wraps to seven lines on an iPad wraps to sixteen here, and
+  // reserving that would cost the map more than it is being given). A
+  // scrolled-and-clipped box is invisible past its own edge, but
+  // getBoundingClientRect on '.say' itself still reports its full,
+  // UNCLIPPED content height regardless — measured directly, this fired a
+  // "credit under the caption" failure on every phone row even though
+  // nothing was visibly overlapping in the real screenshot next to it.
+  // '.say-lane' is the element overflow actually clips, so it is the one
+  // that answers "what does a child actually see" — exactly what every
+  // other check in this file is trying to measure.
+  const say = r('.say-lane') ?? r('.say')
   const placeName = r('.place-name')
   const mapBox = r('.map')
   const shelf = r('.place-shelf')
@@ -311,8 +325,45 @@ const LAYOUT = `(() => {
   // is 'overflow: hidden' (place.css), so a label whose own box pokes out of
   // its tile's box is not a rendering detail, it is invisible text — exactly
   // the "Festival" -> "tival" failure the task brief names.
+  //
+  // BELOW 600PX (place.css's own phone rule) '.place-shelf' scrolls on
+  // purpose — four/five tiles across at 104px each do not fit a phone's
+  // width, so the shelf runs taller instead and a thumb moves to reach the
+  // rest. A tile that starts out only partly visible, peeking above the
+  // fold as an invitation to scroll, is the DESIGN, not a defect, and
+  // measuring it in that unscrolled position would fail it for being
+  // exactly what it is asking the child to do.
+  //
+  // NOT 'scrollIntoView'. It was tried, and it does nothing here: a peeking
+  // row sitting behind the fixed bar is, as far as the DOM is concerned,
+  // ALREADY fully inside '.place-shelf''s own scrollport (0 to its
+  // clientHeight) — 'scrollIntoView' has no idea a 'position: fixed'
+  // sibling is visually painted over the bottom of that scrollport, so it
+  // considers the row already visible and scrolls nothing. The fix scrolls
+  // the shelf directly, by exactly the row's own overlap with the bar's
+  // real rect, which is the same nudge a real swipe gives it — then
+  // re-measures. If even the shelf's OWN maximum scroll cannot clear a row
+  // (checked below by clamping to scrollHeight - clientHeight), that is a
+  // real defect and the check still fails it.
+  //
+  // RESET FIRST. This gate never reloads the page between devices for the
+  // same place — 'gotoPlace' re-navigates to the SAME hash, which a
+  // same-page SPA route treats as a no-op, so the DOM (and any scrollTop a
+  // PREVIOUS device's own adjustment left behind) simply carries over.
+  // Measured directly: without this line, "phone" pushing the shelf down to
+  // clear a landmark left "small phone" — the very next device for the same
+  // place — measuring "Animal" and "Food" at scrollTop's leftover offset,
+  // both reported off-screen at the top. Every row has to start from the
+  // same, real, scrolled-to-the-top state a child actually lands on.
+  const shelfEl = el('.place-shelf')
+  if (shelfEl) shelfEl.scrollTop = 0
   const tiles = all('.place-shelf .tile').map((t) => {
-    const tileBox = box(t.getBoundingClientRect())
+    let tileBox = box(t.getBoundingClientRect())
+    if (shelfEl && bar && tileBox.bottom > bar.top + 0.5) {
+      const need = tileBox.bottom - bar.top + 2
+      shelfEl.scrollTop = Math.min(shelfEl.scrollHeight - shelfEl.clientHeight, shelfEl.scrollTop + need)
+      tileBox = box(t.getBoundingClientRect())
+    }
     const wordEl = t.querySelector('.tile__word')
     const wordBox = wordEl ? box(wordEl.getBoundingClientRect()) : null
     return {
@@ -321,6 +372,7 @@ const LAYOUT = `(() => {
       bigEnough: tileBox.w >= 103.5 && tileBox.h >= 103.5,
       onScreen: tileBox.left >= -0.5 && tileBox.right <= innerWidth + 0.5
         && tileBox.top >= -0.5 && tileBox.bottom <= innerHeight + 0.5,
+      clearOfBar: !bar || !over(tileBox, bar),
       labelClipped: !contains(tileBox, wordBox),
     }
   })
@@ -371,7 +423,6 @@ const LAYOUT = `(() => {
         : null,
     },
     tiles,
-    tileOverBar: tiles.map((t) => over(t.box, bar)).find(Boolean) ?? null,
     // NOT shelfOverBar. \`.place-shelf\`'s own OUTER box deliberately reaches
     // into the bar's territory — place.css's own comment on \`.place-shelf\`
     // says so by name: "THE BAR'S CLEARANCE LIVES HERE", a
@@ -380,8 +431,10 @@ const LAYOUT = `(() => {
     // measures that reserved padding, not anything a child can see — it
     // fired on effectively every device in this gate's first real run with
     // an overlap height of EXACTLY the padding amount, which is the tell.
-    // \`tileOverBar\` above is the real question ("is a TILE behind the
-    // bar"), and unlike this one it did not fire once in that same run.
+    // Per-tile \`clearOfBar\` above (checked by name in \`problems()\`) is the
+    // real question ("is a TILE behind the bar, even at its own best
+    // reachable scroll position"), and unlike this one it did not fire once
+    // in that same run.
     pageScrolls: document.documentElement.scrollWidth > innerWidth + 0.5
       || document.documentElement.scrollHeight > innerHeight + 0.5,
   }
@@ -431,12 +484,15 @@ function problems(row) {
   if (row.say?.overBar) out.push(`caption over the bar ${JSON.stringify(row.say.overBar)}`)
   if (row.placeName?.overBar) out.push(`name plate over the bar ${JSON.stringify(row.placeName.overBar)}`)
   if (row.mapOverBar) out.push(`the map itself over the bar ${JSON.stringify(row.mapOverBar)}`)
-  if (row.tileOverBar) out.push(`a tile over the bar ${JSON.stringify(row.tileOverBar)}`)
   if (row.pageScrolls) out.push('the page scrolls')
 
   for (const t of row.tiles) {
     if (!t.bigEnough) out.push(`tile "${t.label}" is only ${t.box.w}x${t.box.h} (needs 103.5x103.5)`)
     if (!t.onScreen) out.push(`tile "${t.label}" is off-screen`)
+    // Checked at the tile's own best reachable scroll position (see the
+    // LAYOUT script's own note) — this only fires if even the shelf's
+    // maximum scroll cannot clear it of the fixed bar.
+    if (!t.clearOfBar) out.push(`tile "${t.label}" cannot be scrolled clear of the bar`)
     if (t.labelClipped) out.push(`tile "${t.label}"'s own label is clipped`)
   }
 
@@ -458,14 +514,14 @@ await open()
 const rows = []
 for (const slug of PLACES) {
   console.log(`\n${slug}`)
-  for (const [name, w, h] of IPAD_DEVICES) {
+  for (const [name, w, h] of DEVICES) {
     const row = await measure(slug, name, w, h)
     rows.push(row)
     const bad = problems(row)
     console.log(
       `  ${name.padEnd(28)} ${String(w).padStart(4)}x${h}` +
       `  credit ${row.credit ? (row.credit.visible ? 'ok' : 'BAD') : 'MISSING'}` +
-      `  tiles ${row.tiles.filter((t) => t.bigEnough && t.onScreen && !t.labelClipped).length}/${row.tiles.length} ok` +
+      `  tiles ${row.tiles.filter((t) => t.bigEnough && t.onScreen && t.clearOfBar && !t.labelClipped).length}/${row.tiles.length} ok` +
       `  ink ${row.ink ? `${row.ink.box.w}x${row.ink.box.h} (${Math.round((row.ink.fillFraction ?? 0) * 100)}% of map)` : 'MISSING'}` +
       (bad.length ? `\n      ${bad.join('\n      ')}` : ''),
     )
@@ -478,7 +534,7 @@ console.log(`\nwrote ${OUT}/place-layout.json`)
 const bad = rows.filter((row) => problems(row).length > 0)
 
 console.log(bad.length === 0
-  ? `\nno problems at any of ${PLACES.length} places x ${IPAD_DEVICES.length} devices.`
+  ? `\nno problems at any of ${PLACES.length} places x ${DEVICES.length} devices.`
   : `\n${bad.length} problem row(s) of ${rows.length}: ${bad.map((r) => `${r.slug}/${r.device}`).join(', ')} — see build/place-layout.json.`)
 
 // ---------------------------------------------------------------- the sheet
@@ -527,13 +583,13 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 sheet(
   'place-strip',
   'Namaste India — every place, every device',
-  `${PLACES.length} places (${PLACES.join(', ')}) at all ${IPAD_DEVICES.length} real iPad devices from lib/devices.mjs. `
+  `${PLACES.length} places (${PLACES.join(', ')}) at all ${DEVICES.length} real devices from lib/devices.mjs, iPads and phones alike. `
   + 'Each caption is the device name and what this gate measured on it.',
   rows.map((r) => ({
     file: r.file,
     caption: `<b>${esc(r.slug)}</b> — ${esc(r.device)} ${r.w}x${r.h}<br>`
       + `credit ${r.credit?.visible ? 'ok' : 'BAD'} · `
-      + `tiles ${r.tiles.filter((t) => t.bigEnough && t.onScreen && !t.labelClipped).length}/${r.tiles.length} ok · `
+      + `tiles ${r.tiles.filter((t) => t.bigEnough && t.onScreen && t.clearOfBar && !t.labelClipped).length}/${r.tiles.length} ok · `
       + `ink ${r.ink ? `${Math.round((r.ink.fillFraction ?? 0) * 100)}%` : 'MISSING'}`,
   })),
   4,

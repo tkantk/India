@@ -620,3 +620,207 @@
   .place-mark__glyph { width: min(16vmin, 96px); height: min(16vmin, 96px); }
   .place-mark__word { font-size: 16px; }
 }
+
+/* --------------------------------------------------------------- the phone
+
+   THE RULING CHANGED. `docs/handover.md` used to say this app is iPad-only;
+   it no longer does, and the reason that ruling was wrong is worth stating
+   here, next to the fix, not only in the handover: it was made by looking at
+   the MAP screen, before this screen existed. Measured directly, before this
+   rule: `node scripts/shot.mjs place.rajasthan --w=390 --h=844` reported
+   `map=334x46 say=403px shelfBottom=844 barTop=618` — a 46px sliver of map,
+   a 403px caption overlapping four rows of tiles, the name plate and the
+   trail beads both floating over the words. Nothing here was "visually
+   snug"; it did not render as a screen at all.
+
+   WHY THE OLD NUMBERS DO NOT SCALE DOWN. `--say-lines: 7` above is measured
+   against an ~800px-wide iPad column, where even Delhi's 387-character
+   worst-case intro wraps to seven lines. The SAME text at a phone's ~330px
+   column wraps to sixteen (measured: `shot.mjs place.delhi --w=360 --h=740`
+   before this rule existed, `say=577px` = 577/(1.45*24) ≈ 16 lines) — more
+   than double, because the column is less than half as wide. Reserving room
+   for that worst case, the way every OTHER breakpoint in this file does,
+   would by itself cost more than half of a 740-844px screen, leaving nothing
+   for a map or a shelf. A phone caption cannot both never scroll AND leave
+   room for a map that is a map; something has to give, and it is the
+   caption's own promise not to scroll — not the map, and not a touch target.
+
+   THE FIX: STACK, AND LET ONE THING SCROLL. Three things a child needs, in
+   the order the task that wrote this rule states them — see the map, hear
+   the words, reach the things he can press — and only the third one, on a
+   phone, no longer fits without asking a thumb to move.
+
+     - THE MAP keeps a real floor. `--say-lines: 6` below reserves enough for
+       the SHORT lines (every card but `festival` measures 229px ≈ 6 lines
+       at this width) without scrolling, and PROMOTES `.say-lane` from
+       "must contain everything" to "scrolls if it has to" for the two
+       outliers (`festival` at 7 lines, every intro at up to 16) — never
+       clipped, never lost, just reachable with a finger instead of free.
+       That is what buys the map its floor back: with this lane and
+       `--credit-lane: 56px` (the same figure grandTour.css already measured
+       for a phone this narrow — reused, not re-derived), the map lands at
+       167-199px on the two phone rows this app now gates on (see
+       `scripts/lib/devices.mjs`) — comfortably more than the 46px it had,
+       and in the same range (166-195px) the TOUR's own phone map has shipped
+       at since Plan 5, which is the working precedent this number is chosen
+       to match rather than invent. 160px is the floor stated and defended:
+       big enough to show a state's own shape and its nearest neighbours,
+       which is the whole point of this screen.
+
+     - THE SHELF SCROLLS. Nine 104px+ targets do not fit across a phone's
+       width at four or five per row — measured, every tile on a 390px
+       phone under the iPad row layout comes out under 52px wide, half the
+       floor this app holds hardest. `repeat(auto-fit, minmax(var(--tap),
+       1fr))` replaces the fixed column count with "as many 104px+ columns
+       as actually fit" — three at 390px, two at 375px — so a touch target
+       is never made smaller to make it fit; a phone's shelf is simply
+       TALLER, and `--shelf-visible` below caps how much of that height
+       shows before the rest is a scroll away: one full row of cards, in
+       daylight above the fixed bar, plus a small peek of the row beneath it
+       so scrolling reads as an invitation and not a guess.
+
+   TOUCH TARGETS DO NOT CHANGE. `--card-h`, `--landmark-h` and `--tap` are
+   untouched — every tile is still 104px or 120px tall and the grid above
+   guarantees 104px or more wide. Nothing here is a media-query patch on the
+   iPad numbers; every constant is its own, measured at this width, the same
+   way the landscape rule above measured its own. */
+@media (max-width: 600px) {
+  .india.place {
+    /* The same figure grandTour.css already measured for its own phone
+       breakpoint at this width — one line wraps to two here, and a place's
+       credit is the same component, same text, same column. */
+    --credit-lane: 56px;
+
+    /* NOT the worst case. Every card but `festival` measures 229px (six
+       real lines) at this width; `festival` measures 264px (seven) and
+       every intro up to 577px (sixteen, Delhi's 387-character worst case,
+       measured at the narrowest phone this app gates on). Reserving the
+       true worst case, as every wider breakpoint in this file does, would
+       alone cost more of the screen than the map is being given below — so
+       this lane holds the SHORT case without scrolling and the two
+       outliers scroll in place instead (see `.place .say-lane` below):
+       never clipped, never overlapping the map or the shelf, just no
+       longer a promise this width cannot keep for free. */
+    --say-lines: 6;
+
+    /* One full row of cards (`--shelf-gap` above it, `--card-h` itself),
+       clear of the fixed bar (`--bar-over`, plus the same 8px printed gap
+       the shelf's own padding already carries), plus a peek of the row
+       beneath it — enough to read as "more below", not enough to cost the
+       map the height it needs more. */
+    --shelf-visible: calc(var(--shelf-gap) + var(--card-h) + var(--bar-over) + 8px + 24px);
+  }
+
+  /* THE CAPTION SCROLLS INSTEAD OF OVERFLOWING. `.say-lane`'s `height` is
+     still the fixed lane `--say-lane` computes — unchanged mechanism, see
+     base.css — but below 600px that lane is shorter than the true worst
+     case on purpose (above), so its own overflow has to go somewhere other
+     than "on top of the shelf", which is where it went before this rule
+     existed. `align-content: start`, not the centred default: centring an
+     over-height grid item and then scrolling it is a real CSS trap — the
+     scrollable range ends up straddling both edges of the content, and the
+     FIRST line can end up unreachable by scrolling down from the top. Start
+     alignment keeps scrollTop 0 at the actual first word, always. */
+  .place .say-lane {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    align-content: start;
+  }
+
+  /* THE SHELF SCROLLS TOO, AND IS SIZED TO SHOW ONE ROW OF IT. `flex: 0 0
+     auto` is already the default above; only the cap and the scroll are new.
+     `.place-shelf`'s own `padding-bottom` (already `--bar-over + 8px`, for
+     the iPad's last row) does the same job here for whichever row is
+     scrolled to last — nothing new needed for that. */
+  .place-shelf {
+    max-height: var(--shelf-visible);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* FOUR OR FIVE ACROSS DOES NOT FIT A PHONE'S WIDTH AT 104PX EACH — measured,
+     every tile came out under 52px wide under the iPad row layout. `auto-fit`
+     with a `minmax` floor asks a different question: not "how many columns",
+     but "how many 104px-or-wider columns actually fit" — three at 390px, two
+     at 375px, decided by the browser from the real width instead of guessed
+     here and re-guessed at the next phone size. `.tile`'s own `flex` rule
+     above is simply unused under `display: grid`; nothing to override.
+
+     CARDS AND LANDMARKS DO NOT SHARE ONE FLOOR, and this is content, not
+     taste. The four card words are fixed English UI strings (`CARDS` in
+     PlaceScreen.tsx) and the longest, "Festival", is 8 letters — safe at
+     104px with room to spare, confirmed by this gate. A landmark's `short`
+     is per-place AUTHORED content, and `content/schema.ts`'s own
+     `SHORT_WORD_BUDGET` (12 characters, one word, no space to wrap) was
+     calibrated against 129.6px — the narrowest tile this app had ever
+     rendered before this rule, an iPad mini five across. `minmax(var(--tap),
+     1fr)` on a landmark row makes 104.7px the new narrowest, and it clipped
+     immediately: "Ranthambore" (11 letters, under the 12-character budget)
+     — this gate's own first real run against the new device rows caught it
+     by name. `130px` restores the exact floor `SHORT_WORD_BUDGET` was
+     proven safe at, rather than inventing and re-measuring a second number
+     — at 390px this is two landmark columns, not three, and the shelf is
+     already built to be taller than one screenful on a phone (it scrolls),
+     so a shorter row here costs nothing the design was not already paying
+     for. */
+  .place-shelf__row--cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--tap), 1fr));
+  }
+  .place-shelf__row--landmarks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  /* THE BIG PICTURE, RE-MEASURED FOR A BOX SHORTER THAN THE LANDSCAPE ONE
+     ABOVE. `.place-plate` keeps its 84px top padding (the name plate's own
+     measured height, unchanged by width) inside a picture box now only
+     160-200px tall in total — measured directly with `scripts/shot.mjs
+     place.rajasthan:1 --w=390 --h=844` (the animal card's photo) and
+     `place.rajasthan:3` (the festival mark, this screen's tallest), which is
+     what caught this: at the landscape figures above, a photo's frame alone
+     wanted more room than remained once the name plate's own padding was
+     taken out. Every number below is smaller again for that reason, the same
+     "shorter box, smaller figure" call the landscape rule above already
+     made, not a second design language. */
+  .place-photo__img { max-height: min(11vmin, 64px); }
+  .place-photo__cap { gap: 0; margin-top: 2px; }
+  .place-photo__name { font-size: 14px; }
+  .place-photo__by { font-size: 10px; line-height: 1.2; }
+  .place-mark { padding: 8px 12px; gap: 4px; }
+  .place-mark__glyph { width: min(10vmin, 56px); height: min(10vmin, 56px); }
+  .place-mark__word { font-size: 14px; }
+  .place .cue-figure { width: min(22vmin, 96px); }
+  .place .cue-script .cue-greeting__native { font-size: min(9vmin, 44px); }
+
+  /* THE EMPTY PAGE SCROLLS TOO, for the same reason as the shelf above:
+     `.place-empty` is `position: absolute; inset: ...`, sized to the same
+     box as the map, and only four written places existed to test it with —
+     found by actually looking at one (`shot.mjs place.goa --w=390 --h=844`):
+     four 168px-wide tiles do not fit two across a 334px column, so they
+     stack, and stacked plus the two lines of text above them is taller than
+     the box, so it overflowed both upward (clipping "yet") and downward
+     (over the credit and the caption). This only gets truer as more of the
+     32 unwritten places get written and this list grows past four.
+     `justify-content: flex-start`, not the centred default, for the same
+     scroll-gotcha `.say-lane` avoids above: centring an over-height
+     column and then scrolling it can put its first line out of scroll
+     range. */
+  .place-empty {
+    overflow-y: auto;
+    justify-content: flex-start;
+    padding-top: 20px;
+  }
+
+  /* The same `auto-fit`/`minmax` trick the shelf uses above, for the same
+     reason: a fixed 168px tile does not know how many of itself fit a given
+     phone's width, and guessing per breakpoint is how these numbers drift.
+     `width: auto` lets the grid column set it instead of the fixed rule
+     above. */
+  .place-empty__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--tap), 1fr));
+    width: 100%;
+  }
+  .place-empty__row .tile { width: auto; }
+}
