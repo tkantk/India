@@ -1,0 +1,111 @@
+{
+  "id": "meghalaya",
+  "name": "Meghalaya",
+  "type": "state",
+  "capital": "Shillong",
+  "ambience": "mountain",
+  "intro": {
+    "id": "meghalaya.intro",
+    "kind": "intro",
+    "text": "This is Meghalaya, and the name means the home of the clouds. The whole state sits up on a high flat hill, with Assam spread out below it. This is the wettest place in India. In the southern hills twelve metres of rain falls in a year, which is deeper than a house is tall. Most of the state is forest. The main city is Shillong.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "meghalaya"
+      },
+      {
+        "word": 23,
+        "do": "lightNeighbour",
+        "arg": "assam"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "meghalaya.card.animal",
+      "kind": "card",
+      "text": "The clouded leopard lives in these forests. For its size it has enormous teeth, and it can come down a tree trunk head first, straight down, like a ladder.",
+      "species": "clouded-leopard"
+    },
+    "food": {
+      "id": "meghalaya.card.food",
+      "kind": "card",
+      "text": "Jadoh is rice and meat cooked in the same pot, so the rice takes everything up and comes out red instead of white. It is the food of the Khasi hills."
+    },
+    "festival": {
+      "id": "meghalaya.card.festival",
+      "kind": "card",
+      "text": "Wangala is the festival of the hundred drums. The Garo people hold it when the harvest is in, to say thank you for it, and for days the drums do not stop."
+    },
+    "hello": {
+      "id": "meghalaya.card.hello",
+      "kind": "card",
+      "text": "In Meghalaya people say Kumno? It means how are you. You answer Kumne, which means like this. Khasi is written down in the very same letters as English.",
+      "script": "Kumno?",
+      "lang": "kha-Latn"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "meghalaya.root-bridges",
+      "name": "The Living Root Bridges",
+      "short": "Root Bridges",
+      "photoQuery": "Living root bridge Meghalaya",
+      "scene": "root-bridge",
+      "line": {
+        "id": "meghalaya.root-bridges.line",
+        "kind": "landmark",
+        "text": "Nobody built this bridge. Somebody guided the roots of a rubber fig tree out across the river and then waited for them to take hold on the far bank and grow thick. That can take fifteen years. When it is done, fifty people can stand on it at once."
+      }
+    },
+    {
+      "id": "meghalaya.nohkalikai",
+      "name": "Nohkalikai Falls",
+      "short": "Nohkalikai Falls",
+      "photoQuery": "Nohkalikai Falls",
+      "scene": "waterfall",
+      "line": {
+        "id": "meghalaya.nohkalikai.line",
+        "kind": "landmark",
+        "text": "The water comes off the top of this cliff and then touches nothing at all until it hits the pool three hundred and forty metres below. Of all the waterfalls in India that come down in one clear drop, this is the tallest."
+      }
+    },
+    {
+      "id": "meghalaya.dawki",
+      "name": "The Umngot River at Dawki",
+      "short": "Dawki River",
+      "photoQuery": "Umngot River Dawki",
+      "scene": "clear-river",
+      "line": {
+        "id": "meghalaya.dawki.line",
+        "kind": "landmark",
+        "text": "The water in this river is so clear that you can count the stones on the bottom. A boat on it does not look like it is floating. It looks like it is hanging in the air, with its own shadow lying on the ground underneath it."
+      }
+    },
+    {
+      "id": "meghalaya.mawsmai",
+      "name": "Mawsmai Cave",
+      "short": "Mawsmai Cave",
+      "photoQuery": "Mawsmai Cave Cherrapunji",
+      "scene": "caves",
+      "line": {
+        "id": "meghalaya.mawsmai.line",
+        "kind": "landmark",
+        "text": "You walk into the hill along a passage in the limestone. Water has been dripping through the roof of it for a very long time, and each drip leaves the tiniest speck of stone behind, until the stone hangs down from the ceiling in long points."
+      }
+    },
+    {
+      "id": "meghalaya.laitlum",
+      "name": "Laitlum Canyon",
+      "short": "Laitlum Canyon",
+      "photoQuery": "Laitlum Canyon Meghalaya",
+      "scene": "canyon",
+      "line": {
+        "id": "meghalaya.laitlum.line",
+        "kind": "landmark",
+        "text": "Here the hills stop. You walk out to the edge and the ground in front of you is simply not there any more. It falls away into a rocky valley, and on the slopes over the far side people have cut little flat fields, one above another."
+      }
+    }
+  ]
+}

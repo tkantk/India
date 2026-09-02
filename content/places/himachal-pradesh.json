@@ -1,0 +1,111 @@
+{
+  "id": "himachal-pradesh",
+  "name": "Himachal Pradesh",
+  "type": "state",
+  "capital": "Shimla",
+  "ambience": "mountain",
+  "intro": {
+    "id": "himachal-pradesh.intro",
+    "kind": "intro",
+    "text": "This is Himachal Pradesh, and its name means the land of snow-covered mountains. Almost all of it is mountain, going up and up until the tops stay white all year. Punjab lies below it. Shimla is the main city in summer, and in winter the government moves down to Dharamshala.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "himachal-pradesh"
+      },
+      {
+        "word": 30,
+        "do": "lightNeighbour",
+        "arg": "punjab"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "himachal-pradesh.card.animal",
+      "kind": "card",
+      "text": "Himachal's own bird is the western tragopan. To show off, the male puffs out a purple bib and puts up two blue horns. He is black with white specks all over him.",
+      "species": "western-tragopan"
+    },
+    "food": {
+      "id": "himachal-pradesh.card.food",
+      "kind": "card",
+      "text": "Siddu is a fat white bun. The dough is left to puff up on its own, then stuffed with walnuts or peas, then steamed instead of baked. Melted butter goes over the top."
+    },
+    "festival": {
+      "id": "himachal-pradesh.card.festival",
+      "kind": "card",
+      "text": "Kullu Dussehra starts on the day everybody else's Dussehra finishes. Gods are carried down from the villages into one field, and there is dancing for a week."
+    },
+    "hello": {
+      "id": "himachal-pradesh.card.hello",
+      "kind": "card",
+      "text": "Himachal writes in two languages: Hindi, and Sanskrit, which is thousands of years old. Namaste is a Sanskrit word, so saying it means saying something very old indeed.",
+      "script": "नमस्ते",
+      "lang": "sa-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "himachal-pradesh.key-monastery",
+      "name": "Key Monastery",
+      "short": "Key Monastery",
+      "photoQuery": "Key Monastery Spiti",
+      "scene": "hill-monastery",
+      "line": {
+        "id": "himachal-pradesh.key-monastery.line",
+        "kind": "landmark",
+        "text": "This is a whole village of white rooms stacked one on top of another, all the way up a pointed hill, with snow mountains standing round it. About two hundred and fifty monks live inside. It is four thousand metres up. It is spelled Kye, but you say it like the word key."
+      }
+    },
+    {
+      "id": "himachal-pradesh.kalka-shimla-railway",
+      "name": "The Kalka-Shimla Railway",
+      "short": "Shimla Railway",
+      "photoQuery": "Kalka Shimla Railway arch gallery bridge",
+      "scene": "rail-bridge",
+      "line": {
+        "id": "himachal-pradesh.kalka-shimla-railway.line",
+        "kind": "landmark",
+        "text": "A little train climbs all the way up to Shimla on rails set less than a metre apart. It goes through a hundred and two tunnels and over nearly a thousand bridges. One bridge is built in five layers, and every layer is a row of stone arches standing on the row underneath."
+      }
+    },
+    {
+      "id": "himachal-pradesh.chandratal",
+      "name": "Chandratal Lake",
+      "short": "Chandratal",
+      "photoQuery": "Chandra Taal lake Spiti",
+      "scene": "moon-lake",
+      "line": {
+        "id": "himachal-pradesh.chandratal.line",
+        "kind": "landmark",
+        "text": "Chandra Taal means moon lake, and it is named after its shape: a curve like a new moon. Slopes of loose broken rock come down to the water on one side of it. From December to March the whole lake freezes over."
+      }
+    },
+    {
+      "id": "himachal-pradesh.great-himalayan-park",
+      "name": "The Great Himalayan National Park",
+      "short": "Himalayan Park",
+      "photoQuery": "Great Himalayan National Park Kullu",
+      "scene": "river-forest",
+      "line": {
+        "id": "himachal-pradesh.great-himalayan-park.line",
+        "kind": "landmark",
+        "text": "This is a set of whole valleys kept for the wild things. Rivers come down through the forest out of the snow and ice above, falling from rock to rock. Nobody is allowed to hunt anything here at all. It covers more than a thousand square kilometres."
+      }
+    },
+    {
+      "id": "himachal-pradesh.bhakra-dam",
+      "name": "Bhakra Dam",
+      "short": "Bhakra Dam",
+      "photoQuery": "Bhakra Dam Himachal Pradesh",
+      "scene": "dam-wall",
+      "line": {
+        "id": "himachal-pradesh.bhakra-dam.line",
+        "kind": "landmark",
+        "text": "This is a wall of concrete standing across a river, and it is two hundred and twenty-six metres tall. Behind it the water has backed up into a lake ninety kilometres long. All of that water is being held up by this one wall."
+      }
+    }
+  ]
+}

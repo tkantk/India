@@ -1,0 +1,111 @@
+{
+  "id": "ladakh",
+  "name": "Ladakh",
+  "type": "ut",
+  "capital": "Leh",
+  "ambience": "mountain",
+  "intro": {
+    "id": "ladakh.intro",
+    "kind": "intro",
+    "text": "This is Ladakh, and every bit of it is high up: nearly all of it stands more than three thousand metres above the sea. The mountains keep the rain clouds out, so hardly any rain falls here at all, and the water comes from snow melting. Jammu and Kashmir is next door. Leh is the main town.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "ladakh"
+      },
+      {
+        "word": 46,
+        "do": "lightNeighbour",
+        "arg": "jammu-kashmir"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "ladakh.card.animal",
+      "kind": "card",
+      "text": "The kiang is a wild donkey, and the biggest wild donkey there is. Hundreds of them can be out on the high grass at once. Nobody has ever tamed one, not in all this time.",
+      "species": "kiang"
+    },
+    "food": {
+      "id": "ladakh.card.food",
+      "kind": "card",
+      "text": "Thukpa is a soup with noodles in it. The noodles are pulled out of the dough by hand and torn into the pot. In cold like this a hot bowl of it steams like a kettle."
+    },
+    "festival": {
+      "id": "ladakh.card.festival",
+      "kind": "card",
+      "text": "Losar is the new year, in February or March. Every year gets its own animal: one year the snake, another the horse, another the dragon. Ask which one you were born in."
+    },
+    "hello": {
+      "id": "ladakh.card.hello",
+      "kind": "card",
+      "text": "In Ladakh one word does nearly everything. Julley. It means hello. It also means goodbye, and thank you. Ladakhi is really written in Tibetan letters, not these ones.",
+      "script": "Julley",
+      "lang": "lbj-Latn"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "ladakh.pangong-tso",
+      "name": "Pangong Tso",
+      "short": "Pangong Tso",
+      "photoQuery": "Pangong Tso Ladakh",
+      "scene": "mountain-lake",
+      "line": {
+        "id": "ladakh.pangong-tso.line",
+        "kind": "landmark",
+        "text": "This lake is a hundred and thirty-four kilometres long and only five wide, four thousand three hundred metres up, with bare brown mountains all round it and no trees anywhere. The water is salty. Even so, in winter the whole thing freezes over."
+      }
+    },
+    {
+      "id": "ladakh.thiksey",
+      "name": "Thiksey Monastery",
+      "short": "Thiksey",
+      "photoQuery": "Thiksey Monastery Ladakh",
+      "scene": "hill-monastery",
+      "line": {
+        "id": "ladakh.thiksey.line",
+        "kind": "landmark",
+        "text": "White buildings climb this hill in steps, one above the other, twelve floors of them, with the red ones on top like a crown. It is the biggest monastery in the middle of Ladakh. Inside stands a Buddha fifteen metres high, going up through two floors."
+      }
+    },
+    {
+      "id": "ladakh.nubra-camels",
+      "name": "The Camels of Nubra",
+      "short": "Nubra Camels",
+      "photoQuery": "Bactrian camel Hunder Nubra Valley",
+      "scene": "camel-dunes",
+      "line": {
+        "id": "ladakh.nubra-camels.line",
+        "kind": "landmark",
+        "text": "Seven kilometres of sand dunes lie here, with snow mountains standing behind them. The camels that walk on the sand have two humps, not one, and a shaggy winter coat that comes off in huge sheets when the weather warms up."
+      }
+    },
+    {
+      "id": "ladakh.masked-dances",
+      "name": "The Masked Dances",
+      "short": "Masked Dances",
+      "photoQuery": "Hemis masked cham dance Ladakh",
+      "scene": "masks",
+      "line": {
+        "id": "ladakh.masked-dances.line",
+        "kind": "landmark",
+        "text": "Monks put on enormous painted masks and heavy silk robes, and dance slowly round in a circle while other monks keep time on cymbals and drums. The masks have great staring eyes and stick right out past the dancer's own face."
+      }
+    },
+    {
+      "id": "ladakh.frozen-zanskar",
+      "name": "The Frozen Zanskar",
+      "short": "Frozen Zanskar",
+      "photoQuery": "Chadar frozen Zanskar river Ladakh",
+      "scene": "frozen-river",
+      "line": {
+        "id": "ladakh.frozen-zanskar.line",
+        "kind": "landmark",
+        "text": "In January this river freezes right over, and people walk along the top of it. The ice runs for about a hundred kilometres, with cliffs going straight up on either side, and for a long time it was the only way in or out of here in winter."
+      }
+    }
+  ]
+}

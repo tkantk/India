@@ -1,0 +1,126 @@
+{
+  "id": "assam",
+  "name": "Assam",
+  "type": "state",
+  "capital": "Dispur",
+  "ambience": "river",
+  "intro": {
+    "id": "assam.intro",
+    "kind": "intro",
+    "text": "This is Assam, in the far east of India. A river called the Brahmaputra runs the whole length of it, and in places it is twenty kilometres from one bank to the other. Every rainy season it comes over its banks and floods the land. More tea grows here than anywhere else in the world. Meghalaya is its neighbour. The main city is Guwahati.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "assam"
+      },
+      {
+        "word": 55,
+        "do": "lightNeighbour",
+        "arg": "meghalaya"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "assam.card.animal",
+      "kind": "card",
+      "text": "The rhinoceros here has one horn, right in the middle of his face. His grey skin hangs in such thick folds that he looks like he is wearing armour.",
+      "sfx": "rhino",
+      "species": "indian-rhinoceros"
+    },
+    "food": {
+      "id": "assam.card.food",
+      "kind": "card",
+      "text": "Masor tenga is a light sour fish soup you pour over rice. What makes it sour changes: sometimes lemon, sometimes tomato, sometimes a fruit called an elephant apple."
+    },
+    "festival": {
+      "id": "assam.card.festival",
+      "kind": "card",
+      "text": "Bihu comes in April and it is the Assamese new year. Everybody dances together, with quick little steps and hands moving faster than you can follow."
+    },
+    "hello": {
+      "id": "assam.card.hello",
+      "kind": "card",
+      "text": "In Assam people say Nomoskar. The language is Assamese, and it has an unusual sound in it: an x, said right at the back of your throat.",
+      "script": "নমস্কাৰ",
+      "lang": "as"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "assam.kaziranga",
+      "name": "Kaziranga National Park",
+      "short": "Kaziranga",
+      "photoQuery": "Kaziranga National Park",
+      "scene": "grassland",
+      "line": {
+        "id": "assam.kaziranga.line",
+        "kind": "landmark",
+        "text": "More one-horned rhinoceroses live here than anywhere else in the world. Nobody is allowed to walk about in this park. You go through the tall grass in a jeep or on the back of an elephant, and look down at the rhinos from up there.",
+        "cues": [
+          {
+            "word": 41,
+            "do": "playSfx",
+            "arg": "rhino"
+          }
+        ]
+      }
+    },
+    {
+      "id": "assam.majuli",
+      "name": "The Masks of Majuli",
+      "short": "Majuli Masks",
+      "photoQuery": "Majuli mask Samaguri Satra",
+      "scene": "masks",
+      "line": {
+        "id": "assam.majuli.line",
+        "kind": "landmark",
+        "text": "On an island in the middle of the Brahmaputra, people make masks out of bamboo and clay. The big ones are not just a face. They cover a whole person, so a man can put one on and become a demon in a play. One mask takes about two weeks to make."
+      }
+    },
+    {
+      "id": "assam.tea-gardens",
+      "name": "The Tea Gardens of Assam",
+      "short": "Assam Tea Gardens",
+      "photoQuery": "Assam tea garden",
+      "scene": "tea-garden",
+      "line": {
+        "id": "assam.tea-gardens.line",
+        "kind": "landmark",
+        "text": "The tea here grows on flat land, not up in hills, and the bushes run on and on past where you can see. It comes out strong and dark brown, which is why it goes into the tea people drink at breakfast."
+      }
+    },
+    {
+      "id": "assam.bogibeel",
+      "name": "Bogibeel Bridge",
+      "short": "Bogibeel Bridge",
+      "photoQuery": "Bogibeel Bridge",
+      "scene": "rail-bridge",
+      "line": {
+        "id": "assam.bogibeel.line",
+        "kind": "landmark",
+        "text": "This bridge crosses the Brahmaputra and it has two floors. Trains run along the bottom one and cars along the top. It is nearly five kilometres from one bank to the other, which is how wide the river is here."
+      }
+    },
+    {
+      "id": "assam.gibbons",
+      "name": "Hoollongapar Gibbon Sanctuary",
+      "short": "Hoolock Gibbons",
+      "photoQuery": "Hoolock gibbon Hollongapar",
+      "scene": "gibbon-forest",
+      "line": {
+        "id": "assam.gibbons.line",
+        "kind": "landmark",
+        "text": "This is the only ape in the whole of India. It swings through the treetops hand over hand on very long arms, and hardly ever comes down. A family calls to each other across the forest, to say where they are and to tell other gibbons to keep off.",
+        "cues": [
+          {
+            "word": 29,
+            "do": "playSfx",
+            "arg": "gibbon"
+          }
+        ]
+      }
+    }
+  ]
+}

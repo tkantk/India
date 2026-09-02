@@ -1,0 +1,105 @@
+{
+  "id": "puducherry",
+  "name": "Puducherry",
+  "type": "ut",
+  "capital": "Puducherry",
+  "ambience": "ocean",
+  "intro": {
+    "id": "puducherry.intro",
+    "kind": "intro",
+    "text": "This is Puducherry, and it comes in four separate pieces that are nowhere near each other. Two of them sit inside Tamil Nadu, one sits inside Andhra Pradesh, and one sits inside Kerala. For a very long time all four of them belonged to France and not to India. The main town is Puducherry, down by the sea.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "puducherry" },
+      { "word": 21, "do": "lightNeighbour", "arg": "tamil-nadu" },
+      { "word": 26, "do": "lightNeighbour", "arg": "andhra-pradesh" },
+      { "word": 32, "do": "lightNeighbour", "arg": "kerala" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "puducherry.card.animal",
+      "kind": "card",
+      "text": "The great egret comes to the lake here. He is a white bird as tall as a small child. He stands in shallow water without moving until a fish goes past, then spears it.",
+      "species": "great-egret"
+    },
+    "food": {
+      "id": "puducherry.card.food",
+      "kind": "card",
+      "text": "Breakfast here might be idli and sambar, or it might be a croissant. Sometimes it is both at once: a dosa rolled up like a French pancake with cheese inside it."
+    },
+    "festival": {
+      "id": "puducherry.card.festival",
+      "kind": "card",
+      "text": "Once a year, on the fourteenth of July, this town keeps a French holiday, the same day France keeps it. The old monument by the sea is lit up all over with lights."
+    },
+    "hello": {
+      "id": "puducherry.card.hello",
+      "kind": "card",
+      "text": "People here say Vanakkam, in Tamil. But French is an official language here too, so somebody in the same street may say Bonjour to you instead.",
+      "script": "வணக்கம்",
+      "lang": "ta"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "puducherry.sacred-heart",
+      "name": "Basilica of the Sacred Heart",
+      "short": "Sacred Heart",
+      "photoQuery": "Basilica of the Sacred Heart of Jesus Puducherry",
+      "scene": "church-window",
+      "line": {
+        "id": "puducherry.sacred-heart.line",
+        "kind": "landmark",
+        "text": "The windows of this church are not clear glass. They are little coloured panes with pictures set into them, telling stories, so the light that comes through falls on the floor in colours. It was finished a hundred and twenty years ago."
+      }
+    },
+    {
+      "id": "puducherry.old-lighthouse",
+      "name": "The Old Lighthouse",
+      "short": "Old Lighthouse",
+      "photoQuery": "Pondicherry old lighthouse",
+      "scene": "lighthouse",
+      "line": {
+        "id": "puducherry.old-lighthouse.line",
+        "kind": "landmark",
+        "text": "This white tower with a green top stood on the shore for nearly a hundred and fifty years, showing ships in the dark where the land was. Then a new lighthouse was built along the coast, and this one was switched off. It is still standing there."
+      }
+    },
+    {
+      "id": "puducherry.rock-beach",
+      "name": "Rock Beach",
+      "short": "Rock Beach",
+      "photoQuery": "Rock Beach Promenade Pondicherry",
+      "scene": "rock-seawall",
+      "line": {
+        "id": "puducherry.rock-beach.line",
+        "kind": "landmark",
+        "text": "There used to be sand here. Now there is a wall of enormous granite boulders, two kilometres of them piled along the front of the town to keep the sea out. When one slips down into the water, somebody comes and puts another one on."
+      }
+    },
+    {
+      "id": "puducherry.garden-train",
+      "name": "The Botanical Garden",
+      "short": "Garden Train",
+      "photoQuery": "Botanical Garden Puducherry children train",
+      "scene": "garden-train",
+      "line": {
+        "id": "puducherry.garden-train.line",
+        "kind": "landmark",
+        "text": "This garden was laid out two hundred years ago in the French way, with clipped trees, gravel paths and fountains. There is a little train that runs round it, built the right size for children, and a fountain that plays music at the weekend."
+      }
+    },
+    {
+      "id": "puducherry.stone-tree",
+      "name": "The Stone Tree",
+      "short": "Stone Tree",
+      "photoQuery": "petrified wood fossil Puducherry",
+      "scene": "stone-tree",
+      "line": {
+        "id": "puducherry.stone-tree.line",
+        "kind": "landmark",
+        "text": "This looks like a log lying on the ground, but knock on it and it is stone. The wood went away, a speck at a time, and stone came in and took its place, and it kept the shape exactly. You can still count the tree's rings."
+      }
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "id": "maharashtra",
+  "name": "Maharashtra",
+  "type": "state",
+  "capital": "Mumbai",
+  "ambience": "city",
+  "intro": {
+    "id": "maharashtra.intro",
+    "kind": "intro",
+    "text": "This is Maharashtra, over on the west side of India. A long wall of hills runs down beside the sea, and behind those hills the land lifts up into a high flat plateau. Goa is just below it. The main city is Mumbai, right on the coast, and more people live there than in any other city in India.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "maharashtra" },
+      { "word": 19, "do": "revealSymbol", "arg": "arabian-sea" },
+      { "word": 33, "do": "lightNeighbour", "arg": "goa" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "maharashtra.card.animal",
+      "kind": "card",
+      "text": "The giant squirrel is Maharashtra's own animal. It lives up in the treetops and hardly ever comes down. It jumps from one tree to the next, six metres in one go.",
+      "species": "indian-giant-squirrel"
+    },
+    "food": {
+      "id": "maharashtra.card.food",
+      "kind": "card",
+      "text": "Vada pav is a ball of spiced potato, dipped in batter and deep fried, then pushed into a soft bread bun. In Mumbai people eat it standing up in the street."
+    },
+    "festival": {
+      "id": "maharashtra.card.festival",
+      "kind": "card",
+      "text": "At Ganesh Chaturthi people bring home a clay statue of Ganesha, who has an elephant's head. On the tenth day they are all carried down to the water.",
+      "sfx": "elephant"
+    },
+    "hello": {
+      "id": "maharashtra.card.hello",
+      "kind": "card",
+      "text": "In Maharashtra people speak Marathi and say Namaskar. Even the way Marathi is written has a name of its own: Balbodh, which means understood by children.",
+      "script": "नमस्कार",
+      "lang": "mr"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "maharashtra.kailasa-temple",
+      "name": "Kailasa Temple, Ellora",
+      "short": "Kailasa Temple",
+      "photoQuery": "Kailasa Temple Ellora",
+      "scene": "rock-cut-temple",
+      "line": {
+        "id": "maharashtra.kailasa-temple.line",
+        "kind": "landmark",
+        "text": "Nobody built this temple. They cut it out. The workers started at the very top of the rock and dug downwards, taking away everything that was not temple, until the whole thing stood there on its own."
+      }
+    },
+    {
+      "id": "maharashtra.ajanta-caves",
+      "name": "Ajanta Caves",
+      "short": "Ajanta Caves",
+      "photoQuery": "Ajanta Caves",
+      "scene": "cliff-caves",
+      "line": {
+        "id": "maharashtra.ajanta-caves.line",
+        "kind": "landmark",
+        "text": "Thirty caves are cut into a cliff that curves round above a river, and there are paintings on the walls inside them still. The jungle covered them over for hundreds of years, until a man out hunting tigers was shown the way in."
+      }
+    },
+    {
+      "id": "maharashtra.lonar-lake",
+      "name": "Lonar Crater Lake",
+      "short": "Lonar Lake",
+      "photoQuery": "Lonar crater lake",
+      "scene": "crater-lake",
+      "line": {
+        "id": "maharashtra.lonar-lake.line",
+        "kind": "landmark",
+        "text": "A rock came down out of the sky and punched a hole in the ground here, a very long time ago. The hole is nearly two kilometres across, and a round lake sits in the bottom of it now, with trees all round the rim."
+      }
+    },
+    {
+      "id": "maharashtra.kaas-plateau",
+      "name": "Kaas Plateau",
+      "short": "Kaas Plateau",
+      "photoQuery": "Kaas Plateau flowers",
+      "scene": "flower-plateau",
+      "line": {
+        "id": "maharashtra.kaas-plateau.line",
+        "kind": "landmark",
+        "text": "This is a bare tabletop of rock, and then in August and September it goes purple and pink all over. Thousands of tiny flowers come up at once. A few weeks later they are gone and it is bare rock again."
+      }
+    },
+    {
+      "id": "maharashtra.sea-link",
+      "name": "Bandra-Worli Sea Link",
+      "short": "Sea Link",
+      "photoQuery": "Bandra Worli Sea Link",
+      "scene": "sea-bridge",
+      "line": {
+        "id": "maharashtra.sea-link.line",
+        "kind": "landmark",
+        "text": "This road runs straight out across the open sea on legs, hung from cables that fan up to two tall towers. Driving over it you can look out of the window and see nothing at all but water.",
+        "cues": [{ "word": 21, "do": "playSfx", "arg": "whoosh-soft" }]
+      }
+    }
+  ]
+}

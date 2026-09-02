@@ -1,0 +1,111 @@
+{
+  "id": "punjab",
+  "name": "Punjab",
+  "type": "state",
+  "capital": "Chandigarh",
+  "ambience": "plains",
+  "intro": {
+    "id": "punjab.intro",
+    "kind": "intro",
+    "text": "This is Punjab, up in the north-west of India, and it is flat. Fields go on and on to the edge of the sky. Its name means five rivers, and three of those five still run across it. Haryana is next door. The main city is Chandigarh, which Punjab shares with Haryana.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "punjab"
+      },
+      {
+        "word": 38,
+        "do": "lightNeighbour",
+        "arg": "haryana"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "punjab.card.animal",
+      "kind": "card",
+      "text": "The blackbuck lives out on the open fields here. The male turns almost black, and his horns are twisted like two long corkscrews standing up on his head.",
+      "species": "blackbuck"
+    },
+    "food": {
+      "id": "punjab.card.food",
+      "kind": "card",
+      "text": "Sarson da saag is mustard leaves cooked in butter with garlic, ginger and chilli. You eat it with makki di roti, a bread made of ground maize. It is a winter dish."
+    },
+    "festival": {
+      "id": "punjab.card.festival",
+      "kind": "card",
+      "text": "At Baisakhi the wheat is ready to cut, so everybody dances. Men leap and kick to a big drum called a dhol, hit with a stick on one side and a beater on the other."
+    },
+    "hello": {
+      "id": "punjab.card.hello",
+      "kind": "card",
+      "text": "In Punjab people say Sat Sri Akal. The language is Punjabi and its letters are called Gurmukhi. The words mean that what is true goes on for ever.",
+      "script": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ",
+      "lang": "pa"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "punjab.golden-temple",
+      "name": "The Golden Temple",
+      "short": "Golden Temple",
+      "photoQuery": "Golden Temple Amritsar",
+      "scene": "golden-temple",
+      "line": {
+        "id": "punjab.golden-temple.line",
+        "kind": "landmark",
+        "text": "This building stands in the middle of a big square pool, and the top of it is covered in real gold. You walk out to it along a narrow bridge with the water on both sides of you. The dome alone has four hundred kilograms of gold on it."
+      }
+    },
+    {
+      "id": "punjab.bathinda-fort",
+      "name": "Qila Mubarak, Bathinda",
+      "short": "Bathinda Fort",
+      "photoQuery": "Qila Mubarak Bathinda",
+      "scene": "fort-walls",
+      "line": {
+        "id": "punjab.bathinda-fort.line",
+        "kind": "landmark",
+        "text": "The walls are built out of small flat bricks, and they lean backwards like the side of a hill instead of standing straight up. They go up about thirty-six metres, so anybody at the bottom looks tiny from the top."
+      }
+    },
+    {
+      "id": "punjab.mustard-fields",
+      "name": "The Mustard Fields of Punjab",
+      "short": "Mustard Fields",
+      "photoQuery": "mustard field Punjab India",
+      "scene": "mustard-fields",
+      "line": {
+        "id": "punjab.mustard-fields.line",
+        "kind": "landmark",
+        "text": "In winter whole fields here turn bright yellow, because that is what mustard does when it flowers. A yellow field can sit right beside a green one, and both go flat all the way to the sky. The seeds are squeezed to make oil and the leaves are cooked and eaten."
+      }
+    },
+    {
+      "id": "punjab.virasat-e-khalsa",
+      "name": "Virasat-e-Khalsa",
+      "short": "Khalsa Museum",
+      "photoQuery": "Virasat-e-Khalsa Anandpur Sahib",
+      "scene": "khalsa-museum",
+      "line": {
+        "id": "punjab.virasat-e-khalsa.line",
+        "kind": "landmark",
+        "text": "These buildings are shaped like boats standing on their ends, and their shiny steel roofs curve up and catch the sky. They stand in a lake with a bridge across to them and hills behind. Inside is a museum about the Sikhs."
+      }
+    },
+    {
+      "id": "punjab.langar",
+      "name": "The Langar at the Golden Temple",
+      "short": "Langar Kitchen",
+      "photoQuery": "Langar Golden Temple Amritsar",
+      "scene": "langar-kitchen",
+      "line": {
+        "id": "punjab.langar.line",
+        "kind": "landmark",
+        "text": "Beside the Golden Temple is a kitchen that cooks for more than a hundred thousand people every single day. Everybody sits on the floor in long rows and gets the same food, and nobody pays anything. The cooking and the washing up are done by helpers."
+      }
+    }
+  ]
+}

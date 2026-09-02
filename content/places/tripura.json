@@ -1,0 +1,111 @@
+{
+  "id": "tripura",
+  "name": "Tripura",
+  "type": "state",
+  "capital": "Agartala",
+  "ambience": "forest",
+  "intro": {
+    "id": "tripura.intro",
+    "kind": "intro",
+    "text": "This is Tripura, the third smallest state in India, tucked into the corner with Bangladesh curled round three sides of it. Five lines of hills run down it from north to south with valleys in between, and more than half of it is forest, full of bamboo. Assam is its neighbour. The main city is Agartala.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "tripura"
+      },
+      {
+        "word": 47,
+        "do": "lightNeighbour",
+        "arg": "assam"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "tripura.card.animal",
+      "kind": "card",
+      "text": "More kinds of monkey live here than in any other state. This one, the Phayre's langur, has a wide white ring round each eye, so it looks as if it wears spectacles.",
+      "species": "phayres-langur"
+    },
+    "food": {
+      "id": "tripura.card.food",
+      "kind": "card",
+      "text": "Nearly everything cooked here has berma in it: fish left to ferment. A little of it goes in a stew with vegetables, and that is what gives the whole pot its taste."
+    },
+    "festival": {
+      "id": "tripura.card.festival",
+      "kind": "card",
+      "text": "Garia comes in April, at the very start of the Tripuri year, and it goes on for seven days and seven nights. People dance, and ask for a good year of things growing."
+    },
+    "hello": {
+      "id": "tripura.card.hello",
+      "kind": "card",
+      "text": "In Tripura people say Khulumkha. It is two words joined: khulum, to bow, and kha, heart. So when you say it you are saying, I bow to you with my heart.",
+      "script": "Khulumkha",
+      "lang": "trp-Latn"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "tripura.unakoti",
+      "name": "Unakoti",
+      "short": "Unakoti",
+      "photoQuery": "Unakoti Tripura rock carvings",
+      "scene": "cliff-faces",
+      "line": {
+        "id": "tripura.unakoti.line",
+        "kind": "landmark",
+        "text": "Faces are carved straight into the rock of this hillside, out in the jungle. The biggest is a head of Shiva about nine metres tall, which is five grown-ups standing on each other's shoulders, and it wears a carved head-dress on top of that."
+      }
+    },
+    {
+      "id": "tripura.neermahal",
+      "name": "Neermahal",
+      "short": "Neermahal",
+      "photoQuery": "Neermahal Rudrasagar Tripura",
+      "scene": "lake-palace",
+      "line": {
+        "id": "tripura.neermahal.line",
+        "kind": "landmark",
+        "text": "A palace built out in the middle of a lake, with water on every side of it. There is no road to the front door and there never was. The kings of Tripura came here by boat, rowed by hand, and that is still the only way in."
+      }
+    },
+    {
+      "id": "tripura.trishna",
+      "name": "Trishna Wildlife Sanctuary",
+      "short": "Trishna Gaur",
+      "photoQuery": "Gaur Trishna Wildlife Sanctuary Tripura",
+      "scene": "wild-cattle",
+      "line": {
+        "id": "tripura.trishna.line",
+        "kind": "landmark",
+        "text": "A gaur is a wild ox, blackish-brown, with a ridge along the top of its back, running from the shoulders to halfway down. Herds of them come out to graze in the grass in this forest."
+      }
+    },
+    {
+      "id": "tripura.ujjayanta",
+      "name": "Ujjayanta Palace",
+      "short": "Ujjayanta Palace",
+      "photoQuery": "Ujjayanta Palace Agartala",
+      "scene": "domed-palace",
+      "line": {
+        "id": "tripura.ujjayanta.line",
+        "kind": "landmark",
+        "text": "A white palace with three big domes on it. The biggest dome is twenty-six metres up, sitting on a tower four floors high. A king built it in nineteen hundred and one, and now it is a museum that anybody can walk round."
+      }
+    },
+    {
+      "id": "tripura.dumboor",
+      "name": "Dumboor Lake",
+      "short": "Dumboor Lake",
+      "photoQuery": "Dumboor Lake Tripura",
+      "scene": "island-lake",
+      "line": {
+        "id": "tripura.dumboor.line",
+        "kind": "landmark",
+        "text": "Forty-eight little islands sit in this lake, every one of them green with trees right down to the water. Two rivers meet here, the Raima and the Sarma. In winter, birds arrive from a long way off and settle on it."
+      }
+    }
+  ]
+}

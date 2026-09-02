@@ -1,0 +1,111 @@
+{
+  "id": "sikkim",
+  "name": "Sikkim",
+  "type": "state",
+  "capital": "Gangtok",
+  "ambience": "mountain",
+  "intro": {
+    "id": "sikkim.intro",
+    "kind": "intro",
+    "text": "This is Sikkim, the second smallest state in India and the one with the fewest people in it. It touches only one other state, West Bengal, along the bottom. It goes from warm green valleys at the foot all the way up to Kanchenjunga, the highest mountain in India. The main town is Gangtok.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "sikkim"
+      },
+      {
+        "word": 24,
+        "do": "lightNeighbour",
+        "arg": "west-bengal"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "sikkim.card.animal",
+      "kind": "card",
+      "text": "Up at the top of Sikkim there are yaks. A yak is a cow with a coat so long and thick that it hangs down like a skirt and nearly touches the ground, to keep the cold out.",
+      "species": "domestic-yak"
+    },
+    "food": {
+      "id": "sikkim.card.food",
+      "kind": "card",
+      "text": "A momo is a little parcel of dough with meat or vegetables shut inside it, pinched closed round the top and then steamed. You eat it hot and dip it in chilli sauce."
+    },
+    "festival": {
+      "id": "sikkim.card.festival",
+      "kind": "card",
+      "text": "At Losar, which is the Tibetan new year, the whole state stops for a week. Up in Lachung they dance the Gumpa dance for it, out in the monastery courtyard."
+    },
+    "hello": {
+      "id": "sikkim.card.hello",
+      "kind": "card",
+      "text": "In Sikkim people say Namaskar, in Nepali. It does for everything: hello in the morning, hello in the afternoon, and goodbye again when you leave.",
+      "script": "नमस्कार",
+      "lang": "ne"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "sikkim.kanchenjunga",
+      "name": "Kanchenjunga",
+      "short": "Kanchenjunga",
+      "photoQuery": "Kangchenjunga from Sikkim",
+      "scene": "snow-peak",
+      "line": {
+        "id": "sikkim.kanchenjunga.line",
+        "kind": "landmark",
+        "text": "Kanchenjunga is the third highest mountain in the world, eight thousand five hundred and eighty-six metres of it. On a clear morning you can stand in Gangtok, look up, and there it is."
+      }
+    },
+    {
+      "id": "sikkim.gurudongmar",
+      "name": "Gurudongmar Lake",
+      "short": "Gurudongmar",
+      "photoQuery": "Gurudongmar Lake Sikkim",
+      "scene": "frozen-lake",
+      "line": {
+        "id": "sikkim.gurudongmar.line",
+        "kind": "landmark",
+        "text": "This lake lies five thousand four hundred metres up, far higher than any town. From November to the middle of May it is frozen right across. Then it melts, and the water that runs out of it goes on to become the Teesta river."
+      }
+    },
+    {
+      "id": "sikkim.red-pandas",
+      "name": "The Red Pandas of Sikkim",
+      "short": "Red Pandas",
+      "photoQuery": "Red panda Sikkim forest",
+      "scene": "red-panda",
+      "line": {
+        "id": "sikkim.red-pandas.line",
+        "kind": "landmark",
+        "text": "Red pandas live in these forests, up in the trees, eating bamboo nearly all day. A red panda is not a bear and it is not really a panda either. Its closest relations are raccoons and weasels and skunks."
+      }
+    },
+    {
+      "id": "sikkim.rumtek",
+      "name": "Rumtek Monastery",
+      "short": "Rumtek",
+      "photoQuery": "Rumtek Monastery Sikkim",
+      "scene": "monastery",
+      "line": {
+        "id": "sikkim.rumtek.line",
+        "kind": "landmark",
+        "text": "A monastery on a hillside twenty-four kilometres out of Gangtok and fifteen hundred metres up. Monks live here and study here and do their ceremonies here, and inside the buildings stands a tower covered all over in gold."
+      }
+    },
+    {
+      "id": "sikkim.singshore",
+      "name": "Singshore Bridge",
+      "short": "Singshore Bridge",
+      "photoQuery": "Singshore Bridge Pelling Sikkim",
+      "scene": "gorge-bridge",
+      "line": {
+        "id": "sikkim.singshore.line",
+        "kind": "landmark",
+        "text": "A footbridge two hundred and forty metres long, hung on wires across a gorge. It is a hundred metres above the bottom, so walking over it you are walking along above the tops of the trees."
+      }
+    }
+  ]
+}

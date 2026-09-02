@@ -1,0 +1,107 @@
+{
+  "id": "madhya-pradesh",
+  "name": "Madhya Pradesh",
+  "type": "state",
+  "capital": "Bhopal",
+  "ambience": "plains",
+  "intro": {
+    "id": "madhya-pradesh.intro",
+    "kind": "intro",
+    "text": "This is Madhya Pradesh, right in the middle of India. The river Narmada crosses it, with a line of hills on each side, and it runs the wrong way. Nearly every other big river round here goes east. This one goes west. Rajasthan is up above it and Chhattisgarh is beside it. The main city is Bhopal.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "madhya-pradesh" },
+      { "word": 42, "do": "lightNeighbour", "arg": "rajasthan" },
+      { "word": 48, "do": "lightNeighbour", "arg": "chhattisgarh" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "madhya-pradesh.card.animal",
+      "kind": "card",
+      "text": "The paradise flycatcher is Madhya Pradesh's own bird. The male grows two long tail feathers, longer than the rest of him, that stream out behind as he flies.",
+      "species": "indian-paradise-flycatcher"
+    },
+    "food": {
+      "id": "madhya-pradesh.card.food",
+      "kind": "card",
+      "text": "In Indore they have poha for breakfast. Poha is rice squashed flat between rollers, so it softens in a moment. It comes with jalebi, which is sweet and sticky."
+    },
+    "festival": {
+      "id": "madhya-pradesh.card.festival",
+      "kind": "card",
+      "text": "Every December, near Gwalior, singers gather and sing for four days beside the grave of Tansen. Tansen was a singer here more than four hundred years ago."
+    },
+    "hello": {
+      "id": "madhya-pradesh.card.hello",
+      "kind": "card",
+      "text": "In Madhya Pradesh people speak Hindi. Hello is Namaskar. Say it to anybody at all, a shopkeeper or a stranger, and it comes straight back to you.",
+      "script": "नमस्कार",
+      "lang": "hi"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "madhya-pradesh.bhimbetka",
+      "name": "Bhimbetka Rock Shelters",
+      "short": "Bhimbetka",
+      "photoQuery": "Bhimbetka rock shelters",
+      "scene": "rock-shelter",
+      "line": {
+        "id": "madhya-pradesh.bhimbetka.line",
+        "kind": "landmark",
+        "text": "People sheltered in these hollows in the rock, and they painted on the stone above their heads: animals, dancing, men riding horses. They did it a very long time ago, long before anybody thought of writing anything down."
+      }
+    },
+    {
+      "id": "madhya-pradesh.sanchi-stupa",
+      "name": "Sanchi Stupa",
+      "short": "Sanchi Stupa",
+      "photoQuery": "Sanchi Stupa",
+      "scene": "stupa",
+      "line": {
+        "id": "madhya-pradesh.sanchi-stupa.line",
+        "kind": "landmark",
+        "text": "This is a great dome of brick, like a bowl turned upside down and left on a hill. Four stone gateways stand around it, and every bit of them is carved: elephants, trees, and little crowds of people going somewhere.",
+        "cues": [{ "word": 6, "do": "playSfx", "arg": "temple-bell" }]
+      }
+    },
+    {
+      "id": "madhya-pradesh.marble-rocks",
+      "name": "Marble Rocks, Bhedaghat",
+      "short": "Marble Rocks",
+      "photoQuery": "Marble Rocks Bhedaghat",
+      "scene": "marble-gorge",
+      "line": {
+        "id": "madhya-pradesh.marble-rocks.line",
+        "kind": "landmark",
+        "text": "You go down this river in a rowing boat, and pale marble cliffs stand up on both sides of you for kilometre after kilometre. People come on the night of the full moon, when the moon makes all that white stone shine.",
+        "cues": [{ "word": 8, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    },
+    {
+      "id": "madhya-pradesh.kanha",
+      "name": "Kanha National Park",
+      "short": "Kanha",
+      "photoQuery": "Kanha National Park",
+      "scene": "sal-forest",
+      "line": {
+        "id": "madhya-pradesh.kanha.line",
+        "kind": "landmark",
+        "text": "Tigers live in this forest, and people do see them, out on the track. There is a deer here called barasingha, which means twelve horns. Once there were only sixty-six of them left, every one of them here.",
+        "cues": [{ "word": 0, "do": "playSfx", "arg": "tiger-growl" }]
+      }
+    },
+    {
+      "id": "madhya-pradesh.gwalior-fort",
+      "name": "Gwalior Fort",
+      "short": "Gwalior Fort",
+      "photoQuery": "Gwalior Fort",
+      "scene": "hill-fort",
+      "line": {
+        "id": "madhya-pradesh.gwalior-fort.line",
+        "kind": "landmark",
+        "text": "This fort stands on top of a rocky hill all on its own, so you can see it from a long way off. Along one of its palace walls run bands of tiles, turquoise and green and yellow, laid out in patterns."
+      }
+    }
+  ]
+}

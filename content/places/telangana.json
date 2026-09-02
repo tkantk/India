@@ -1,0 +1,103 @@
+{
+  "id": "telangana",
+  "name": "Telangana",
+  "type": "state",
+  "capital": "Hyderabad",
+  "ambience": "plains",
+  "intro": {
+    "id": "telangana.intro",
+    "kind": "intro",
+    "text": "This is Telangana, up on top of a great slab of old rock called the Deccan. It is hot and dry here, and the rock under it is grey and pink granite that pushes up into little hills. Andhra Pradesh is just below it. Telangana is one of the newest states in India. It only began in two thousand and fourteen. The main city is Hyderabad.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "telangana" },
+      { "word": 38, "do": "lightNeighbour", "arg": "andhra-pradesh" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "telangana.card.animal",
+      "kind": "card",
+      "text": "The sloth bear eats termites. He sucks them out of their nest through a gap in his front teeth, and the noise he makes doing it carries a hundred and eighty metres.",
+      "species": "sloth-bear"
+    },
+    "food": {
+      "id": "telangana.card.food",
+      "kind": "card",
+      "text": "For Hyderabadi biryani, meat is laid between layers of rice in a pot, and then the lid is stuck down all the way round with dough so that no steam can get out."
+    },
+    "festival": {
+      "id": "telangana.card.festival",
+      "kind": "card",
+      "text": "At Bathukamma, flowers are stacked in seven rings, like a little tower. People go round and round it clapping and singing, and at the end the tower goes into the water."
+    },
+    "hello": {
+      "id": "telangana.card.hello",
+      "kind": "card",
+      "text": "In Hyderabad people say Adaab. Two languages are used here, Telugu and Urdu. Urdu is written the other way round from English, from the right of the page to the left.",
+      "script": "آداب",
+      "lang": "ur"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "telangana.charminar",
+      "name": "Charminar",
+      "short": "Charminar",
+      "photoQuery": "Charminar Hyderabad",
+      "scene": "charminar",
+      "line": {
+        "id": "telangana.charminar.line",
+        "kind": "landmark",
+        "text": "Charminar just means four towers, and there they are, one at each corner, with four big arches underneath them. Every arch opens straight onto a street, so the roads run right through the middle of the building, and they have done for four hundred years."
+      }
+    },
+    {
+      "id": "telangana.golconda-fort",
+      "name": "Golconda Fort",
+      "short": "Golconda Fort",
+      "photoQuery": "Golconda Fort Hyderabad",
+      "scene": "hill-fort",
+      "line": {
+        "id": "telangana.golconda-fort.line",
+        "kind": "landmark",
+        "text": "Stand under the arch of the gate at the bottom of this hill and clap your hands, once. Up at the top of the fort, almost a whole kilometre away, somebody can hear that clap."
+      }
+    },
+    {
+      "id": "telangana.bhongir-fort",
+      "name": "Bhongir Fort",
+      "short": "Bhongir Fort",
+      "photoQuery": "Bhongir Fort Telangana",
+      "scene": "rock-fort",
+      "line": {
+        "id": "telangana.bhongir-fort.line",
+        "kind": "landmark",
+        "text": "This whole hill is one single rock, shaped like an enormous egg lying on its side, and it is higher than a hundred and fifty metres. On the top of it is a fort, and the steps that go up the bare curve have been there a thousand years."
+      }
+    },
+    {
+      "id": "telangana.kuntala-falls",
+      "name": "Kuntala Falls",
+      "short": "Kuntala Falls",
+      "photoQuery": "Kuntala Waterfall Telangana",
+      "scene": "stepped-falls",
+      "line": {
+        "id": "telangana.kuntala-falls.line",
+        "kind": "landmark",
+        "text": "The river comes to a ledge here and goes over it in two steps, one drop and then another, forty-five metres of falling altogether. After heavy rain there is so much water that it splits and comes down as two falls side by side."
+      }
+    },
+    {
+      "id": "telangana.lake-buddha",
+      "name": "The Buddha in Hussain Sagar",
+      "short": "Lake Buddha",
+      "photoQuery": "Buddha Statue Hussain Sagar Hyderabad",
+      "scene": "lake-statue",
+      "line": {
+        "id": "telangana.lake-buddha.line",
+        "kind": "landmark",
+        "text": "There is a lake in the middle of this city, and people dug it, hundreds of years ago. In the middle of the lake is a rock, and standing on the rock is a stone man eighteen metres tall, carved out of one whole block of white granite."
+      }
+    }
+  ]
+}

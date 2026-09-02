@@ -1,0 +1,103 @@
+{
+  "id": "uttar-pradesh",
+  "name": "Uttar Pradesh",
+  "type": "state",
+  "capital": "Lucknow",
+  "ambience": "river",
+  "intro": {
+    "id": "uttar-pradesh.intro",
+    "kind": "intro",
+    "text": "This is Uttar Pradesh, and its name means the northern state. More people live here than in any other state in India: more than two hundred and forty million of them. It is flat and farmed all over, and two great rivers cross it, the Ganga and the Yamuna. Delhi is on one side. The main city is Lucknow.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "uttar-pradesh" },
+      { "word": 49, "do": "lightNeighbour", "arg": "delhi" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "uttar-pradesh.card.animal",
+      "kind": "card",
+      "text": "The sarus crane is Uttar Pradesh's own bird, and the tallest flying bird there is: standing up it comes to about the height of a grown-up. Grey, with a bright red head.",
+      "species": "sarus-crane"
+    },
+    "food": {
+      "id": "uttar-pradesh.card.food",
+      "kind": "card",
+      "text": "Petha is made in Agra out of a big white pumpkin. The pieces are boiled soft and left in sugar syrup until they turn see-through, crisp outside and sticky in the middle."
+    },
+    "festival": {
+      "id": "uttar-pradesh.card.festival",
+      "kind": "card",
+      "text": "At the Kumbh Mela more people come together in one place than anywhere else on earth. It happens where two rivers meet, and everybody goes down into the water to bathe."
+    },
+    "hello": {
+      "id": "uttar-pradesh.card.hello",
+      "kind": "card",
+      "text": "In Uttar Pradesh people say Ram Ram. The very same two words do for hello and for goodbye, so you have one to arrive with and one to go away with.",
+      "script": "राम राम",
+      "lang": "awa-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "uttar-pradesh.taj-mahal",
+      "name": "The Taj Mahal",
+      "short": "Taj Mahal",
+      "photoQuery": "Taj Mahal Agra",
+      "scene": "domed-garden",
+      "line": {
+        "id": "uttar-pradesh.taj-mahal.line",
+        "kind": "landmark",
+        "text": "This is all white marble, so smooth it looks poured instead of cut, with coloured stones set into it in patterns of flowers. It is seventy-three metres high, and there is a long pool in front, so you get it twice: once standing up and once lying in the water."
+      }
+    },
+    {
+      "id": "uttar-pradesh.bara-imambara",
+      "name": "The Bara Imambara",
+      "short": "Bara Imambara",
+      "photoQuery": "Bara Imambara Lucknow",
+      "scene": "maze-hall",
+      "line": {
+        "id": "uttar-pradesh.bara-imambara.line",
+        "kind": "landmark",
+        "text": "The great hall in here has no beams at all holding its roof up. It just stands. And upstairs there is a maze: four hundred and eighty-nine doorways that all look exactly the same, with passages winding back into each other. People really do get lost in it."
+      }
+    },
+    {
+      "id": "uttar-pradesh.varanasi-ghats",
+      "name": "The Ghats of Varanasi",
+      "short": "Varanasi Ghats",
+      "photoQuery": "ghats Varanasi Ganges boats",
+      "scene": "river-steps",
+      "line": {
+        "id": "uttar-pradesh.varanasi-ghats.line",
+        "kind": "landmark",
+        "text": "These are steps, wide stone steps, going right down into the river, eighty-four flights of them one after another along the bank. Wooden boats are tied up at the bottom. Very early in the morning people go out on the water to watch the sun come up."
+      }
+    },
+    {
+      "id": "uttar-pradesh.chambal-gharials",
+      "name": "The Gharials of the Chambal",
+      "short": "Chambal Gharials",
+      "photoQuery": "gharial National Chambal Sanctuary",
+      "scene": "gharial-sandbank",
+      "line": {
+        "id": "uttar-pradesh.chambal-gharials.line",
+        "kind": "landmark",
+        "text": "A gharial is a crocodile with a nose like a long thin stick, full of small teeth for catching fish. The grown-up males get a round lump on the end of it, like a little pot, and that lump is what the animal is named after. They hardly ever come out of the water."
+      }
+    },
+    {
+      "id": "uttar-pradesh.buland-darwaza",
+      "name": "Buland Darwaza",
+      "short": "Buland Darwaza",
+      "photoQuery": "Buland Darwaza Fatehpur Sikri",
+      "scene": "great-gate",
+      "line": {
+        "id": "uttar-pradesh.buland-darwaza.line",
+        "kind": "landmark",
+        "text": "This is a doorway. Only a doorway. It is fifty-four metres from the ground to the top of it, and a long flight of steps sweeps down the hill in front. Stand at the bottom, look up, and the people climbing towards the door look like ants."
+      }
+    }
+  ]
+}

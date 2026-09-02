@@ -1,0 +1,111 @@
+{
+  "id": "jammu-kashmir",
+  "name": "Jammu & Kashmir",
+  "type": "ut",
+  "capital": "Srinagar",
+  "ambience": "mountain",
+  "intro": {
+    "id": "jammu-kashmir.intro",
+    "kind": "intro",
+    "text": "This is Jammu and Kashmir, right up at the top of India. In the middle of it lies a wide flat valley with mountains standing all the way round it, and a river called the Jhelum winding along the bottom. Ladakh is next door. Srinagar is the main city, and it sits on a lake.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "jammu-kashmir"
+      },
+      {
+        "word": 40,
+        "do": "lightNeighbour",
+        "arg": "ladakh"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "jammu-kashmir.card.animal",
+      "kind": "card",
+      "text": "The markhor is a wild goat living on the cliffs here. His horns spiral up like two twisted candles, longer than you are tall. He stands on his back legs to reach leaves.",
+      "species": "markhor"
+    },
+    "food": {
+      "id": "jammu-kashmir.card.food",
+      "kind": "card",
+      "text": "Kashmir grows saffron. Every purple flower has three red threads in it, pulled out by hand, one flower at a time. About a hundred and fifty flowers make one gram."
+    },
+    "festival": {
+      "id": "jammu-kashmir.card.festival",
+      "kind": "card",
+      "text": "Lohri comes in January, on one of the coldest nights, and means the days will start getting longer. People light a bonfire and throw popcorn and peanuts into it."
+    },
+    "hello": {
+      "id": "jammu-kashmir.card.hello",
+      "kind": "card",
+      "text": "Kashmiri goes the other way on the page. You start at the right-hand edge and read towards the left, so the last letter comes first. Hello here is Namaskar.",
+      "script": "نَمَسکار",
+      "lang": "ks-Arab"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "jammu-kashmir.dal-lake",
+      "name": "Dal Lake",
+      "short": "Dal Lake",
+      "photoQuery": "Dal Lake houseboats Srinagar",
+      "scene": "houseboats",
+      "line": {
+        "id": "jammu-kashmir.dal-lake.line",
+        "kind": "landmark",
+        "text": "People live on this lake in wooden houses that float, tied up in rows. To go anywhere you sit in a long thin boat and somebody paddles you there, the way you would walk down a street. There are gardens floating on the water too, growing things to sell."
+      }
+    },
+    {
+      "id": "jammu-kashmir.gulmarg-gondola",
+      "name": "The Gulmarg Gondola",
+      "short": "Gulmarg Gondola",
+      "photoQuery": "Gulmarg Gondola cable car",
+      "scene": "ropeway",
+      "line": {
+        "id": "jammu-kashmir.gulmarg-gondola.line",
+        "kind": "landmark",
+        "text": "A little cabin hangs from a wire and carries you up the mountain, over the snow and over the tops of the fir trees. It sets off two and a half thousand metres up and stops at nearly four thousand. Under your feet, all the way, there is nothing but air."
+      }
+    },
+    {
+      "id": "jammu-kashmir.tulip-garden",
+      "name": "The Tulip Garden, Srinagar",
+      "short": "Tulip Garden",
+      "photoQuery": "Indira Gandhi Memorial Tulip Garden Srinagar",
+      "scene": "tulip-rows",
+      "line": {
+        "id": "jammu-kashmir.tulip-garden.line",
+        "kind": "landmark",
+        "text": "This garden was planted with more than a million and a half tulip bulbs. In spring they come up in long stripes of one colour at a time: a stripe of red, then a stripe of yellow, running away from you further than a street is long."
+      }
+    },
+    {
+      "id": "jammu-kashmir.dachigam",
+      "name": "Dachigam National Park",
+      "short": "Dachigam",
+      "photoQuery": "hangul Kashmir stag Dachigam National Park",
+      "scene": "deer-hillside",
+      "line": {
+        "id": "jammu-kashmir.dachigam.line",
+        "kind": "landmark",
+        "text": "These deer are called hangul, and nearly every hangul left alive is in this one park. Twenty years ago there were fewer than two hundred of them. Now there are a bit over three hundred. A stag can carry antlers with sixteen points on them."
+      }
+    },
+    {
+      "id": "jammu-kashmir.bahu-fort",
+      "name": "Bahu Fort, Jammu",
+      "short": "Bahu Fort",
+      "photoQuery": "Bahu Fort Jammu",
+      "scene": "fort",
+      "line": {
+        "id": "jammu-kashmir.bahu-fort.line",
+        "kind": "landmark",
+        "text": "This fort stands on a wooded hill above a river, built of sandstone, with fat round towers along the top of its wall. The story goes that a king saw a tiger and a goat drinking from that river side by side, and neither hurt the other, so he built his city right here."
+      }
+    }
+  ]
+}

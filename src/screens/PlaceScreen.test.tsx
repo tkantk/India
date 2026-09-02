@@ -5,6 +5,7 @@ import { PlaceScreen } from './PlaceScreen'
 import geo from '../data/geo.json'
 import photoCredits from '../data/photo-credits.json'
 import rajasthan from '../../content/places/rajasthan.json'
+import { WRITTEN } from '../content/places'
 import type { Bbox, Clip, Cue } from '../types'
 
 /**
@@ -100,6 +101,41 @@ vi.mock('../map/camera', () => ({
     watch: () => () => {},
   },
 }))
+
+const { UNWRITTEN_SLUG, UNWRITTEN_NAME } = vi.hoisted(() => ({
+  UNWRITTEN_SLUG: 'nowhereland',
+  UNWRITTEN_NAME: 'Nowhereland',
+}))
+
+/**
+ * The "nothing written yet" describe block below needs a place with real
+ * geography but no authored content. Every one of the 36 real geo entries
+ * now HAS a written page — all 36 of `content/places/*.json` exist (see
+ * `docs/handover.md`) — so there is no genuine example left to borrow the
+ * way this test used to borrow Gujarat, and hardcoding whichever real slug
+ * happens to be empty today only rots again the moment that slug is
+ * authored, exactly as Gujarat did. So this augments the real map with one
+ * obviously-fake place instead of reaching for another real name — reusing
+ * Delhi's own shape/bbox/centroid, since the tests below only check that a
+ * flight happens and a name is shown, never Delhi's own numbers. Keep this
+ * synthetic; do not "fix" it back to a real slug, or it will rot the same
+ * way again.
+ */
+vi.mock('../data/geo.json', async () => {
+  const actual = (await vi.importActual('../data/geo.json')) as {
+    default: { places: Record<string, Record<string, unknown>> } & Record<string, unknown>
+  }
+  const template = actual.default.places.delhi
+  return {
+    default: {
+      ...actual.default,
+      places: {
+        ...actual.default.places,
+        [UNWRITTEN_SLUG]: { ...template, name: UNWRITTEN_NAME, neighbours: [] },
+      },
+    },
+  }
+})
 
 const RAJASTHAN = geo.places.rajasthan as unknown as { bbox: Bbox }
 const CREDITS = photoCredits as unknown as Record<string, { attributionHtml: string }>
@@ -289,21 +325,29 @@ describe('PlaceScreen', () => {
   })
 
   /**
-   * 32 of the 36 places have no page written, and beat 14 of the tour tells
-   * every child to tap any state. A dead end there would break a promise
-   * the narration makes out loud.
+   * All 36 real places have a written page today (see the geo.json mock's
+   * own comment, above), but a place file can still go missing — deleted,
+   * failing validation, or simply a 37th state nobody has authored yet —
+   * and beat 14 of the tour tells every child to tap any state. A dead end
+   * there would break a promise the narration makes out loud, so this path
+   * stays exercised against the synthetic `UNWRITTEN_SLUG`/`UNWRITTEN_NAME`
+   * rather than a real place that will not stay empty.
    */
   describe('a place with nothing written yet', () => {
-    it('is a page, not an error, and offers the ones that do exist', () => {
-      render(<PlaceScreen slug="gujarat" />)
-      expect(screen.getByText(/We have not been to Gujarat yet/)).toBeInTheDocument()
-      for (const name of ['Rajasthan', 'Kerala', 'Odisha', 'Delhi']) {
-        expect(screen.getByRole('button', { name })).toBeInTheDocument()
+    it('is a page, not an error, and offers every place that does exist', () => {
+      render(<PlaceScreen slug={UNWRITTEN_SLUG} />)
+      expect(screen.getByText(new RegExp(`We have not been to ${UNWRITTEN_NAME} yet`))).toBeInTheDocument()
+      // Derived from the real, on-disk content rather than a hardcoded
+      // handful — this is the same census-vs-invariant distinction as
+      // runs.test.mjs: the claim worth locking is "every written place is
+      // offered," not today's count of them.
+      for (const p of WRITTEN) {
+        expect(screen.getByRole('button', { name: p.name })).toBeInTheDocument()
       }
     })
 
     it('still lights the state, still flies to it, and still has something to say', () => {
-      render(<PlaceScreen slug="gujarat" />)
+      render(<PlaceScreen slug={UNWRITTEN_SLUG} />)
       expect(flights).toHaveLength(1)
       // A UI line already rendered, so the bar's Play and "Say it again"
       // both have something true to do — see `pages`' own note.
@@ -311,12 +355,12 @@ describe('PlaceScreen', () => {
     })
 
     it('has no shelf, because there is nothing on it', () => {
-      const { container } = render(<PlaceScreen slug="gujarat" />)
+      const { container } = render(<PlaceScreen slug={UNWRITTEN_SLUG} />)
       expect(container.querySelector('.place-shelf')).toBeNull()
     })
 
     it('has no trail either — there is nothing yet to say "how much is left"', () => {
-      const { container } = render(<PlaceScreen slug="gujarat" />)
+      const { container } = render(<PlaceScreen slug={UNWRITTEN_SLUG} />)
       expect(container.querySelector('.place-trail')).toBeNull()
     })
   })

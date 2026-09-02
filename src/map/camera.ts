@@ -75,14 +75,57 @@ const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
 /**
  * How far a single flight may zoom in.
  *
- * Lakshadweep's bbox is four units across; framed to fill the screen it would
- * be a 250x magnification of a simplified outline — soup, with no coastline a
- * child could recognise. Twelve is about as far as this geometry stays
- * readable. There is deliberately no floor: every flight is computed from
- * wherever the camera already is, so coming home from a tight view needs a
- * scale far below 1.
+ * USED TO BE 12, DERIVED FROM GEOMETRY THAT NO LONGER EXISTS. The old
+ * comment here said Lakshadweep's bbox was four units across and framing it
+ * would be a 250x magnification of a simplified outline — soup, with no
+ * coastline a child could recognise — and set 12 as "about as far as this
+ * geometry stays readable." Plan 3 then rebuilt every place's geometry with
+ * per-place screen-space simplification that kept every ring (Lakshadweep
+ * went from 4 rings to 35, Andaman from 52 to 220), and nobody re-derived
+ * this number afterwards. Measured directly: Lakshadweep's real bbox is
+ * 57x130, needing only 8.5x to fill a screen — nowhere near the old cap, let
+ * alone the new one — so the geometry the "12" was tuned against is simply
+ * gone. Left at 12, the stale cap surfaced as a NEW bug on `PlaceScreen`'s
+ * own arrival flight, whose padding is a proportion of a place's own size
+ * (`ARRIVAL_MARGIN`, `PlaceScreen.tsx`) rather than this file's flat
+ * `PLACE_PADDING`: Chandigarh's tiny bbox needs 60.6x to fill that frame,
+ * capped at 12 landed it at 5% of the map box — a speck, `npm run
+ * place:strip`'s own floor (`MIN_FILL_FRACTION`, 0.10) failing on all 12
+ * devices. Delhi, Goa and Sikkim were ALSO being quietly capped below their
+ * own designed proportion (`ARRIVAL_MARGIN`'s own comment says Delhi should
+ * land at "46% of the frame"; capped at 12 it only ever reached 20%) — they
+ * merely stayed on the right side of the 0.10 floor, so nothing failed loudly.
+ *
+ * RE-DERIVED, not re-guessed: computed the scale every real flight in this
+ * app actually asks for — both padding recipes (this file's own
+ * `PLACE_PADDING`/`pinR`, used by the tour's `zoomTo`/`pick`; and
+ * `PlaceScreen`'s own `ARRIVAL_MARGIN`) against every one of the 36 places'
+ * real bbox — and took the largest. That is Chandigarh's own arrival flight,
+ * 60.6x; nothing else in the app, tour or place screen, asks for more (the
+ * tour's own worst case, also Chandigarh, only reaches 11.83x — under the
+ * OLD cap already, which is why the tour never showed this bug). 65 clears
+ * that with a small margin, so every real flight today runs UNCAPPED, at
+ * whatever scale its own padding recipe asks for, and this stays a genuine
+ * safety ceiling only for a future flight nobody has measured yet.
+ *
+ * WHY NOT JUST DELETE THE CAP. Every stroke this app draws round a state is
+ * either `vector-effect: non-scaling-stroke` (`map.css`'s 1.5px land-edge
+ * border, its 4px island-territory border, its 3px glow) or, on
+ * `PlaceScreen`'s own `StateShape`, a width scaled by `1 / (that flight's
+ * own scale)` (`useMapZoom`) — both hold a CONSTANT number of CSS pixels
+ * regardless of camera scale, so a border never grows to swamp a state as
+ * this number rises; checked directly at 65x on Chandigarh's own 15-point
+ * outline (the least detailed geometry in the data, and the one that reaches
+ * the new ceiling) and it reads as a small, crisp, recognisable polygon, not
+ * soup. The risk this ceiling actually guards against is a flight nobody has
+ * measured yet — a future landmark-scale target smaller than any of today's
+ * 36 place bboxes — not any flight that exists today.
+ *
+ * There is deliberately no floor: every flight is computed from wherever the
+ * camera already is, so coming home from a tight view needs a scale far
+ * below 1.
  */
-const MAX_SCALE = 12
+export const MAX_SCALE = 65
 
 /**
  * The floor under a *place*'s padding when the map's own camera flies to

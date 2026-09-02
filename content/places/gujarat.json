@@ -1,0 +1,105 @@
+{
+  "id": "gujarat",
+  "name": "Gujarat",
+  "type": "state",
+  "capital": "Gandhinagar",
+  "ambience": "desert",
+  "intro": {
+    "id": "gujarat.intro",
+    "kind": "intro",
+    "text": "This is Gujarat, on the west side of India, and it has more sea coast than any other state. Up in one corner is the Rann of Kutch, where the sea comes in and the sun dries it up and leaves the ground white with salt. Rajasthan is above it. The capital is Gandhinagar, and the big city is Ahmedabad.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "gujarat" },
+      { "word": 13, "do": "revealSymbol", "arg": "arabian-sea" },
+      { "word": 46, "do": "lightNeighbour", "arg": "rajasthan" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "gujarat.card.animal",
+      "kind": "card",
+      "text": "The flamingo is Gujarat's own bird. It feeds with its head upside down in the water, stirring the mud with its feet. It is pink because of what it eats.",
+      "species": "greater-flamingo"
+    },
+    "food": {
+      "id": "gujarat.card.food",
+      "kind": "card",
+      "text": "Dhokla is rice and gram ground to a batter and left for hours to go bubbly. Then it is steamed, and it comes out a soft yellow sponge, cut into squares."
+    },
+    "festival": {
+      "id": "gujarat.card.festival",
+      "kind": "card",
+      "text": "Navratri means nine nights, and for nine of them Gujarat dances. People go round and round in a circle, and in the middle is a clay pot with holes and a flame inside."
+    },
+    "hello": {
+      "id": "gujarat.card.hello",
+      "kind": "card",
+      "text": "In Gujarat people speak Gujarati, and their hello is a question. Kem cho? It means: how are you? And their goodbye, Aavjo, means: come again.",
+      "script": "કેમ છો?",
+      "lang": "gu"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "gujarat.gir-forest",
+      "name": "Gir Forest",
+      "short": "Gir Forest",
+      "photoQuery": "Gir Forest Asiatic lion",
+      "scene": "lion-forest",
+      "line": {
+        "id": "gujarat.gir-forest.line",
+        "kind": "landmark",
+        "text": "Lions live in this forest. Not in a zoo — out here, hunting, with their own cubs. This is the only place in the whole of Asia where lions are left, and once there were only about a dozen of them in all of India.",
+        "cues": [{ "word": 0, "do": "playSfx", "arg": "lion-roar" }]
+      }
+    },
+    {
+      "id": "gujarat.white-rann",
+      "name": "The Great Rann of Kutch",
+      "short": "White Rann",
+      "photoQuery": "Great Rann of Kutch",
+      "scene": "salt-flat",
+      "line": {
+        "id": "gujarat.white-rann.line",
+        "kind": "landmark",
+        "text": "The ground here is salt. Sea water spreads over this place, and then the dry season comes and takes the water away again, and what it leaves behind is a white flat floor going all the way to the sky."
+      }
+    },
+    {
+      "id": "gujarat.statue-of-unity",
+      "name": "Statue of Unity",
+      "short": "Statue of Unity",
+      "photoQuery": "Statue of Unity",
+      "scene": "giant-statue",
+      "line": {
+        "id": "gujarat.statue-of-unity.line",
+        "kind": "landmark",
+        "text": "This is the tallest statue in the world. It is a man, made of metal, standing beside a river with his hands by his sides. The people walking about down at the bottom barely come up to his shoes."
+      }
+    },
+    {
+      "id": "gujarat.modhera-temple",
+      "name": "Modhera Sun Temple",
+      "short": "Modhera Temple",
+      "photoQuery": "Sun Temple Modhera",
+      "scene": "step-tank",
+      "line": {
+        "id": "gujarat.modhera-temple.line",
+        "kind": "landmark",
+        "text": "In front of this temple is a great stone tank, with steps going down into the water on every side. Little shrines are set in among the steps, so the whole tank is a staircase full of tiny temples."
+      }
+    },
+    {
+      "id": "gujarat.wild-asses",
+      "name": "The Wild Ass Sanctuary",
+      "short": "Wild Asses",
+      "photoQuery": "Indian wild ass Little Rann of Kutch",
+      "scene": "wild-asses",
+      "line": {
+        "id": "gujarat.wild-asses.line",
+        "kind": "landmark",
+        "text": "These are wild donkeys, and they are fast. One of them can outrun a jeep. They live in herds out on the hot salt plain, and this corner of Gujarat is the only place left in the world where they live wild."
+      }
+    }
+  ]
+}

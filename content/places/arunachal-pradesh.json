@@ -1,0 +1,118 @@
+{
+  "id": "arunachal-pradesh",
+  "name": "Arunachal Pradesh",
+  "type": "state",
+  "capital": "Itanagar",
+  "ambience": "mountain",
+  "intro": {
+    "id": "arunachal-pradesh.intro",
+    "kind": "intro",
+    "text": "This is Arunachal Pradesh, the furthest east of all India's states. Its name means the mountains lit by the dawn. Nearly all of it is mountain and forest, going up and up until the trees stop. Hardly anybody lives here: there is more room per person than in any other state. Assam lies below it. The main town is Itanagar.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "arunachal-pradesh"
+      },
+      {
+        "word": 51,
+        "do": "lightNeighbour",
+        "arg": "assam"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "arunachal-pradesh.card.animal",
+      "kind": "card",
+      "text": "The takin lives up in these mountains. It is as big as a cow but it climbs like a goat, and its nose is so swollen that a scientist once called it a bee-stung moose.",
+      "species": "mishmi-takin"
+    },
+    "food": {
+      "id": "arunachal-pradesh.card.food",
+      "kind": "card",
+      "text": "Rice is what people eat here, and it is often cooked inside a folded leaf and carried about like a little parcel. Bamboo shoots go into almost everything else."
+    },
+    "festival": {
+      "id": "arunachal-pradesh.card.festival",
+      "kind": "card",
+      "text": "Nyokum belongs to the Nyishi people. The name is two words stuck together: nyok, meaning the land, and kum, meaning everybody at once. So the land and the people meet."
+    },
+    "hello": {
+      "id": "arunachal-pradesh.card.hello",
+      "kind": "card",
+      "text": "Up in Tawang people say Tashi Delek. It is Tibetan, and it does not mean hello exactly. It means something more like: may good things come to you.",
+      "script": "བཀྲ་ཤིས་བདེ་ལེགས",
+      "lang": "bo"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "arunachal-pradesh.tawang",
+      "name": "Tawang Monastery",
+      "short": "Tawang Monastery",
+      "photoQuery": "Tawang Monastery",
+      "scene": "monastery",
+      "line": {
+        "id": "arunachal-pradesh.tawang.line",
+        "kind": "landmark",
+        "text": "This is the biggest Buddhist monastery in India, three thousand metres up near the top of a mountain, looking down a valley of snow peaks and fir trees. Four hundred monks live in it. It was built about three hundred and fifty years ago."
+      }
+    },
+    {
+      "id": "arunachal-pradesh.sela-pass",
+      "name": "Sela Pass",
+      "short": "Sela Pass",
+      "photoQuery": "Sela Pass Arunachal Pradesh",
+      "scene": "mountain-pass",
+      "line": {
+        "id": "arunachal-pradesh.sela-pass.line",
+        "kind": "landmark",
+        "text": "A pass is the low place in a wall of mountains where a road can climb over. This one is four thousand one hundred and seventy metres up, and there is some snow lying on it at just about any time of the year."
+      }
+    },
+    {
+      "id": "arunachal-pradesh.nuranang",
+      "name": "Nuranang Falls",
+      "short": "Nuranang Falls",
+      "photoQuery": "Nuranang Falls",
+      "scene": "waterfall",
+      "line": {
+        "id": "arunachal-pradesh.nuranang.line",
+        "kind": "landmark",
+        "text": "The water going over this cliff came off the snow up at Sela Pass, not far back. It drops a hundred metres in a wide white curtain, and a little power station at the bottom turns the falling water into electricity for the houses nearby."
+      }
+    },
+    {
+      "id": "arunachal-pradesh.ziro",
+      "name": "Ziro Valley",
+      "short": "Ziro Valley",
+      "photoQuery": "Ziro Valley Arunachal Pradesh",
+      "scene": "rice-fields",
+      "line": {
+        "id": "arunachal-pradesh.ziro.line",
+        "kind": "landmark",
+        "text": "The Apatani people grow rice in flooded fields, and they keep fish in the very same water at the very same time. So one field gives them dinner twice. And they never move on: the same fields are used again and again, year after year."
+      }
+    },
+    {
+      "id": "arunachal-pradesh.pakke",
+      "name": "Pakke Tiger Reserve",
+      "short": "Pakke Hornbills",
+      "photoQuery": "Great hornbill Pakke Tiger Reserve",
+      "scene": "hornbill-nest",
+      "line": {
+        "id": "arunachal-pradesh.pakke.line",
+        "kind": "landmark",
+        "text": "When a hornbill is ready to lay her eggs she gets inside a hole in a tall tree and plasters it shut from the inside, leaving one narrow slit. The father posts food in through the slit, day after day, until the chicks are half grown.",
+        "cues": [
+          {
+            "word": 30,
+            "do": "playSfx",
+            "arg": "hornbill"
+          }
+        ]
+      }
+    }
+  ]
+}

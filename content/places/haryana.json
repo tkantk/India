@@ -1,0 +1,104 @@
+{
+  "id": "haryana",
+  "name": "Haryana",
+  "type": "state",
+  "capital": "Chandigarh",
+  "ambience": "plains",
+  "intro": {
+    "id": "haryana.intro",
+    "kind": "intro",
+    "text": "This is Haryana, in the north of India, and it curls right round Delhi on three sides like a hand round a cup. Most of it is flat farming land, with wheat and mustard growing in enormous fields. Haryana shares its main city, Chandigarh, with Punjab.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "haryana" },
+      { "word": 13, "do": "lightNeighbour", "arg": "delhi" },
+      { "word": 45, "do": "lightNeighbour", "arg": "punjab" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "haryana.card.animal",
+      "kind": "card",
+      "text": "The black francolin is Haryana's own bird. The male is black, with a white patch on each cheek and a brown collar. He stands up on a rock and shouts all morning.",
+      "species": "black-francolin"
+    },
+    "food": {
+      "id": "haryana.card.food",
+      "kind": "card",
+      "text": "People here eat bajre ki roti, a thick flat bread made from millet. Haryana is full of buffaloes, so there is butter churned that morning to go on it, and lassi to drink."
+    },
+    "festival": {
+      "id": "haryana.card.festival",
+      "kind": "card",
+      "text": "At Teej the rains have come and everything is green. Ropes go up in the trees for swings, girls paint patterns on their hands with henna, and boys fly kites all day."
+    },
+    "hello": {
+      "id": "haryana.card.hello",
+      "kind": "card",
+      "text": "Haryana has its own way of talking, called Haryanvi. Nearly ten million people speak it. Say hello with Namaste, and then everything after that will sound different.",
+      "script": "नमस्ते",
+      "lang": "bgc-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "haryana.sultanpur-storks",
+      "name": "Sultanpur National Park",
+      "short": "Sultanpur Storks",
+      "photoQuery": "painted stork Sultanpur National Park",
+      "scene": "stork-nest",
+      "line": {
+        "id": "haryana.sultanpur-storks.line",
+        "kind": "landmark",
+        "text": "These big white birds have pink under their wings and a bare orange face. A stork fishes by feeling: it wades along with its beak half open in the water, swishing it side to side, and stirs up the bottom with its feet to make the fish move. They nest in the trees, all together."
+      }
+    },
+    {
+      "id": "haryana.sultanpur-nilgai",
+      "name": "The Nilgai of Sultanpur",
+      "short": "Sultanpur Nilgai",
+      "photoQuery": "nilgai Sultanpur National Park Haryana",
+      "scene": "nilgai",
+      "line": {
+        "id": "haryana.sultanpur-nilgai.line",
+        "kind": "landmark",
+        "text": "Nilgai means blue cow, and the male really is blue-grey, as big as a horse. He has a white patch at his throat, white socks on his legs, and two short straight horns. The females and the young are orange-brown instead, so they do not look like the same animal at all."
+      }
+    },
+    {
+      "id": "haryana.pinjore-gardens",
+      "name": "Pinjore Gardens",
+      "short": "Pinjore Gardens",
+      "photoQuery": "Pinjore Gardens Haryana",
+      "scene": "terrace-garden",
+      "line": {
+        "id": "haryana.pinjore-gardens.line",
+        "kind": "landmark",
+        "text": "This garden is built as seven enormous steps going down a hillside. You come in at the very top step, where there is a palace called the Palace of Glass. Further down are fountains and rows of tall dark cypress trees, and the bottom step of all is a theatre out in the open air."
+      }
+    },
+    {
+      "id": "haryana.surajkund",
+      "name": "Surajkund",
+      "short": "Surajkund",
+      "photoQuery": "Surajkund Faridabad reservoir",
+      "scene": "stepped-tank",
+      "line": {
+        "id": "haryana.surajkund.line",
+        "kind": "landmark",
+        "text": "About a thousand years ago somebody dug a pond here and built stone steps in a great curve all the way round one side of it, like the seats in a theatre. Rain running off the hills behind ran down and filled it up. Its name means the pool of the sun."
+      }
+    },
+    {
+      "id": "haryana.dhosi-hill",
+      "name": "Dhosi Hill",
+      "short": "Dhosi Hill",
+      "photoQuery": "Dhosi Hill Haryana",
+      "scene": "lone-hill",
+      "line": {
+        "id": "haryana.dhosi-hill.line",
+        "kind": "landmark",
+        "text": "Haryana is flat almost everywhere you look. Then this hill stands up out of the fields on its own, about two hundred and seventy metres from the fields to the top. It is an old volcano. It stopped erupting a very long time ago and it will not start again."
+      }
+    }
+  ]
+}

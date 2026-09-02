@@ -1,0 +1,104 @@
+{
+  "id": "jharkhand",
+  "name": "Jharkhand",
+  "type": "state",
+  "capital": "Ranchi",
+  "ambience": "forest",
+  "intro": {
+    "id": "jharkhand.intro",
+    "kind": "intro",
+    "text": "This is Jharkhand, sitting just underneath Bihar. Its name means the land of forests, and that is exactly what it is: green hills with trees all over them, and rivers that keep falling off the edges of things. Deep under the ground here there is coal, and iron too. The main city is Ranchi.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "jharkhand" },
+      { "word": 6, "do": "lightNeighbour", "arg": "bihar" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "jharkhand.card.animal",
+      "kind": "card",
+      "text": "The koel is Jharkhand's own bird. She lays her egg in a crow's nest and flies off. The crow sits on it, feeds the chick when it hatches, and never finds out.",
+      "species": "asian-koel"
+    },
+    "food": {
+      "id": "jharkhand.card.food",
+      "kind": "card",
+      "text": "Dhuska is rice and chana dal, soaked and then ground into a thick batter and dropped into hot oil. It comes out crisp and brown, and you eat it while it is hot."
+    },
+    "festival": {
+      "id": "jharkhand.card.festival",
+      "kind": "card",
+      "text": "Sarhul is the spring festival here, and it comes when the sal trees flower. It is the start of the new year. People dance with sal blossom held in their hands."
+    },
+    "hello": {
+      "id": "jharkhand.card.hello",
+      "kind": "card",
+      "text": "In Jharkhand people say Johar. Many here speak Santali, which has an alphabet of its own, and the shape of every letter is a drawing of what its name means.",
+      "script": "ᱡᱚᱦᱟᱨ",
+      "lang": "sat-Olck"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "jharkhand.hundru-falls",
+      "name": "Hundru Falls",
+      "short": "Hundru Falls",
+      "photoQuery": "Hundru Falls",
+      "scene": "waterfall",
+      "line": {
+        "id": "jharkhand.hundru-falls.line",
+        "kind": "landmark",
+        "text": "The river gets to the edge of a cliff here and falls a very long way down, splitting into white ropes of water as it goes. At the bottom it lands in a pool with big boulders sitting about in it.",
+        "cues": [{ "word": 30, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    },
+    {
+      "id": "jharkhand.palamu-fort",
+      "name": "Palamu Fort",
+      "short": "Palamu Fort",
+      "photoQuery": "Palamu Fort",
+      "scene": "ruined-fort",
+      "line": {
+        "id": "jharkhand.palamu-fort.line",
+        "kind": "landmark",
+        "text": "There are two forts here, and both of them are broken now. They stand deep inside a forest, and that forest was one of the first nine in the whole of India to be set aside and kept as a home for tigers."
+      }
+    },
+    {
+      "id": "jharkhand.sohrai-houses",
+      "name": "Sohrai Painted Houses",
+      "short": "Sohrai Houses",
+      "photoQuery": "Sohrai painting Hazaribagh",
+      "scene": "painted-houses",
+      "line": {
+        "id": "jharkhand.sohrai-houses.line",
+        "kind": "landmark",
+        "text": "When the harvest comes in, the women here paint the outsides of their houses. First they coat the mud wall with earth. Then they draw animals and flowers all over it, and the whole village turns into a picture book."
+      }
+    },
+    {
+      "id": "jharkhand.patratu-valley",
+      "name": "Patratu Valley",
+      "short": "Patratu Valley",
+      "photoQuery": "Patratu Valley Jharkhand",
+      "scene": "valley-road",
+      "line": {
+        "id": "jharkhand.patratu-valley.line",
+        "kind": "landmark",
+        "text": "The road down into this valley will not go straight. It bends back on itself, and back again, and again, all the way down through the green hills, like a long ribbon somebody has dropped."
+      }
+    },
+    {
+      "id": "jharkhand.jonha-falls",
+      "name": "Jonha Falls",
+      "short": "Jonha Falls",
+      "photoQuery": "Jonha Falls",
+      "scene": "stair-falls",
+      "line": {
+        "id": "jharkhand.jonha-falls.line",
+        "kind": "landmark",
+        "text": "To get down to this waterfall you go down seven hundred and twenty-two steps. Then you stand at the bottom and look up at the water coming over the rock. And then you remember you have to climb every one of them again."
+      }
+    }
+  ]
+}

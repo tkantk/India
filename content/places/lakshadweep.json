@@ -1,0 +1,103 @@
+{
+  "id": "lakshadweep",
+  "name": "Lakshadweep",
+  "type": "ut",
+  "capital": "Kavaratti",
+  "ambience": "island",
+  "intro": {
+    "id": "lakshadweep.intro",
+    "kind": "intro",
+    "text": "This is Lakshadweep, thirty-six little islands out in the sea off the west side of India. The name means a hundred thousand islands, which is rather more than there really are. Add up every scrap of land and it comes to about thirty square kilometres. Only ten of the islands have anybody on them. The main one is Kavaratti.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "lakshadweep" },
+      { "word": 9, "do": "revealSymbol", "arg": "arabian-sea" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "lakshadweep.card.animal",
+      "kind": "card",
+      "text": "Flying fish live in this sea. They shoot up out of the water, open two fins like wings and glide over the waves. One was watched staying up for forty-five seconds.",
+      "species": "flying-fish"
+    },
+    "food": {
+      "id": "lakshadweep.card.food",
+      "kind": "card",
+      "text": "There is almost no soil on these islands. The only crop that really grows here is the coconut, so what people eat is coconut and fish, and then fish and coconut."
+    },
+    "festival": {
+      "id": "lakshadweep.card.festival",
+      "kind": "card",
+      "text": "The big day here is Eid. Everybody puts on new clothes, goes round to see all their relations, and eats so many sweet things that one name for it is the Sugar Feast."
+    },
+    "hello": {
+      "id": "lakshadweep.card.hello",
+      "kind": "card",
+      "text": "People here say Namaskaram, in Malayalam. But on the island right at the bottom they speak something else altogether, the same language they speak in the Maldives.",
+      "script": "നമസ്കാരം",
+      "lang": "ml"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "lakshadweep.agatti",
+      "name": "Agatti Island",
+      "short": "Agatti",
+      "photoQuery": "Agatti Island Lakshadweep aerial",
+      "scene": "runway-island",
+      "line": {
+        "id": "lakshadweep.agatti.line",
+        "kind": "landmark",
+        "text": "This island is seven and a half kilometres long and less than one kilometre across. Somebody has laid an aeroplane runway a kilometre and a half long down one end of it, with the sea close on both sides. It is the only airport in Lakshadweep."
+      }
+    },
+    {
+      "id": "lakshadweep.coral-reef",
+      "name": "The Coral Reef",
+      "short": "Coral Reef",
+      "photoQuery": "Lakshadweep coral reef fish",
+      "scene": "coral-reef",
+      "line": {
+        "id": "lakshadweep.coral-reef.line",
+        "kind": "landmark",
+        "text": "A reef looks like rock, but it is alive. It is made of colonies of tiny animals, sitting side by side inside hard shells they grew themselves. Little islands like these would not even be here without the reefs around them."
+      }
+    },
+    {
+      "id": "lakshadweep.sea-turtles",
+      "name": "The Sea Turtles",
+      "short": "Sea Turtles",
+      "photoQuery": "green sea turtle Lakshadweep",
+      "scene": "sea-turtles",
+      "line": {
+        "id": "lakshadweep.sea-turtles.line",
+        "kind": "landmark",
+        "text": "A green turtle out here can weigh more than a grown-up does. It does not paddle like a duck. It rows, with the two flippers at the front, and it goes down into the shallow water to eat the grass growing on the bottom."
+      }
+    },
+    {
+      "id": "lakshadweep.minicoy",
+      "name": "Minicoy Island",
+      "short": "Minicoy",
+      "photoQuery": "Minicoy Island lagoon Lakshadweep",
+      "scene": "lagoon",
+      "line": {
+        "id": "lakshadweep.minicoy.line",
+        "kind": "landmark",
+        "text": "You can see exactly where the reef is without going near it. Out there the waves stand up and break in a white line. Inside that line the water is quiet and pale and shallow, and it hardly ever gets deeper than four metres."
+      }
+    },
+    {
+      "id": "lakshadweep.from-space",
+      "name": "An Atoll from Space",
+      "short": "From Space",
+      "photoQuery": "Lakshadweep atoll satellite image",
+      "scene": "atoll-from-space",
+      "line": {
+        "id": "lakshadweep.from-space.line",
+        "kind": "landmark",
+        "text": "This is what one of these islands looks like from up in a spaceship. A ring of coral with pale shallow water inside it and dark deep sea all around. That shape has a name of its own. It is called an atoll."
+      }
+    }
+  ]
+}

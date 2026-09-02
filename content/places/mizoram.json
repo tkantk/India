@@ -1,0 +1,111 @@
+{
+  "id": "mizoram",
+  "name": "Mizoram",
+  "type": "state",
+  "capital": "Aizawl",
+  "ambience": "forest",
+  "intro": {
+    "id": "mizoram.intro",
+    "kind": "intro",
+    "text": "This is Mizoram, right down in the bottom corner of the north-east. It is all hills, one behind another behind another. Forest covers about five parts of every six of it, so from up high it is green as far as you can look. Tripura is its neighbour. The main city is Aizawl.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "mizoram"
+      },
+      {
+        "word": 44,
+        "do": "lightNeighbour",
+        "arg": "tripura"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "mizoram.card.animal",
+      "kind": "card",
+      "text": "The serow is Mizoram's own animal, a big goat-like beast of the steep forests. It is blackish, with rusty red flanks and whitish lower legs, and two short horns.",
+      "species": "himalayan-serow"
+    },
+    "food": {
+      "id": "mizoram.card.food",
+      "kind": "card",
+      "text": "Bai is vegetables and green leaves boiled up together in one pot, with bamboo shoot in it for the smell and a spoon of fermented pork fat for the taste."
+    },
+    "festival": {
+      "id": "mizoram.card.festival",
+      "kind": "card",
+      "text": "Chapchar Kut comes in March. Six or eight people kneel and clap long bamboo poles together on the ground, and the dancers step in and out between them without looking."
+    },
+    "hello": {
+      "id": "mizoram.card.hello",
+      "kind": "card",
+      "text": "In Mizoram people say Chibai. Mizo is written with Roman letters, the same shapes you are learning, so you could have a go at reading a Mizo book straight away.",
+      "script": "Chibai",
+      "lang": "lus-Latn"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "mizoram.vantawng",
+      "name": "Vantawng Falls",
+      "short": "Vantawng Falls",
+      "photoQuery": "Vantawng Falls Mizoram",
+      "scene": "waterfall",
+      "line": {
+        "id": "mizoram.vantawng.line",
+        "kind": "landmark",
+        "text": "This waterfall comes down two hundred and thirty metres, but not in one go. It falls in stages, one after another, white all the way down the rock, with thick green jungle crowding in on either side of it."
+      }
+    },
+    {
+      "id": "mizoram.phawngpui",
+      "name": "Phawngpui, the Blue Mountain",
+      "short": "Phawngpui",
+      "photoQuery": "Phawngpui Blue Mountain Mizoram",
+      "scene": "flat-peak",
+      "line": {
+        "id": "mizoram.phawngpui.line",
+        "kind": "landmark",
+        "text": "This is the highest mountain in Mizoram, two thousand one hundred and fifty-seven metres up. The top does not come to a point. It is flat, two square kilometres of level ground, and its name means the great meadow."
+      }
+    },
+    {
+      "id": "mizoram.hmuifang",
+      "name": "Hmuifang",
+      "short": "Hmuifang",
+      "photoQuery": "Hmuifang Mizoram",
+      "scene": "ridge",
+      "line": {
+        "id": "mizoram.hmuifang.line",
+        "kind": "landmark",
+        "text": "Hmuifang is a mountain sixteen hundred metres up with forest on it that has never been cut down. The old Mizo chiefs kept it that way on purpose, and it is still kept that way, so it is the oldest wood for miles."
+      }
+    },
+    {
+      "id": "mizoram.aizawl",
+      "name": "Aizawl",
+      "short": "Aizawl",
+      "photoQuery": "Aizawl Mizoram",
+      "scene": "hill-town",
+      "line": {
+        "id": "mizoram.aizawl.line",
+        "kind": "landmark",
+        "text": "A whole city built along the tops of a row of ridges, more than a thousand metres up in the air. The streets run along the crests, and the houses go down the steep sides underneath them, roof below roof below roof."
+      }
+    },
+    {
+      "id": "mizoram.tam-dil",
+      "name": "Tam Dil",
+      "short": "Tam Dil",
+      "photoQuery": "Tam Dil lake Mizoram",
+      "scene": "still-lake",
+      "line": {
+        "id": "mizoram.tam-dil.line",
+        "kind": "landmark",
+        "text": "Tam Dil means the mustard lake. It lies in a small valley with steep little hills standing all round it. A frog was found here that nobody had ever seen before, and it is named after this lake."
+      }
+    }
+  ]
+}

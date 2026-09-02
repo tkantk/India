@@ -1,0 +1,118 @@
+{
+  "id": "uttarakhand",
+  "name": "Uttarakhand",
+  "type": "state",
+  "capital": "Dehradun",
+  "ambience": "mountain",
+  "intro": {
+    "id": "uttarakhand.intro",
+    "kind": "intro",
+    "text": "This is Uttarakhand, and its name means the northern land. Most of it is mountain, right up to some of the highest peaks in India. The river Ganga begins here, where two rivers run together and become one. Himachal Pradesh is next door, and the biggest town is Dehradun.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "uttarakhand"
+      },
+      {
+        "word": 38,
+        "do": "lightNeighbour",
+        "arg": "himachal-pradesh"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "uttarakhand.card.animal",
+      "kind": "card",
+      "text": "The monal is Uttarakhand's own bird. The male looks as if he were made of metal, green and copper and blue, all shining, with a white patch that only shows when he flies.",
+      "species": "himalayan-monal"
+    },
+    "food": {
+      "id": "uttarakhand.card.food",
+      "kind": "card",
+      "text": "Bal mithai is a soft brown fudge, almost like chocolate, rolled all over in hundreds of tiny white sugar balls, so the outside of it is bumpy the whole way round."
+    },
+    "festival": {
+      "id": "uttarakhand.card.festival",
+      "kind": "card",
+      "text": "Ten days before Harela every house sows seeds in a pot. When the shoots come up, grown-ups put them on the children's heads for luck, and children walk about on stilts."
+    },
+    "hello": {
+      "id": "uttarakhand.card.hello",
+      "kind": "card",
+      "text": "Uttarakhand has two languages of its own: Garhwali in the west, Kumaoni in the east. Both use the same letters as Hindi. Namaskar is hello, and means the same as Namaste.",
+      "script": "नमस्कार",
+      "lang": "gbm-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "uttarakhand.jim-corbett",
+      "name": "Jim Corbett National Park",
+      "short": "Jim Corbett",
+      "photoQuery": "Bengal tiger Jim Corbett National Park",
+      "scene": "tiger-forest",
+      "line": {
+        "id": "uttarakhand.jim-corbett.line",
+        "kind": "landmark",
+        "text": "The very first national park in India was made here, in 1936, and nobody has been allowed to hunt in it since. A tiger hunts by hiding: it creeps a little, then stops dead still, then creeps a little more. Its stripes make it hard to see in the grass.",
+        "cues": [
+          {
+            "word": 23,
+            "do": "playSfx",
+            "arg": "tiger-growl"
+          }
+        ]
+      }
+    },
+    {
+      "id": "uttarakhand.valley-of-flowers",
+      "name": "The Valley of Flowers",
+      "short": "Valley of Flowers",
+      "photoQuery": "Valley of Flowers National Park Uttarakhand",
+      "scene": "flower-valley",
+      "line": {
+        "id": "uttarakhand.valley-of-flowers.line",
+        "kind": "landmark",
+        "text": "This valley is eight kilometres long and two wide, and for most of the year it is buried under snow. Then the snow goes, and in July the whole floor of it comes out in flowers, the sort that grow only high up in the mountains. By October it is white again."
+      }
+    },
+    {
+      "id": "uttarakhand.gaumukh",
+      "name": "Gaumukh",
+      "short": "Gaumukh",
+      "photoQuery": "Gaumukh Gangotri Glacier snout",
+      "scene": "glacier-snout",
+      "line": {
+        "id": "uttarakhand.gaumukh.line",
+        "kind": "landmark",
+        "text": "A glacier is a river of ice, moving so slowly you cannot see it move. At the bottom end of this one there is a hole, and out of that hole comes water. That water becomes the Bhagirathi river, and the Bhagirathi becomes the Ganga. The hole is called Cow's Mouth."
+      }
+    },
+    {
+      "id": "uttarakhand.lakshman-jhula",
+      "name": "Lakshman Jhula",
+      "short": "Lakshman Jhula",
+      "photoQuery": "Lakshman Jhula Rishikesh",
+      "scene": "suspension-bridge",
+      "line": {
+        "id": "uttarakhand.lakshman-jhula.line",
+        "kind": "landmark",
+        "text": "This bridge hangs from steel ropes over the Ganga. It is a hundred and thirty-seven metres long and less than two metres wide, and people walked across it for ninety years. It is shut now, because it got old, and another one is going up beside it."
+      }
+    },
+    {
+      "id": "uttarakhand.nainital",
+      "name": "Nainital Lake",
+      "short": "Nainital Lake",
+      "photoQuery": "Nainital Lake Uttarakhand",
+      "scene": "hill-lake",
+      "line": {
+        "id": "uttarakhand.nainital.line",
+        "kind": "landmark",
+        "text": "This lake sits in a bowl of steep hills with forest all over them, and the town is squeezed in round the edge of the water. The lake was almost a circle once. Then the hillsides slid down into it, and now it is bent like a banana."
+      }
+    }
+  ]
+}

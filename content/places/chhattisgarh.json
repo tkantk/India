@@ -1,0 +1,106 @@
+{
+  "id": "chhattisgarh",
+  "name": "Chhattisgarh",
+  "type": "state",
+  "capital": "Raipur",
+  "ambience": "forest",
+  "intro": {
+    "id": "chhattisgarh.intro",
+    "kind": "intro",
+    "text": "This is Chhattisgarh, in the middle of India, and nearly half of it is forest. In the part called Bastar the trees go on and on, and rivers come tumbling off the cliffs in the rain. Madhya Pradesh is on one side of it and Odisha is on the other. The main city is Raipur.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "chhattisgarh" },
+      { "word": 36, "do": "lightNeighbour", "arg": "madhya-pradesh" },
+      { "word": 45, "do": "lightNeighbour", "arg": "odisha" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "chhattisgarh.card.animal",
+      "kind": "card",
+      "text": "The hill myna is Chhattisgarh's own bird. It is jet black with bare yellow patches on its head. Mynas kept as pets learn to copy the voices of people.",
+      "species": "common-hill-myna"
+    },
+    "food": {
+      "id": "chhattisgarh.card.food",
+      "kind": "card",
+      "text": "Chila is rice flour mixed up with water and poured thin into a hot pan, like a pancake. You eat it with a chutney made of tomato, chilli and coriander."
+    },
+    "festival": {
+      "id": "chhattisgarh.card.festival",
+      "kind": "card",
+      "text": "Pola is the day the bullocks get thanked for a year of work. They are washed, their horns are painted, new bells go on. Children decorate little toy bulls too."
+    },
+    "hello": {
+      "id": "chhattisgarh.card.hello",
+      "kind": "card",
+      "text": "Most people here speak Chhattisgarhi, which is written in the same letters as Hindi. To say hello you say Ram Ram: the same word, said twice over.",
+      "script": "राम राम",
+      "lang": "hne-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "chhattisgarh.chitrakote-falls",
+      "name": "Chitrakote Falls",
+      "short": "Chitrakote Falls",
+      "photoQuery": "Chitrakote Falls",
+      "scene": "wide-falls",
+      "line": {
+        "id": "chhattisgarh.chitrakote-falls.line",
+        "kind": "landmark",
+        "text": "This is the widest waterfall in India. When the rains come the water spreads right along the cliff in a great curve, so that the whole horseshoe of rock turns into falling water at once.",
+        "cues": [{ "word": 12, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    },
+    {
+      "id": "chhattisgarh.tirathgarh-falls",
+      "name": "Tirathgarh Falls",
+      "short": "Tirathgarh Falls",
+      "photoQuery": "Tirathgarh Falls",
+      "scene": "curtain-falls",
+      "line": {
+        "id": "chhattisgarh.tirathgarh-falls.line",
+        "kind": "landmark",
+        "text": "Here the water comes over the cliff in a wide curtain and falls the whole way down in one single go, without touching anything at all until it lands at the bottom."
+      }
+    },
+    {
+      "id": "chhattisgarh.kotumsar-cave",
+      "name": "Kotumsar Cave",
+      "short": "Kotumsar Cave",
+      "photoQuery": "Kotumsar Cave",
+      "scene": "cave-pools",
+      "line": {
+        "id": "chhattisgarh.kotumsar-cave.line",
+        "kind": "landmark",
+        "text": "This cave runs a long way back into the hill, with stone icicles hanging off the roof. There are fish in the pools in there, and the fish are blind. Down in that dark there is nothing to look at anyway."
+      }
+    },
+    {
+      "id": "chhattisgarh.bhoramdeo",
+      "name": "Bhoramdeo Temple",
+      "short": "Bhoramdeo",
+      "photoQuery": "Bhoramdeo Temple",
+      "scene": "carved-temple",
+      "line": {
+        "id": "chhattisgarh.bhoramdeo.line",
+        "kind": "landmark",
+        "text": "The outside of this stone temple is covered in carved figures, crowded together all over the walls. It was built about a thousand years ago, and somebody chipped out every single one of those figures by hand.",
+        "cues": [{ "word": 5, "do": "playSfx", "arg": "temple-bell" }]
+      }
+    },
+    {
+      "id": "chhattisgarh.bastar-dokra",
+      "name": "The Dokra Metal of Bastar",
+      "short": "Bastar Dokra",
+      "photoQuery": "Dhokra metal craft Bastar",
+      "scene": "brass-casting",
+      "line": {
+        "id": "chhattisgarh.bastar-dokra.line",
+        "kind": "landmark",
+        "text": "These golden animals are brass. Somebody made each one out of wax first, packed clay all round it, then baked the clay so the wax ran out of a little duct. Melted brass went in where the wax had been."
+      }
+    }
+  ]
+}

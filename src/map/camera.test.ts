@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { frame, committedRect, flyTo, bindCamera, camera } from './camera'
+import { frame, committedRect, flyTo, bindCamera, camera, MAX_SCALE } from './camera'
 import type { Bbox } from '../types'
 
 const VIEW: [number, number, number, number] = [0, 0, 1000, 1100]
@@ -38,8 +38,14 @@ describe('frame', () => {
   })
 
   it('never scales past a sane ceiling, so a tiny territory does not fill the world', () => {
-    // Lakshadweep is a few pixels across; without a clamp the child sees soup.
-    expect(frame([500, 900, 4, 4], VIEW, 0).scale).toBeLessThanOrEqual(12)
+    // A target far tinier than any real place in geo.json — without a
+    // clamp a flight to it would magnify a simplified outline into soup.
+    // Imports the real constant rather than a second copy of the number:
+    // MAX_SCALE's own comment has the full derivation, and a hardcoded
+    // literal here is exactly the kind of duplicate this codebase keeps
+    // getting bitten by when the two drift apart.
+    expect(frame([500, 900, 0.5, 0.5], VIEW, 0).scale).toBeLessThanOrEqual(MAX_SCALE)
+    expect(frame([500, 900, 0.5, 0.5], VIEW, 0).scale).toBeCloseTo(MAX_SCALE, 5)
   })
 
   it('produces a real transform for every actual place in the map', async () => {

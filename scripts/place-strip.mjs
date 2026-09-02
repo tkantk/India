@@ -602,6 +602,27 @@ async function measureReadAlong(slug) {
   // through any of them is well past the fold on every one of them, with
   // nothing here to keep in sync if a fifth place's intro is a different
   // length.
+  /**
+   * A PLACE WITH NO AUDIO CANNOT HAVE A READ-ALONG, and saying so beats
+   * timing out. All 36 places have text; only the ones whose narration has
+   * been rendered have clips, and the render is a separate, paid step. Before
+   * it runs, `s.total` stays 0 here forever and this waited the full 20s and
+   * then killed the whole gate on the alphabetically first place — so the
+   * other 35 places' LAYOUT went unchecked, which is the one thing that has
+   * to be right BEFORE spending money on audio.
+   *
+   * So: skip this measurement when there is no clip, and let every other
+   * check in this file still run. Skipping is reported, never silent — a
+   * read-along that stops working after the audio lands must still fail here.
+   */
+  const hasClip = await chrome.eval(`(${READALONG_SNAPSHOT})().total > 0`)
+    .catch(() => false)
+  // Same shape every other return uses. Returning a bare {readAlong:...} here
+  // once made all 74 phone rows report BAD with undefined fields, because the
+  // caller reads `.visible` — a guard that fails louder than the thing it
+  // guards against is worse than no guard.
+  if (!hasClip) return { visible: true, skipped: true, word: 0, total: 0 }
+
   const snap = await until(async () => {
     const s = await chrome.eval(READALONG_SNAPSHOT)
     return s.total > 0 && s.word >= Math.floor(s.total * 0.7) ? s : null
@@ -738,7 +759,7 @@ for (const slug of PLACES) {
       `  credit ${row.credit ? (row.credit.visible ? 'ok' : 'BAD') : 'MISSING'}` +
       `  tiles ${row.tiles.filter((t) => t.bigEnough && t.onScreen && t.clearOfBar && !t.labelClipped).length}/${row.tiles.length} ok` +
       `  ink ${row.ink ? `${row.ink.box.w}x${row.ink.box.h} (${Math.round((row.ink.fillFraction ?? 0) * 100)}% of map)` : 'MISSING'}` +
-      `  readAlong ${row.readAlong ? (row.readAlong.visible ? `ok (${row.readAlong.word}/${row.readAlong.total})` : 'BAD') : 'n/a'}` +
+      `  readAlong ${row.readAlong ? (row.readAlong.skipped ? 'skipped (no audio yet)' : row.readAlong.visible ? `ok (${row.readAlong.word}/${row.readAlong.total})` : 'BAD') : 'n/a'}` +
       (bad.length ? `\n      ${bad.join('\n      ')}` : ''),
     )
   }

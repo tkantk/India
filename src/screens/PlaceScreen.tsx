@@ -205,6 +205,15 @@ const ARRIVE_MS = 900
  *
  * The absolute floor is for a place whose bbox is a sliver (a single narrow
  * island), where a proportional margin would be no margin at all.
+ *
+ * THIS MATH WAS RIGHT AND STILL SILENTLY CAPPED. `camera.ts`'s own
+ * `MAX_SCALE` — a flight-wide ceiling, computed after this recipe decides
+ * `padding` — used to be 12, tuned against geometry this app no longer
+ * ships. Delhi's own 46% above was the INTENDED outcome of this constant;
+ * capped at the old 12 it only ever reached 20%, and Chandigarh (whose tiny
+ * bbox asks for 60x here) landed at 5% — a speck, and `place:strip`'s own
+ * failure. Nothing here was wrong; the cap in the OTHER file was stale. See
+ * `MAX_SCALE`'s own comment for the full derivation of its replacement.
  */
 const ARRIVAL_MARGIN = 0.16
 const MIN_MARGIN = 6
@@ -836,11 +845,17 @@ function Greeting({ script }: { script: string }) {
 }
 
 /**
- * Thirty-two of the thirty-six places have no page written yet, and the tour
- * tells every child to tap any state. So this is a real page rather than an
- * error: the state is still lit, its border still drawn, its neighbours
- * still there — and the four that ARE written are offered, so a tap that
- * found nothing does not end in a dead end.
+ * ALL THIRTY-SIX PLACES ARE NOW WRITTEN, so a child cannot reach this page
+ * through the map any more. It stays because it is what he would see if a
+ * content file ever went missing, and because the tour tells every child to
+ * tap any state — a tap that finds nothing must not end in a dead end. The
+ * state is still lit, its border still drawn, its neighbours still there,
+ * and the places that DO exist are offered as somewhere to go.
+ *
+ * It is covered by tests against a synthetic slug rather than a real one:
+ * this comment used to say "thirty-two of the thirty-six have no page yet",
+ * and four tests used Gujarat as their example, and all five went stale the
+ * hour the last place was written. Do not point them back at a real name.
  */
 function NotWrittenYet({ name, onPick }: { name: string; onPick?: (slug: string) => void }) {
   return (

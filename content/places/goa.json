@@ -1,0 +1,106 @@
+{
+  "id": "goa",
+  "name": "Goa",
+  "type": "state",
+  "capital": "Panaji",
+  "ambience": "ocean",
+  "intro": {
+    "id": "goa.intro",
+    "kind": "intro",
+    "text": "This is Goa, the smallest state in the whole of India. The sea runs all the way down one side of it and the hills of the Western Ghats stand up along the other. For four hundred and fifty years Goa was ruled by Portugal, which is a country very far away. Maharashtra is just above it. The main city is Panaji.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "goa" },
+      { "word": 12, "do": "revealSymbol", "arg": "arabian-sea" },
+      { "word": 52, "do": "lightNeighbour", "arg": "maharashtra" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "goa.card.animal",
+      "kind": "card",
+      "text": "The gaur is Goa's own animal: a wild cow, and the biggest wild cow there is. A big one stands taller at the shoulder than a grown-up does.",
+      "species": "gaur"
+    },
+    "food": {
+      "id": "goa.card.food",
+      "kind": "card",
+      "text": "Bebinca is a cake with anywhere from seven to sixteen layers in it. Each layer goes on thin and gets cooked before the next one is poured over the top of it."
+    },
+    "festival": {
+      "id": "goa.card.festival",
+      "kind": "card",
+      "text": "For four days at Carnival, Goa is handed over to a king called King Momo. He is really somebody who lives here. There are floats and dancing in the streets."
+    },
+    "hello": {
+      "id": "goa.card.hello",
+      "kind": "card",
+      "text": "In Goa people speak Konkani and say Namaskar. Konkani gets written down two ways here: in the same letters as Hindi, and in the same letters as English.",
+      "script": "नमस्कार",
+      "lang": "kok-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "goa.dudhsagar-falls",
+      "name": "Dudhsagar Falls",
+      "short": "Dudhsagar Falls",
+      "photoQuery": "Dudhsagar Falls",
+      "scene": "railway-falls",
+      "line": {
+        "id": "goa.dudhsagar-falls.line",
+        "kind": "landmark",
+        "text": "Dudhsagar means sea of milk, and that is what this looks like: white water coming down the mountain in four goes, one after another. A railway crosses right in front of it, so trains go past with all that falling behind them.",
+        "cues": [{ "word": 13, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    },
+    {
+      "id": "goa.palolem-beach",
+      "name": "Palolem Beach",
+      "short": "Palolem Beach",
+      "photoQuery": "Palolem Beach Goa",
+      "scene": "cove-beach",
+      "line": {
+        "id": "goa.palolem-beach.line",
+        "kind": "landmark",
+        "text": "This beach is one long curve, and from either end of it you can see all the way to the other end. The water gets deeper very slowly here, so it is a good place to swim, and there are rocks at both ends poking out into the sea."
+      }
+    },
+    {
+      "id": "goa.bom-jesus",
+      "name": "Basilica of Bom Jesus",
+      "short": "Bom Jesus",
+      "photoQuery": "Basilica of Bom Jesus Old Goa",
+      "scene": "old-church",
+      "line": {
+        "id": "goa.bom-jesus.line",
+        "kind": "landmark",
+        "text": "This church was finished more than four hundred years ago and it is still standing. The front of it is bare brown stone, and set into that stone, high up, are round windows like the portholes on a ship."
+      }
+    },
+    {
+      "id": "goa.fort-aguada",
+      "name": "Fort Aguada",
+      "short": "Fort Aguada",
+      "photoQuery": "Fort Aguada",
+      "scene": "lighthouse-fort",
+      "line": {
+        "id": "goa.fort-aguada.line",
+        "kind": "landmark",
+        "text": "Aguada means watery. There is a spring inside this fort and a tank that holds millions of gallons of fresh water, and ships used to stop here to fill their barrels up. It has a lighthouse of its own as well."
+      }
+    },
+    {
+      "id": "goa.tambdi-surla",
+      "name": "Mahadev Temple, Tambdi Surla",
+      "short": "Tambdi Surla",
+      "photoQuery": "Mahadev Temple Tambdi Surla",
+      "scene": "forest-temple",
+      "line": {
+        "id": "goa.tambdi-surla.line",
+        "kind": "landmark",
+        "text": "This little temple is built of black stone and it stands on its own in a clearing, deep in the forest at the foot of the hills. It is so far in and so well hidden that nobody ever came along and knocked it down.",
+        "cues": [{ "word": 2, "do": "playSfx", "arg": "temple-bell" }]
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -111,6 +111,18 @@ describe('collectRuns against the real, shipped content', () => {
   // place's lines must never carry it, or a --only on one place could widen
   // into another's.
   it("every real place's own lines share one place id, and no two places share theirs", () => {
+    // The census, not hand-listed: whatever content/places/*.json actually
+    // holds today, read the same way collectRuns() itself reads it. Locking
+    // this to a literal list of slugs is exactly the pattern that already
+    // bit this project once (ART_VERBS) — the invariant worth asserting is
+    // that every FILE's own id ends up as its own group of exactly ten
+    // lines, not any particular count or set of names.
+    const placesDir = 'content/places'
+    const expectedPlaces = readdirSync(placesDir)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => JSON.parse(readFileSync(join(placesDir, f), 'utf8')).id)
+      .sort()
+
     const runs = collectRuns()
     const byPlace = new Map()
     for (const run of runs) {
@@ -119,7 +131,7 @@ describe('collectRuns against the real, shipped content', () => {
       if (!byPlace.has(place)) byPlace.set(place, [])
       byPlace.get(place).push(...run.map((l) => l.id))
     }
-    expect([...byPlace.keys()].sort()).toEqual(['delhi', 'kerala', 'odisha', 'rajasthan'])
+    expect([...byPlace.keys()].sort()).toEqual(expectedPlaces)
     for (const [place, ids] of byPlace) {
       expect(ids.length, `${place} does not have exactly 10 lines`).toBe(10)
       for (const id of ids) expect(id.startsWith(`${place}.`), `${id} tagged with the wrong place`).toBe(true)

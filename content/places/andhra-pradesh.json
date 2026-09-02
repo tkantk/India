@@ -1,0 +1,103 @@
+{
+  "id": "andhra-pradesh",
+  "name": "Andhra Pradesh",
+  "type": "state",
+  "capital": "Amaravati",
+  "ambience": "ocean",
+  "intro": {
+    "id": "andhra-pradesh.intro",
+    "kind": "intro",
+    "text": "This is Andhra Pradesh, on the east coast of the south of India. The sea runs along its whole east side, almost a thousand kilometres of it, and big rivers come down and empty into the sea. Telangana, next door, used to be part of this state until it was made a state of its own. The main city is Amaravati.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "andhra-pradesh" },
+      { "word": 37, "do": "lightNeighbour", "arg": "telangana" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "andhra-pradesh.card.animal",
+      "kind": "card",
+      "text": "The blackbuck lives out on the flat grassy land here. The males have long horns that twist round and round like a corkscrew, and they can run as fast as a car.",
+      "species": "blackbuck"
+    },
+    "food": {
+      "id": "andhra-pradesh.card.food",
+      "kind": "card",
+      "text": "Pootharekulu is a sweet made of sheets so thin you can nearly see through them, like paper. Sugar and nuts go inside, and you eat the whole thing, paper and all."
+    },
+    "festival": {
+      "id": "andhra-pradesh.card.festival",
+      "kind": "card",
+      "text": "Ugadi is the new year here. Everybody eats a spoonful of pachadi, which is sweet and sour and salty and bitter all at once, because a year has all of those in it."
+    },
+    "hello": {
+      "id": "andhra-pradesh.card.hello",
+      "kind": "card",
+      "text": "In Andhra Pradesh people say Namaskaram. The language is Telugu, and somebody once noticed that nearly every word in it ends in a vowel: an a, or an i, or a u.",
+      "script": "నమస్కారం",
+      "lang": "te"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "andhra-pradesh.borra-caves",
+      "name": "Borra Caves",
+      "short": "Borra Caves",
+      "photoQuery": "Borra Caves Andhra Pradesh",
+      "scene": "caves",
+      "line": {
+        "id": "andhra-pradesh.borra-caves.line",
+        "kind": "landmark",
+        "text": "This is a hole in a hillside that you can walk down into, and it goes eighty metres under the ground. A river made it, dripping through the rock. Stones hang down from the roof like icicles, and other stones grow up off the floor to meet them."
+      }
+    },
+    {
+      "id": "andhra-pradesh.gandikota",
+      "name": "Gandikota",
+      "short": "Gandikota",
+      "photoQuery": "Gandikota gorge Andhra Pradesh",
+      "scene": "gorge",
+      "line": {
+        "id": "andhra-pradesh.gandikota.line",
+        "kind": "landmark",
+        "text": "A river has sawn a slot down through the red rock here. In one place the hills squeeze so close together that the water has only a hundred metres to get through. There is an old fort on the top, and you can stand at the edge and look straight down."
+      }
+    },
+    {
+      "id": "andhra-pradesh.lepakshi-bull",
+      "name": "The Bull of Lepakshi",
+      "short": "Lepakshi Bull",
+      "photoQuery": "Lepakshi Nandi monolithic bull",
+      "scene": "stone-bull",
+      "line": {
+        "id": "andhra-pradesh.lepakshi-bull.line",
+        "kind": "landmark",
+        "text": "This bull is cut out of one single piece of stone. He is six metres tall and nine metres long, lying down with carved garlands and bells around his neck, and he is looking across the fields at a huge stone snake two hundred metres away."
+      }
+    },
+    {
+      "id": "andhra-pradesh.talakona-falls",
+      "name": "Talakona Falls",
+      "short": "Talakona Falls",
+      "photoQuery": "Talakona Waterfall Andhra Pradesh",
+      "scene": "waterfall",
+      "line": {
+        "id": "andhra-pradesh.talakona-falls.line",
+        "kind": "landmark",
+        "text": "The water comes over the lip of a cliff here and drops eighty metres to the forest below, one long white rope of it. Down in those trees, if you are lucky, you might see a mouse deer, or a slow little animal with huge round eyes called a loris."
+      }
+    },
+    {
+      "id": "andhra-pradesh.etikoppaka-toys",
+      "name": "The Toys of Etikoppaka",
+      "short": "Etikoppaka Toys",
+      "photoQuery": "Etikoppaka toys",
+      "scene": "wooden-toys",
+      "line": {
+        "id": "andhra-pradesh.etikoppaka-toys.line",
+        "kind": "landmark",
+        "text": "These toys are turned on a spinning lathe out of soft wood: spinning tops, rattles, little animals. The colours on them are not paint. They come out of seeds and roots and leaves, which is why they are safe for a very small child to play with."
+      }
+    }
+  ]
+}

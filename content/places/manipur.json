@@ -1,0 +1,111 @@
+{
+  "id": "manipur",
+  "name": "Manipur",
+  "type": "state",
+  "capital": "Imphal",
+  "ambience": "river",
+  "intro": {
+    "id": "manipur.intro",
+    "kind": "intro",
+    "text": "This is Manipur. The middle of it is a flat oval valley with a great lake lying in it, and blue mountains standing all the way round like the rim of a bowl. Nagaland is its neighbour above. The main city is Imphal, down in the valley.",
+    "cues": [
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "manipur"
+      },
+      {
+        "word": 33,
+        "do": "lightNeighbour",
+        "arg": "nagaland"
+      }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "manipur.card.animal",
+      "kind": "card",
+      "text": "The sangai is a deer that lives on floating ground. Its hooves are made for it, so it can walk about on a mat of rotted plants with only water underneath.",
+      "species": "sangai"
+    },
+    "food": {
+      "id": "manipur.card.food",
+      "kind": "card",
+      "text": "Eromba is vegetables boiled soft and then mashed up by hand, with chillies and a scrap of fermented fish in it. The fermented fish is called ngari and it smells enormous."
+    },
+    "festival": {
+      "id": "manipur.card.festival",
+      "kind": "card",
+      "text": "At Yaoshang, when the moon comes up, everyone joins hands in a big circle and dances the thabal chongba, hopping on one foot and swinging the other across."
+    },
+    "hello": {
+      "id": "manipur.card.hello",
+      "kind": "card",
+      "text": "In Manipur the writing has letters named after you. Every one is a part of your body. The first, kok, means head. Then sam, hair. Then lai, forehead. Then mit, eye.",
+      "script": "ꯀ ꯁ ꯂ ꯃ",
+      "lang": "mni-Mtei"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "manipur.loktak",
+      "name": "Loktak Lake",
+      "short": "Loktak Lake",
+      "photoQuery": "Loktak Lake Manipur",
+      "scene": "floating-rings",
+      "line": {
+        "id": "manipur.loktak.line",
+        "kind": "landmark",
+        "text": "This is the biggest freshwater lake in the north-east, and it is covered in floating islands. Some the lake made by itself. The round ones are built on purpose, by fishermen, so that fish swim inside the ring and stay there."
+      }
+    },
+    {
+      "id": "manipur.keibul-lamjao",
+      "name": "Keibul Lamjao National Park",
+      "short": "Keibul Lamjao",
+      "photoQuery": "Keibul Lamjao National Park",
+      "scene": "floating-meadow",
+      "line": {
+        "id": "manipur.keibul-lamjao.line",
+        "kind": "landmark",
+        "text": "This is the only national park in the world that floats. The ground is a thick mat of rotted-down plants lying on top of the lake, and deer walk about on it all day with nothing but water underneath their feet."
+      }
+    },
+    {
+      "id": "manipur.kangla",
+      "name": "Kangla Fort",
+      "short": "Kangla Fort",
+      "photoQuery": "Kangla Fort Imphal",
+      "scene": "guardian-beasts",
+      "line": {
+        "id": "manipur.kangla.line",
+        "kind": "landmark",
+        "text": "Two huge beasts stand guard on this wall, each with the body of a lion and the head of a dragon. They are called the Kanglasha, which means the dragons of the Kangla. This was where the kings of Manipur lived."
+      }
+    },
+    {
+      "id": "manipur.ima-keithel",
+      "name": "Ima Keithel",
+      "short": "Ima Keithel",
+      "photoQuery": "Ima Keithel Imphal",
+      "scene": "market",
+      "line": {
+        "id": "manipur.ima-keithel.line",
+        "kind": "landmark",
+        "text": "This market has about five thousand stalls, and every single one of them is run by a woman. It is the biggest market like that in Asia. They sell fish and vegetables and cloth and spices and toys. It started in the sixteenth century."
+      }
+    },
+    {
+      "id": "manipur.shirui-lily",
+      "name": "The Shirui Lily",
+      "short": "Shirui Lily",
+      "photoQuery": "Lilium mackliniae Shirui lily",
+      "scene": "lily",
+      "line": {
+        "id": "manipur.shirui-lily.line",
+        "kind": "landmark",
+        "text": "This lily grows on the high slopes of one mountain in Manipur, and in one valley next door, and nowhere else in the world. The flowers hang downwards like little bells, pale pink inside, and they open in May as the rains begin."
+      }
+    }
+  ]
+}

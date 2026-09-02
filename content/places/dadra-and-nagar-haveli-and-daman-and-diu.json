@@ -1,0 +1,103 @@
+{
+  "id": "dadra-and-nagar-haveli-and-daman-and-diu",
+  "name": "Dadra and Nagar Haveli and Daman and Diu",
+  "type": "ut",
+  "capital": "Daman",
+  "ambience": "ocean",
+  "intro": {
+    "id": "dadra-and-nagar-haveli-and-daman-and-diu.intro",
+    "kind": "intro",
+    "text": "This place has a very long name: Dadra and Nagar Haveli and Daman and Diu. It is in four pieces. Daman sits on the coast of Gujarat, Diu is an island just off it, and the other two are inland, inside Gujarat. And inside one of those there is a little piece of Gujarat again. The main town is Daman.",
+    "cues": [
+      { "word": 7, "do": "highlightState", "arg": "dadra-and-nagar-haveli-and-daman-and-diu" },
+      { "word": 26, "do": "lightNeighbour", "arg": "gujarat" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.card.animal",
+      "kind": "card",
+      "text": "Flamingos come to the marsh in Diu. One stirs the mud with its feet, sucks water in through its beak and strains out the little creatures. That is what turns it pink.",
+      "species": "greater-flamingo"
+    },
+    "food": {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.card.food",
+      "kind": "card",
+      "text": "Umbadiyu is cooked in a clay pot turned upside down and set in a fire. Potatoes and beans and purple yams go inside, and the smoke gets into all of it."
+    },
+    "festival": {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.card.festival",
+      "kind": "card",
+      "text": "People here paint their walls white, using rice ground up in water. Everybody in the picture is two triangles joined at the tips, dancing round a man with a gourd horn."
+    },
+    "hello": {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.card.hello",
+      "kind": "card",
+      "text": "When people meet here they say Kem Cho, which really means: how are you? And in Diu there is a language of its own left over from Portugal, still spoken today.",
+      "script": "કેમ છો?",
+      "lang": "gu"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.diu-fort",
+      "name": "Diu Fort",
+      "short": "Diu Fort",
+      "photoQuery": "Diu Fort cannons",
+      "scene": "cannon-fort",
+      "line": {
+        "id": "dadra-and-nagar-haveli-and-daman-and-diu.diu-fort.line",
+        "kind": "landmark",
+        "text": "This fort was built beside the sea nearly five hundred years ago, on a hill above the water. The cannons are still up on the wall. They are made of brass, and they are still pointing out at the sea."
+      }
+    },
+    {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.panikotha",
+      "name": "Panikotha",
+      "short": "Panikotha",
+      "photoQuery": "Panikotha Fortim do Mar Diu",
+      "scene": "sea-fort",
+      "line": {
+        "id": "dadra-and-nagar-haveli-and-daman-and-diu.panikotha.line",
+        "kind": "landmark",
+        "text": "This little fort stands out in the water, in the channel between the island and the mainland, with nothing at all around it. It is shaped rather like a ship. The only way to get to it is in a boat."
+      }
+    },
+    {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.naida-caves",
+      "name": "Naida Caves",
+      "short": "Naida Caves",
+      "photoQuery": "Naida Caves Diu",
+      "scene": "cut-caves",
+      "line": {
+        "id": "dadra-and-nagar-haveli-and-daman-and-diu.naida-caves.line",
+        "kind": "landmark",
+        "text": "Somebody cut great yellow rooms out of this hillside, one opening into the next, and then left them. Daylight comes down through the gaps in the roof. Tree roots hang all the way through from the top, still looking for the ground."
+      }
+    },
+    {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.nagoa-beach",
+      "name": "Nagoa Beach",
+      "short": "Nagoa Beach",
+      "photoQuery": "Nagoa Beach Diu",
+      "scene": "beach",
+      "line": {
+        "id": "dadra-and-nagar-haveli-and-daman-and-diu.nagoa-beach.line",
+        "kind": "landmark",
+        "text": "This beach is bent right round in a curve, the shape of a horseshoe, with the sea in the middle of it. It is the beach everybody in Diu goes to, so on a warm day there are a great many people on it."
+      }
+    },
+    {
+      "id": "dadra-and-nagar-haveli-and-daman-and-diu.ghoghla-limpets",
+      "name": "The Limpets of Ghoghla",
+      "short": "Ghoghla Limpets",
+      "photoQuery": "limpets Ghoghla Beach Diu",
+      "scene": "limpets",
+      "line": {
+        "id": "dadra-and-nagar-haveli-and-daman-and-diu.ghoghla-limpets.line",
+        "kind": "landmark",
+        "text": "Every one of these little ridged shells has a snail underneath it, holding on to the rock with one big muscly foot. It holds so hard that you cannot pull it off without hurting it. So do not. Crouch down and look at it instead."
+      }
+    }
+  ]
+}

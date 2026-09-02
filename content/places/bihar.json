@@ -1,0 +1,109 @@
+{
+  "id": "bihar",
+  "name": "Bihar",
+  "type": "state",
+  "capital": "Patna",
+  "ambience": "river",
+  "intro": {
+    "id": "bihar.intro",
+    "kind": "intro",
+    "text": "This is Bihar, over in the east of India. The river Ganga runs right across the middle of it, from west to east, and on both sides of the river the land lies flat and green. Uttar Pradesh is on one side of Bihar and West Bengal is on the other. The main city is Patna, and it stands on the bank of the Ganga.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "bihar" },
+      { "word": 11, "do": "traceRiver", "arg": "ganga" },
+      { "word": 36, "do": "lightNeighbour", "arg": "uttar-pradesh" },
+      { "word": 45, "do": "lightNeighbour", "arg": "west-bengal" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "bihar.card.animal",
+      "kind": "card",
+      "text": "The Ganga has dolphins in it. They are nearly blind, so they hunt by clicking and then listening for the echo. In shallow water a dolphin swims on its side.",
+      "species": "ganges-river-dolphin"
+    },
+    "food": {
+      "id": "bihar.card.food",
+      "kind": "card",
+      "text": "Litti chokha. A litti is a ball of dough with roasted gram flour packed inside, cooked on a coal fire. Chokha is potato and aubergine, roasted and smashed up."
+    },
+    "festival": {
+      "id": "bihar.card.festival",
+      "kind": "card",
+      "text": "At Chhath, people stand in the river with the water round their knees and hold their offerings up to the sun. They do it as the sun sets, and again when it rises.",
+      "sfx": "water-ripple"
+    },
+    "hello": {
+      "id": "bihar.card.hello",
+      "kind": "card",
+      "text": "In Bihar people speak Maithili, Magahi and Bhojpuri. A polite hello is Pranam, and the word itself means bowing, so you bow a little as you say it.",
+      "script": "प्रणाम",
+      "lang": "bho-Deva"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "bihar.mahabodhi",
+      "name": "Mahabodhi Temple, Bodh Gaya",
+      "short": "Mahabodhi",
+      "photoQuery": "Mahabodhi Temple Bodh Gaya",
+      "scene": "spire-temple",
+      "line": {
+        "id": "bihar.mahabodhi.line",
+        "kind": "landmark",
+        "text": "A tall pointed tower stands here, and its sides are covered in row upon row of little carved niches, with a stone figure sitting inside each one. Behind the temple grows a fig tree, and people come from all over the world to sit quietly underneath it.",
+        "cues": [{ "word": 29, "do": "playSfx", "arg": "temple-bell" }]
+      }
+    },
+    {
+      "id": "bihar.golghar",
+      "name": "Golghar, Patna",
+      "short": "Golghar",
+      "photoQuery": "Golghar Patna",
+      "scene": "granary-dome",
+      "line": {
+        "id": "bihar.golghar.line",
+        "kind": "landmark",
+        "text": "This is a giant bowl turned upside down, built long ago to hold grain so that nobody would go hungry. A stair spirals up the outside of it. Men carried sacks up that stair, tipped the grain in through a hole at the top, and came down the other one."
+      }
+    },
+    {
+      "id": "bihar.barabar-caves",
+      "name": "Barabar Caves",
+      "short": "Barabar Caves",
+      "photoQuery": "Barabar Caves",
+      "scene": "granite-cave",
+      "line": {
+        "id": "bihar.barabar-caves.line",
+        "kind": "landmark",
+        "text": "These rooms were cut into the inside of one lump of granite, which is a very hard rock. Then somebody rubbed the walls until they shone like a mirror. Speak in there and your voice comes straight back at you, over and over again."
+      }
+    },
+    {
+      "id": "bihar.rajgir-ropeway",
+      "name": "Rajgir Ropeway",
+      "short": "Rajgir Ropeway",
+      "photoQuery": "Rajgir ropeway",
+      "scene": "ropeway",
+      "line": {
+        "id": "bihar.rajgir-ropeway.line",
+        "kind": "landmark",
+        "text": "You go up this hill sitting on a little chair hung from a wire, one person to a chair, with nothing under your feet at all but green hillside. At the top there is a big round white tower, looking out over the valley.",
+        "cues": [{ "word": 5, "do": "playSfx", "arg": "whoosh-soft" }]
+      }
+    },
+    {
+      "id": "bihar.ganga-dolphins",
+      "name": "Vikramshila Dolphin Sanctuary",
+      "short": "Ganga Dolphins",
+      "photoQuery": "Ganges river dolphin Bihar",
+      "scene": "river-dolphin",
+      "line": {
+        "id": "bihar.ganga-dolphins.line",
+        "kind": "landmark",
+        "text": "Sixty kilometres of this river are kept safe for the dolphins. You sit in a boat and you wait, and mostly what you get is a tail: up, over, and gone. Then the water closes and you are watching an empty river again.",
+        "cues": [{ "word": 34, "do": "playSfx", "arg": "water-ripple" }]
+      }
+    }
+  ]
+}

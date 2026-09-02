@@ -1,0 +1,103 @@
+{
+  "id": "andaman-nicobar",
+  "name": "Andaman & Nicobar",
+  "type": "ut",
+  "capital": "Sri Vijaya Puram",
+  "ambience": "island",
+  "intro": {
+    "id": "andaman-nicobar.intro",
+    "kind": "intro",
+    "text": "This is Andaman and Nicobar, a long line of islands out in the sea, a very long way from the rest of India. It is more than a thousand kilometres of open water from Chennai to here. There are eight hundred and thirty-six islands, and only thirty-one of them have anybody living on them at all. The main town is called Sri Vijaya Puram. It used to be called Port Blair.",
+    "cues": [
+      { "word": 2, "do": "highlightState", "arg": "andaman-nicobar" },
+      { "word": 13, "do": "revealSymbol", "arg": "bay-of-bengal" }
+    ]
+  },
+  "card": {
+    "animal": {
+      "id": "andaman-nicobar.card.animal",
+      "kind": "card",
+      "text": "The dugong is the animal of these islands. He is as long as a car, he lives in the sea, and all he eats is grass off the sea floor. People call him the sea cow.",
+      "species": "dugong"
+    },
+    "food": {
+      "id": "andaman-nicobar.card.food",
+      "kind": "card",
+      "text": "A thousand years ago somebody wrote these islands down as Coconut Island. Coconut trees still grow all along the shore, and the boats still come in loaded with fish."
+    },
+    "festival": {
+      "id": "andaman-nicobar.card.festival",
+      "kind": "card",
+      "text": "Nearly everybody here came from somewhere else in India: from Bengal, from Tamil Nadu, from Kerala. Each family brought its own festivals, so all of those happen here."
+    },
+    "hello": {
+      "id": "andaman-nicobar.card.hello",
+      "kind": "card",
+      "text": "People here say Namaste in Hindi. But you will hear hello in Bengali too, and in Tamil, and in Telugu, because the families here came from all those places.",
+      "script": "नमस्ते",
+      "lang": "hi"
+    }
+  },
+  "landmarks": [
+    {
+      "id": "andaman-nicobar.radhanagar",
+      "name": "Radhanagar Beach",
+      "short": "Radhanagar",
+      "photoQuery": "Radhanagar Beach Havelock Island",
+      "scene": "beach",
+      "line": {
+        "id": "andaman-nicobar.radhanagar.line",
+        "kind": "landmark",
+        "text": "White sand, water so clear and so blue that it looks like a swimming pool, and thick forest coming right down to the top of the beach. You have to come here on a boat. The waves are gentle, so you can go in."
+      }
+    },
+    {
+      "id": "andaman-nicobar.barren-island",
+      "name": "Barren Island",
+      "short": "Barren Island",
+      "photoQuery": "Barren Island volcano Andaman",
+      "scene": "volcano-island",
+      "line": {
+        "id": "andaman-nicobar.barren-island.line",
+        "kind": "landmark",
+        "text": "This island is a volcano, and it is the only one in the whole country that is still awake. It sits out in the sea by itself. Nobody lives on it, only a few wild goats, and it has boiled over more than ten times."
+      }
+    },
+    {
+      "id": "andaman-nicobar.baratang-caves",
+      "name": "The Limestone Caves at Baratang",
+      "short": "Baratang Caves",
+      "photoQuery": "Baratang limestone caves Andaman",
+      "scene": "caves",
+      "line": {
+        "id": "andaman-nicobar.baratang-caves.line",
+        "kind": "landmark",
+        "text": "Water drips through the roof of these caves, and every single drop leaves a speck of stone behind it. Thousands of years of dripping, and now the rock hangs down off the ceiling in long shapes, like candles that have melted."
+      }
+    },
+    {
+      "id": "andaman-nicobar.ross-island",
+      "name": "Ross Island",
+      "short": "Ross Island",
+      "photoQuery": "Ross Island Andaman ruins",
+      "scene": "ruined-island",
+      "line": {
+        "id": "andaman-nicobar.ross-island.line",
+        "kind": "landmark",
+        "text": "People built a whole little town on this island once, with a bakery and a church and a swimming pool, and then they went away and left it. The ruins are still standing among the palm trees, and spotted deer wander about in them."
+      }
+    },
+    {
+      "id": "andaman-nicobar.clownfish",
+      "name": "The Clownfish",
+      "short": "Clownfish",
+      "photoQuery": "clownfish sea anemone",
+      "scene": "anemone-fish",
+      "line": {
+        "id": "andaman-nicobar.clownfish.line",
+        "kind": "landmark",
+        "text": "This little orange fish lives inside a sea anemone, which has soft waving arms that sting. They would sting anything else that came near. The fish has a slippery coat that stops them, so it sleeps in there at night and nothing can get at it."
+      }
+    }
+  ]
+}
