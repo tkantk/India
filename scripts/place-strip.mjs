@@ -402,8 +402,39 @@ const LAYOUT = `(() => {
   // .stage transform, so no manual viewBox->screen mapping is needed the
   // way tour-strip.mjs's Mor measurement (a different element, drawn in its
   // own local viewBox) requires.
+  // TARGETED BY data-slug, NOT "the only lit path" — and that distinction is
+  // the whole of a 325-of-432-row failure. This used to require EXACTLY one
+  // lit path anywhere in the map. That held only while the 32 new places had
+  // no narration: an intro NAMES ITS NEIGHBOURS as it plays
+  // ("lightNeighbour"), "useMapNodes.ts"'s "highlight()" only ever ADDS the
+  // class, and nothing clears the previous one until a different page opens
+  // — all deliberate app behaviour, documented in "measureReadAlong"'s own
+  // "LEAVE NO TRACE" note. The moment the render landed, Andhra Pradesh's
+  // intro lit Telangana, Delhi's lit Haryana, and this measurement called
+  // every one of them "the state's own shape is not drawn."
+  //
+  // Measured, not assumed: 33 of the 36 places name at least one neighbour
+  // in their intro and every one of those 33 failed; the only two that never
+  // failed on any device are Andaman & Nicobar and Lakshadweep, the two
+  // island territories whose intros name no neighbour at all. (Ladakh names
+  // "Jammu and Kashmir" in prose with a "lightNeighbour" cue for it.)
+  //
+  // Every state path carries "data-slug" ("hitLayer.ts" writes it, and
+  // "useMapNodes.ts" selects on it), so the place's own shape can be asked
+  // for BY NAME. A neighbour being lit at the same time is now correctly
+  // irrelevant — it is the app working.
+  // NO REGEX HERE, deliberately. This whole script is a template literal, so
+  // a backslash in it is eaten as a template escape before Chrome ever sees
+  // the source: /#\/place\// arrived in the page as /#/place// and threw
+  // "Invalid regular expression flags" on the very first row. Plain string
+  // work has no escaping hazard to get wrong.
+  const PLACE_HASH = '#/place/'
+  const slug = location.hash.indexOf(PLACE_HASH) === 0
+    ? location.hash.slice(PLACE_HASH.length).split('?')[0]
+    : null
   const litPaths = all('.map .base path.lit')
-  const ink = litPaths.length === 1 ? box(litPaths[0].getBoundingClientRect()) : null
+  const ownLit = slug ? el('.map .base path.lit[data-slug="' + slug + '"]') : null
+  const ink = ownLit ? box(ownLit.getBoundingClientRect()) : null
 
   // EVERY TILE ON THE SHELF: nine of them, four cards then five landmarks,
   // DOM order — see PlaceScreen.tsx. Each carries its own word, and '.tile'
@@ -487,6 +518,16 @@ const LAYOUT = `(() => {
     // misplace .map's OWN box, and THAT is what a bar overlap on .map would
     // catch, whether or not the ink inside it is also wrong.
     mapOverBar: over(mapBox, bar),
+    // ROW-LEVEL, and recorded even when "ink" is null — which is exactly
+    // when it matters. These used to live only INSIDE "ink", and "ink" is
+    // null precisely when the count is not 1, so the reporter's own
+    // "N states lit, expected exactly 1" branch was unreachable dead code
+    // and every such row printed the misleading "the state's own shape is
+    // not drawn" instead. "Nothing is drawn" and "three states are lit" are
+    // opposite faults with opposite fixes; the gate must be able to say
+    // which one it saw.
+    litCount: litPaths.length,
+    litSlugs: litPaths.map((p) => p.getAttribute('data-slug')).filter(Boolean),
     ink: ink && {
       box: ink,
       litCount: litPaths.length,
@@ -615,8 +656,21 @@ async function measureReadAlong(slug) {
    * check in this file still run. Skipping is reported, never silent — a
    * read-along that stops working after the audio lands must still fail here.
    */
-  const hasClip = await chrome.eval(`(${READALONG_SNAPSHOT})().total > 0`)
-    .catch(() => false)
+  // POLLED, not read once. This was a single instantaneous read taken the
+  // moment after Play was pressed, so a clip that had simply not rendered
+  // its words yet was recorded as "no audio yet" — permanently, because the
+  // early return below never looks again. After the 32 places' narration
+  // landed, every phone row still reported "skipped (no audio yet)" while
+  // the intro was demonstrably playing (its `lightNeighbour` cues were
+  // firing, which is what broke the ink measurement above). A gate that
+  // silently skips its own check is worse than one that fails.
+  //
+  // Short window on purpose: long enough for a clip that exists, short
+  // enough that the genuinely-absent case does not cost 20s x 36 places.
+  const hasClip = await until(
+    () => chrome.eval(`(${READALONG_SNAPSHOT})().total > 0`).catch(() => false),
+    { every: 100, limit: 4000, what: `${slug}'s intro clip to load` },
+  ).catch(() => false)
   // Same shape every other return uses. Returning a bare {readAlong:...} here
   // once made all 74 phone rows report BAD with undefined fields, because the
   // caller reads `.visible` — a guard that fails louder than the thing it
@@ -721,9 +775,12 @@ function problems(row) {
     if (t.labelClipped) out.push(`tile "${t.label}"'s own label is clipped`)
   }
 
-  if (!row.ink) out.push("the state's own shape is not drawn (no single lit path found)")
-  else {
-    if (row.ink.litCount !== 1) out.push(`${row.ink.litCount} states lit, expected exactly 1`)
+  if (!row.ink) {
+    // Say WHICH of the two faults this is — see LAYOUT's own note on why
+    // these counts are now recorded at row level.
+    const lit = row.litSlugs?.length ? ` (${row.litCount} lit: ${row.litSlugs.join(', ')})` : ' (nothing lit)'
+    out.push(`the state's own shape is not drawn or not lit${lit}`)
+  } else {
     if (row.ink.clippedByMap) out.push("the drawn state pokes outside the map's own box")
     if (row.ink.fillFraction !== null && row.ink.fillFraction < MIN_FILL_FRACTION) {
       out.push(`the drawn state fills only ${row.ink.fillFraction} of the map box (floor ${MIN_FILL_FRACTION})`)
