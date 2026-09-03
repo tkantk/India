@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Kerala, a long thin strip of land down the west side of India. The sea is on one side and green hills are on the other. It rains a great deal here, so everything grows, and coconut palms lean over every road. Tamil Nadu is one of its neighbours. The main city has a very long name. Thiruvananthapuram.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "kerala" },
-      { "word": 44, "do": "lightNeighbour", "arg": "tamil-nadu" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "kerala"
+      },
+      {
+        "word": 44,
+        "do": "lightNeighbour",
+        "arg": "tamil-nadu"
+      }
     ]
   },
   "card": {
@@ -49,8 +57,14 @@
       "line": {
         "id": "kerala.backwaters.line",
         "kind": "landmark",
-        "text": "Behind the beaches, lakes and canals are all joined up together, so you can travel a very long way by boat and never once touch a road. Some of the boats have a roof of woven palm leaves, and people sleep on board.",
-        "cues": [{ "word": 20, "do": "playSfx", "arg": "water-ripple" }]
+        "text": "This is the Backwaters. Behind the beaches, lakes and canals are all joined up together, so you can travel a very long way by boat and never once touch a road. Some of the boats have a roof of woven palm leaves, and people sleep on board.",
+        "cues": [
+          {
+            "word": 24,
+            "do": "playSfx",
+            "arg": "water-ripple"
+          }
+        ]
       }
     },
     {
@@ -62,7 +76,7 @@
       "line": {
         "id": "kerala.munnar.line",
         "kind": "landmark",
-        "text": "Every green bump on these hills is a tea bush, clipped flat on top so a picker can reach right across it. For the best tea they take only the bud and the two young leaves under it. Those leaves dry small and dark, and become a cup of tea."
+        "text": "These are Munnar Tea Hills. Every green bump on these hills is a tea bush, clipped flat on top so a picker can reach right across it. For the best tea they take only the bud and the two young leaves under it. Those leaves dry small and dark, and become a cup of tea."
       }
     },
     {
@@ -74,7 +88,7 @@
       "line": {
         "id": "kerala.athirappilly.line",
         "kind": "landmark",
-        "text": "Here the river runs to the edge of a rock and simply falls off it. The water drops much further than a house is tall, and it lands so hard that mist hangs in the air above the pool. You hear this place long before you see it."
+        "text": "This is Athirappilly Falls. Here the river runs to the edge of a rock and simply falls off it. The water drops much further than a house is tall, and it lands so hard that mist hangs in the air above the pool. You hear this place long before you see it."
       }
     },
     {
@@ -98,8 +112,14 @@
       "line": {
         "id": "kerala.periyar.line",
         "kind": "landmark",
-        "text": "You go out on this lake in a boat, and then you wait. You might see wild elephants come down to the edge to drink, and bring their babies with them. There are tigers back in those trees as well, but they are so good at hiding that hardly anybody sees one.",
-        "cues": [{ "word": 17, "do": "playSfx", "arg": "elephant" }]
+        "text": "This is Periyar. You go out on this lake in a boat, and then you wait. You might see wild elephants come down to the edge to drink, and bring their babies with them. There are tigers back in those trees as well, but they are so good at hiding that hardly anybody sees one.",
+        "cues": [
+          {
+            "word": 20,
+            "do": "playSfx",
+            "arg": "elephant"
+          }
+        ]
       }
     }
   ]

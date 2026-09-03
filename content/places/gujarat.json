@@ -9,9 +9,21 @@
     "kind": "intro",
     "text": "This is Gujarat, on the west side of India, and it has more sea coast than any other state. Up in one corner is the Rann of Kutch, where the sea comes in and the sun dries it up and leaves the ground white with salt. Rajasthan is above it. The capital is Gandhinagar, and the big city is Ahmedabad.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "gujarat" },
-      { "word": 13, "do": "revealSymbol", "arg": "arabian-sea" },
-      { "word": 46, "do": "lightNeighbour", "arg": "rajasthan" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "gujarat"
+      },
+      {
+        "word": 13,
+        "do": "revealSymbol",
+        "arg": "arabian-sea"
+      },
+      {
+        "word": 46,
+        "do": "lightNeighbour",
+        "arg": "rajasthan"
+      }
     ]
   },
   "card": {
@@ -50,7 +62,13 @@
         "id": "gujarat.gir-forest.line",
         "kind": "landmark",
         "text": "Lions live in this forest. Not in a zoo — out here, hunting, with their own cubs. This is the only place in the whole of Asia where lions are left, and once there were only about a dozen of them in all of India.",
-        "cues": [{ "word": 0, "do": "playSfx", "arg": "lion-roar" }]
+        "cues": [
+          {
+            "word": 0,
+            "do": "playSfx",
+            "arg": "lion-roar"
+          }
+        ]
       }
     },
     {
@@ -62,7 +80,7 @@
       "line": {
         "id": "gujarat.white-rann.line",
         "kind": "landmark",
-        "text": "The ground here is salt. Sea water spreads over this place, and then the dry season comes and takes the water away again, and what it leaves behind is a white flat floor going all the way to the sky."
+        "text": "This is the Great Rann of Kutch. The ground here is salt. Sea water spreads over this place, and then the dry season comes and takes the water away again, and what it leaves behind is a white flat floor going all the way to the sky."
       }
     },
     {
@@ -86,7 +104,7 @@
       "line": {
         "id": "gujarat.modhera-temple.line",
         "kind": "landmark",
-        "text": "In front of this temple is a great stone tank, with steps going down into the water on every side. Little shrines are set in among the steps, so the whole tank is a staircase full of tiny temples."
+        "text": "This is Modhera Sun Temple. In front of this temple is a great stone tank, with steps going down into the water on every side. Little shrines are set in among the steps, so the whole tank is a staircase full of tiny temples."
       }
     },
     {

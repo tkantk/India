@@ -9,9 +9,21 @@
     "kind": "intro",
     "text": "This is Chhattisgarh, in the middle of India, and nearly half of it is forest. In the part called Bastar the trees go on and on, and rivers come tumbling off the cliffs in the rain. Madhya Pradesh is on one side of it and Odisha is on the other. The main city is Raipur.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "chhattisgarh" },
-      { "word": 36, "do": "lightNeighbour", "arg": "madhya-pradesh" },
-      { "word": 45, "do": "lightNeighbour", "arg": "odisha" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "chhattisgarh"
+      },
+      {
+        "word": 36,
+        "do": "lightNeighbour",
+        "arg": "madhya-pradesh"
+      },
+      {
+        "word": 45,
+        "do": "lightNeighbour",
+        "arg": "odisha"
+      }
     ]
   },
   "card": {
@@ -49,8 +61,14 @@
       "line": {
         "id": "chhattisgarh.chitrakote-falls.line",
         "kind": "landmark",
-        "text": "This is the widest waterfall in India. When the rains come the water spreads right along the cliff in a great curve, so that the whole horseshoe of rock turns into falling water at once.",
-        "cues": [{ "word": 12, "do": "playSfx", "arg": "water-ripple" }]
+        "text": "This is Chitrakote Falls. This is the widest waterfall in India. When the rains come the water spreads right along the cliff in a great curve, so that the whole horseshoe of rock turns into falling water at once.",
+        "cues": [
+          {
+            "word": 16,
+            "do": "playSfx",
+            "arg": "water-ripple"
+          }
+        ]
       }
     },
     {
@@ -62,7 +80,7 @@
       "line": {
         "id": "chhattisgarh.tirathgarh-falls.line",
         "kind": "landmark",
-        "text": "Here the water comes over the cliff in a wide curtain and falls the whole way down in one single go, without touching anything at all until it lands at the bottom."
+        "text": "This is Tirathgarh Falls. Here the water comes over the cliff in a wide curtain and falls the whole way down in one single go, without touching anything at all until it lands at the bottom."
       }
     },
     {
@@ -74,7 +92,7 @@
       "line": {
         "id": "chhattisgarh.kotumsar-cave.line",
         "kind": "landmark",
-        "text": "This cave runs a long way back into the hill, with stone icicles hanging off the roof. There are fish in the pools in there, and the fish are blind. Down in that dark there is nothing to look at anyway."
+        "text": "This is Kotumsar Cave. This cave runs a long way back into the hill, with stone icicles hanging off the roof. There are fish in the pools in there, and the fish are blind. Down in that dark there is nothing to look at anyway."
       }
     },
     {
@@ -86,8 +104,14 @@
       "line": {
         "id": "chhattisgarh.bhoramdeo.line",
         "kind": "landmark",
-        "text": "The outside of this stone temple is covered in carved figures, crowded together all over the walls. It was built about a thousand years ago, and somebody chipped out every single one of those figures by hand.",
-        "cues": [{ "word": 5, "do": "playSfx", "arg": "temple-bell" }]
+        "text": "This is Bhoramdeo Temple. The outside of this stone temple is covered in carved figures, crowded together all over the walls. It was built about a thousand years ago, and somebody chipped out every single one of those figures by hand.",
+        "cues": [
+          {
+            "word": 9,
+            "do": "playSfx",
+            "arg": "temple-bell"
+          }
+        ]
       }
     },
     {
@@ -99,7 +123,7 @@
       "line": {
         "id": "chhattisgarh.bastar-dokra.line",
         "kind": "landmark",
-        "text": "These golden animals are brass. Somebody made each one out of wax first, packed clay all round it, then baked the clay so the wax ran out of a little duct. Melted brass went in where the wax had been."
+        "text": "This is the Dokra Metal of Bastar. These golden animals are brass. Somebody made each one out of wax first, packed clay all round it, then baked the clay so the wax ran out of a little duct. Melted brass went in where the wax had been."
       }
     }
   ]

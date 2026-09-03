@@ -9,9 +9,21 @@
     "kind": "intro",
     "text": "This is Goa, the smallest state in the whole of India. The sea runs all the way down one side of it and the hills of the Western Ghats stand up along the other. For four hundred and fifty years Goa was ruled by Portugal, which is a country very far away. Maharashtra is just above it. The main city is Panaji.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "goa" },
-      { "word": 12, "do": "revealSymbol", "arg": "arabian-sea" },
-      { "word": 52, "do": "lightNeighbour", "arg": "maharashtra" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "goa"
+      },
+      {
+        "word": 12,
+        "do": "revealSymbol",
+        "arg": "arabian-sea"
+      },
+      {
+        "word": 52,
+        "do": "lightNeighbour",
+        "arg": "maharashtra"
+      }
     ]
   },
   "card": {
@@ -50,7 +62,13 @@
         "id": "goa.dudhsagar-falls.line",
         "kind": "landmark",
         "text": "Dudhsagar means sea of milk, and that is what this looks like: white water coming down the mountain in four goes, one after another. A railway crosses right in front of it, so trains go past with all that falling behind them.",
-        "cues": [{ "word": 13, "do": "playSfx", "arg": "water-ripple" }]
+        "cues": [
+          {
+            "word": 13,
+            "do": "playSfx",
+            "arg": "water-ripple"
+          }
+        ]
       }
     },
     {
@@ -62,7 +80,7 @@
       "line": {
         "id": "goa.palolem-beach.line",
         "kind": "landmark",
-        "text": "This beach is one long curve, and from either end of it you can see all the way to the other end. The water gets deeper very slowly here, so it is a good place to swim, and there are rocks at both ends poking out into the sea."
+        "text": "This is Palolem Beach. This beach is one long curve, and from either end of it you can see all the way to the other end. The water gets deeper very slowly here, so it is a good place to swim, and there are rocks at both ends poking out into the sea."
       }
     },
     {
@@ -74,7 +92,7 @@
       "line": {
         "id": "goa.bom-jesus.line",
         "kind": "landmark",
-        "text": "This church was finished more than four hundred years ago and it is still standing. The front of it is bare brown stone, and set into that stone, high up, are round windows like the portholes on a ship."
+        "text": "This is Basilica of Bom Jesus. This church was finished more than four hundred years ago and it is still standing. The front of it is bare brown stone, and set into that stone, high up, are round windows like the portholes on a ship."
       }
     },
     {
@@ -98,8 +116,14 @@
       "line": {
         "id": "goa.tambdi-surla.line",
         "kind": "landmark",
-        "text": "This little temple is built of black stone and it stands on its own in a clearing, deep in the forest at the foot of the hills. It is so far in and so well hidden that nobody ever came along and knocked it down.",
-        "cues": [{ "word": 2, "do": "playSfx", "arg": "temple-bell" }]
+        "text": "This is Mahadev Temple, Tambdi Surla. This little temple is built of black stone and it stands on its own in a clearing, deep in the forest at the foot of the hills. It is so far in and so well hidden that nobody ever came along and knocked it down.",
+        "cues": [
+          {
+            "word": 8,
+            "do": "playSfx",
+            "arg": "temple-bell"
+          }
+        ]
       }
     }
   ]

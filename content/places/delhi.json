@@ -9,9 +9,20 @@
     "kind": "intro",
     "text": "This is Delhi, and Delhi is not a state. It is a union territory, which means the government of the whole of India has a big say in how it is run. India's capital city, New Delhi, sits right inside it. Haryana wraps around three sides of it, and Uttar Pradesh is on the other side. Delhi is enormous and busy, with the river Yamuna running through it and trains that go under the ground.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "delhi" },
-      { "word": 12, "do": "highlightUnionTerritories" },
-      { "word": 41, "do": "lightNeighbour", "arg": "haryana" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "delhi"
+      },
+      {
+        "word": 12,
+        "do": "highlightUnionTerritories"
+      },
+      {
+        "word": 41,
+        "do": "lightNeighbour",
+        "arg": "haryana"
+      }
     ]
   },
   "card": {
@@ -50,7 +61,7 @@
       "line": {
         "id": "delhi.india-gate.line",
         "kind": "landmark",
-        "text": "This stone arch stands at the end of a very long lawn, and it is far taller than any house. Names are carved right across the stone, so that people who are gone are still remembered. In the evening families sit on the grass and eat ice cream."
+        "text": "This is India Gate. This stone arch stands at the end of a very long lawn, and it is far taller than any house. Names are carved right across the stone, so that people who are gone are still remembered. In the evening families sit on the grass and eat ice cream."
       }
     },
     {
@@ -62,7 +73,7 @@
       "line": {
         "id": "delhi.qutub-minar.line",
         "kind": "landmark",
-        "text": "Most of this tower is red sandstone, but near the top there is a band of white marble. It climbs in five sections, each thinner than the one below. Inside, hundreds of steps spiral round and round like a snail shell. Nobody climbs them now, so the top belongs to the birds."
+        "text": "This is Qutub Minar. Most of this tower is red sandstone, but near the top there is a band of white marble. It climbs in five sections, each thinner than the one below. Inside, hundreds of steps spiral round and round like a snail shell. Nobody climbs them now, so the top belongs to the birds."
       }
     },
     {
@@ -74,7 +85,7 @@
       "line": {
         "id": "delhi.red-fort.line",
         "kind": "landmark",
-        "text": "A wall of red stone runs right round this fort for about two and a half kilometres, so walking all the way beside it takes a long time. Inside there is a covered street of little shops. Water once ran through the rooms in a narrow channel to keep everybody cool."
+        "text": "This is Red Fort. A wall of red stone runs right round this fort for about two and a half kilometres, so walking all the way beside it takes a long time. Inside there is a covered street of little shops. Water once ran through the rooms in a narrow channel to keep everybody cool."
       }
     },
     {
@@ -86,7 +97,7 @@
       "line": {
         "id": "delhi.lotus-temple.line",
         "kind": "landmark",
-        "text": "This building is a flower. Twenty-seven white marble petals lean in together to make the walls and the roof, and nine pools of water lie around the outside. Anybody at all may come in, sit down, and be quiet for a while."
+        "text": "This is Lotus Temple. This building is a flower. Twenty-seven white marble petals lean in together to make the walls and the roof, and nine pools of water lie around the outside. Anybody at all may come in, sit down, and be quiet for a while."
       }
     },
     {
@@ -98,7 +109,7 @@
       "line": {
         "id": "delhi.humayuns-tomb.line",
         "kind": "landmark",
-        "text": "A great white dome sits on top of a red stone building, in the middle of a garden, and thin channels of water cut that garden into neat green squares. Have a good look at it. One day you will see the Taj Mahal, and you will notice how much it looks like this."
+        "text": "This is Humayun's Tomb. A great white dome sits on top of a red stone building, in the middle of a garden, and thin channels of water cut that garden into neat green squares. Have a good look at it. One day you will see the Taj Mahal, and you will notice how much it looks like this."
       }
     }
   ]

@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Uttar Pradesh, and its name means the northern state. More people live here than in any other state in India: more than two hundred and forty million of them. It is flat and farmed all over, and two great rivers cross it, the Ganga and the Yamuna. Delhi is on one side. The main city is Lucknow.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "uttar-pradesh" },
-      { "word": 49, "do": "lightNeighbour", "arg": "delhi" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "uttar-pradesh"
+      },
+      {
+        "word": 49,
+        "do": "lightNeighbour",
+        "arg": "delhi"
+      }
     ]
   },
   "card": {
@@ -48,7 +56,7 @@
       "line": {
         "id": "uttar-pradesh.taj-mahal.line",
         "kind": "landmark",
-        "text": "This is all white marble, so smooth it looks poured instead of cut, with coloured stones set into it in patterns of flowers. It is seventy-three metres high, and there is a long pool in front, so you get it twice: once standing up and once lying in the water."
+        "text": "This is the Taj Mahal. This is all white marble, so smooth it looks poured instead of cut, with coloured stones set into it in patterns of flowers. It is seventy-three metres high, and there is a long pool in front, so you get it twice: once standing up and once lying in the water."
       }
     },
     {
@@ -60,7 +68,7 @@
       "line": {
         "id": "uttar-pradesh.bara-imambara.line",
         "kind": "landmark",
-        "text": "The great hall in here has no beams at all holding its roof up. It just stands. And upstairs there is a maze: four hundred and eighty-nine doorways that all look exactly the same, with passages winding back into each other. People really do get lost in it."
+        "text": "This is the Bara Imambara. The great hall in here has no beams at all holding its roof up. It just stands. And upstairs there is a maze: four hundred and eighty-nine doorways that all look exactly the same, with passages winding back into each other. People really do get lost in it."
       }
     },
     {
@@ -72,7 +80,7 @@
       "line": {
         "id": "uttar-pradesh.varanasi-ghats.line",
         "kind": "landmark",
-        "text": "These are steps, wide stone steps, going right down into the river, eighty-four flights of them one after another along the bank. Wooden boats are tied up at the bottom. Very early in the morning people go out on the water to watch the sun come up."
+        "text": "This is the Ghats of Varanasi. These are steps, wide stone steps, going right down into the river, eighty-four flights of them one after another along the bank. Wooden boats are tied up at the bottom. Very early in the morning people go out on the water to watch the sun come up."
       }
     },
     {
@@ -84,7 +92,7 @@
       "line": {
         "id": "uttar-pradesh.chambal-gharials.line",
         "kind": "landmark",
-        "text": "A gharial is a crocodile with a nose like a long thin stick, full of small teeth for catching fish. The grown-up males get a round lump on the end of it, like a little pot, and that lump is what the animal is named after. They hardly ever come out of the water."
+        "text": "These are the Gharials of the Chambal. A gharial is a crocodile with a nose like a long thin stick, full of small teeth for catching fish. The grown-up males get a round lump on the end of it, like a little pot, and that lump is what the animal is named after. They hardly ever come out of the water."
       }
     },
     {
@@ -96,7 +104,7 @@
       "line": {
         "id": "uttar-pradesh.buland-darwaza.line",
         "kind": "landmark",
-        "text": "This is a doorway. Only a doorway. It is fifty-four metres from the ground to the top of it, and a long flight of steps sweeps down the hill in front. Stand at the bottom, look up, and the people climbing towards the door look like ants."
+        "text": "This is Buland Darwaza. This is a doorway. Only a doorway. It is fifty-four metres from the ground to the top of it, and a long flight of steps sweeps down the hill in front. Stand at the bottom, look up, and the people climbing towards the door look like ants."
       }
     }
   ]

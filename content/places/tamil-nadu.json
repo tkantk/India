@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Tamil Nadu, right down at the bottom of India on the east side. The sea runs along one edge of it and high hills run along the other, with Kerala over on the far side of them. At the very bottom the land comes to a point, and three different seas meet there. The main city is Chennai.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "tamil-nadu" },
-      { "word": 31, "do": "lightNeighbour", "arg": "kerala" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "tamil-nadu"
+      },
+      {
+        "word": 31,
+        "do": "lightNeighbour",
+        "arg": "kerala"
+      }
     ]
   },
   "card": {
@@ -48,8 +56,14 @@
       "line": {
         "id": "tamil-nadu.meenakshi.line",
         "kind": "landmark",
-        "text": "Fourteen towers stand over this temple, and each one is covered from the bottom to the very top with figures: gods, saints and heroes, packed in row on row. Inside is a hall called the Thousand Pillars. Somebody counted them. There are nine hundred and eighty-five.",
-        "cues": [{ "word": 0, "do": "playSfx", "arg": "temple-bell" }]
+        "text": "This is Meenakshi Temple. Fourteen towers stand over this temple, and each one is covered from the bottom to the very top with figures: gods, saints and heroes, packed in row on row. Inside is a hall called the Thousand Pillars. Somebody counted them. There are nine hundred and eighty-five.",
+        "cues": [
+          {
+            "word": 4,
+            "do": "playSfx",
+            "arg": "temple-bell"
+          }
+        ]
       }
     },
     {
@@ -61,7 +75,7 @@
       "line": {
         "id": "tamil-nadu.butterball.line",
         "kind": "landmark",
-        "text": "A rock as tall as a house sits on a bare slope, tipped over, looking as though it is just about to roll. It never has. A long time ago somebody tried to move it out of the way with seven elephants, and it did not move at all."
+        "text": "This is Krishna's Butterball. A rock as tall as a house sits on a bare slope, tipped over, looking as though it is just about to roll. It never has. A long time ago somebody tried to move it out of the way with seven elephants, and it did not move at all."
       }
     },
     {
@@ -85,7 +99,7 @@
       "line": {
         "id": "tamil-nadu.pamban-bridge.line",
         "kind": "landmark",
-        "text": "The railway line runs off the end of the land and keeps going, straight out over two kilometres of open sea, to an island. When a tall ship needs to get past, a whole piece of the middle of the bridge lifts straight up into the air to let it through."
+        "text": "This is Pamban Bridge. The railway line runs off the end of the land and keeps going, straight out over two kilometres of open sea, to an island. When a tall ship needs to get past, a whole piece of the middle of the bridge lifts straight up into the air to let it through."
       }
     },
     {
@@ -97,7 +111,7 @@
       "line": {
         "id": "tamil-nadu.pichavaram.line",
         "kind": "landmark",
-        "text": "These trees stand in the water all the time and never come out of it. They hold themselves up on roots like stilts, and between them are little islands and narrow green channels. Herons and pelicans come here to fish."
+        "text": "This is Pichavaram Mangrove Forest. These trees stand in the water all the time and never come out of it. They hold themselves up on roots like stilts, and between them are little islands and narrow green channels. Herons and pelicans come here to fish."
       }
     }
   ]

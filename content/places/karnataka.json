@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Karnataka, in the south of India. The sea is along its western edge. Then the land climbs into green hills, and behind the hills it opens out flat and wide and dry. Kerala is one of its neighbours. The main city is Bengaluru, which sits nearly a kilometre up in the air on top of that flat land.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "karnataka" },
-      { "word": 34, "do": "lightNeighbour", "arg": "kerala" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "karnataka"
+      },
+      {
+        "word": 34,
+        "do": "lightNeighbour",
+        "arg": "kerala"
+      }
     ]
   },
   "card": {
@@ -48,7 +56,7 @@
       "line": {
         "id": "karnataka.mysore-palace.line",
         "kind": "landmark",
-        "text": "For nine nights every year, a hundred thousand little bulbs are lit all over this palace. Every arch, every dome and every edge of the roof turns into a line of gold, drawn on the dark."
+        "text": "This is Mysore Palace. For nine nights every year, a hundred thousand little bulbs are lit all over this palace. Every arch, every dome and every edge of the roof turns into a line of gold, drawn on the dark."
       }
     },
     {
@@ -72,7 +80,7 @@
       "line": {
         "id": "karnataka.jog-falls.line",
         "kind": "landmark",
-        "text": "Here the river reaches a cliff and splits into four waterfalls side by side, and each one has a name. Raja comes down in one straight column. Roarer crashes into a cup of rock. Rani slides quietly in a sheet of foam. Rocket shoots out in jets."
+        "text": "This is Jog Falls. Here the river reaches a cliff and splits into four waterfalls side by side, and each one has a name. Raja comes down in one straight column. Roarer crashes into a cup of rock. Rani slides quietly in a sheet of foam. Rocket shoots out in jets."
       }
     },
     {
@@ -84,8 +92,14 @@
       "line": {
         "id": "karnataka.bandipur.line",
         "kind": "landmark",
-        "text": "A road runs through this forest, and wild elephants walk across it. So from nine at night until six in the morning nobody may drive along it. There is a gate at each end, and for those hours the road belongs to the animals.",
-        "cues": [{ "word": 8, "do": "playSfx", "arg": "elephant" }]
+        "text": "This is Bandipur. A road runs through this forest, and wild elephants walk across it. So from nine at night until six in the morning nobody may drive along it. There is a gate at each end, and for those hours the road belongs to the animals.",
+        "cues": [
+          {
+            "word": 11,
+            "do": "playSfx",
+            "arg": "elephant"
+          }
+        ]
       }
     },
     {

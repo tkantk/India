@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Andaman and Nicobar, a long line of islands out in the sea, a very long way from the rest of India. It is more than a thousand kilometres of open water from Chennai to here. There are eight hundred and thirty-six islands, and only thirty-one of them have anybody living on them at all. The main town is called Sri Vijaya Puram. It used to be called Port Blair.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "andaman-nicobar" },
-      { "word": 13, "do": "revealSymbol", "arg": "bay-of-bengal" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "andaman-nicobar"
+      },
+      {
+        "word": 13,
+        "do": "revealSymbol",
+        "arg": "bay-of-bengal"
+      }
     ]
   },
   "card": {
@@ -48,7 +56,7 @@
       "line": {
         "id": "andaman-nicobar.radhanagar.line",
         "kind": "landmark",
-        "text": "White sand, water so clear and so blue that it looks like a swimming pool, and thick forest coming right down to the top of the beach. You have to come here on a boat. The waves are gentle, so you can go in."
+        "text": "This is Radhanagar Beach. White sand, water so clear and so blue that it looks like a swimming pool, and thick forest coming right down to the top of the beach. You have to come here on a boat. The waves are gentle, so you can go in."
       }
     },
     {
@@ -60,7 +68,7 @@
       "line": {
         "id": "andaman-nicobar.barren-island.line",
         "kind": "landmark",
-        "text": "This island is a volcano, and it is the only one in the whole country that is still awake. It sits out in the sea by itself. Nobody lives on it, only a few wild goats, and it has boiled over more than ten times."
+        "text": "This is Barren Island. This island is a volcano, and it is the only one in the whole country that is still awake. It sits out in the sea by itself. Nobody lives on it, only a few wild goats, and it has boiled over more than ten times."
       }
     },
     {
@@ -72,7 +80,7 @@
       "line": {
         "id": "andaman-nicobar.baratang-caves.line",
         "kind": "landmark",
-        "text": "Water drips through the roof of these caves, and every single drop leaves a speck of stone behind it. Thousands of years of dripping, and now the rock hangs down off the ceiling in long shapes, like candles that have melted."
+        "text": "These are the Limestone Caves at Baratang. Water drips through the roof of these caves, and every single drop leaves a speck of stone behind it. Thousands of years of dripping, and now the rock hangs down off the ceiling in long shapes, like candles that have melted."
       }
     },
     {
@@ -84,7 +92,7 @@
       "line": {
         "id": "andaman-nicobar.ross-island.line",
         "kind": "landmark",
-        "text": "People built a whole little town on this island once, with a bakery and a church and a swimming pool, and then they went away and left it. The ruins are still standing among the palm trees, and spotted deer wander about in them."
+        "text": "This is Ross Island. People built a whole little town on this island once, with a bakery and a church and a swimming pool, and then they went away and left it. The ruins are still standing among the palm trees, and spotted deer wander about in them."
       }
     },
     {
@@ -96,7 +104,7 @@
       "line": {
         "id": "andaman-nicobar.clownfish.line",
         "kind": "landmark",
-        "text": "This little orange fish lives inside a sea anemone, which has soft waving arms that sting. They would sting anything else that came near. The fish has a slippery coat that stops them, so it sleeps in there at night and nothing can get at it."
+        "text": "This is the Clownfish. This little orange fish lives inside a sea anemone, which has soft waving arms that sting. They would sting anything else that came near. The fish has a slippery coat that stops them, so it sleeps in there at night and nothing can get at it."
       }
     }
   ]

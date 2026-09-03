@@ -56,7 +56,7 @@
       "line": {
         "id": "arunachal-pradesh.tawang.line",
         "kind": "landmark",
-        "text": "This is the biggest Buddhist monastery in India, three thousand metres up near the top of a mountain, looking down a valley of snow peaks and fir trees. Four hundred monks live in it. It was built about three hundred and fifty years ago."
+        "text": "This is Tawang Monastery. This is the biggest Buddhist monastery in India, three thousand metres up near the top of a mountain, looking down a valley of snow peaks and fir trees. Four hundred monks live in it. It was built about three hundred and fifty years ago."
       }
     },
     {
@@ -68,7 +68,7 @@
       "line": {
         "id": "arunachal-pradesh.sela-pass.line",
         "kind": "landmark",
-        "text": "A pass is the low place in a wall of mountains where a road can climb over. This one is four thousand one hundred and seventy metres up, and there is some snow lying on it at just about any time of the year."
+        "text": "This is Sela Pass. A pass is the low place in a wall of mountains where a road can climb over. This one is four thousand one hundred and seventy metres up, and there is some snow lying on it at just about any time of the year."
       }
     },
     {
@@ -80,7 +80,7 @@
       "line": {
         "id": "arunachal-pradesh.nuranang.line",
         "kind": "landmark",
-        "text": "The water going over this cliff came off the snow up at Sela Pass, not far back. It drops a hundred metres in a wide white curtain, and a little power station at the bottom turns the falling water into electricity for the houses nearby."
+        "text": "This is Nuranang Falls. The water going over this cliff came off the snow up at Sela Pass, not far back. It drops a hundred metres in a wide white curtain, and a little power station at the bottom turns the falling water into electricity for the houses nearby."
       }
     },
     {
@@ -92,7 +92,7 @@
       "line": {
         "id": "arunachal-pradesh.ziro.line",
         "kind": "landmark",
-        "text": "The Apatani people grow rice in flooded fields, and they keep fish in the very same water at the very same time. So one field gives them dinner twice. And they never move on: the same fields are used again and again, year after year."
+        "text": "This is Ziro Valley. The Apatani people grow rice in flooded fields, and they keep fish in the very same water at the very same time. So one field gives them dinner twice. And they never move on: the same fields are used again and again, year after year."
       }
     },
     {
@@ -104,10 +104,10 @@
       "line": {
         "id": "arunachal-pradesh.pakke.line",
         "kind": "landmark",
-        "text": "When a hornbill is ready to lay her eggs she gets inside a hole in a tall tree and plasters it shut from the inside, leaving one narrow slit. The father posts food in through the slit, day after day, until the chicks are half grown.",
+        "text": "This is Pakke Tiger Reserve. When a hornbill is ready to lay her eggs she gets inside a hole in a tall tree and plasters it shut from the inside, leaving one narrow slit. The father posts food in through the slit, day after day, until the chicks are half grown.",
         "cues": [
           {
-            "word": 30,
+            "word": 35,
             "do": "playSfx",
             "arg": "hornbill"
           }

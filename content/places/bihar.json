@@ -9,10 +9,26 @@
     "kind": "intro",
     "text": "This is Bihar, over in the east of India. The river Ganga runs right across the middle of it, from west to east, and on both sides of the river the land lies flat and green. Uttar Pradesh is on one side of Bihar and West Bengal is on the other. The main city is Patna, and it stands on the bank of the Ganga.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "bihar" },
-      { "word": 11, "do": "traceRiver", "arg": "ganga" },
-      { "word": 36, "do": "lightNeighbour", "arg": "uttar-pradesh" },
-      { "word": 45, "do": "lightNeighbour", "arg": "west-bengal" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "bihar"
+      },
+      {
+        "word": 11,
+        "do": "traceRiver",
+        "arg": "ganga"
+      },
+      {
+        "word": 36,
+        "do": "lightNeighbour",
+        "arg": "uttar-pradesh"
+      },
+      {
+        "word": 45,
+        "do": "lightNeighbour",
+        "arg": "west-bengal"
+      }
     ]
   },
   "card": {
@@ -51,8 +67,14 @@
       "line": {
         "id": "bihar.mahabodhi.line",
         "kind": "landmark",
-        "text": "A tall pointed tower stands here, and its sides are covered in row upon row of little carved niches, with a stone figure sitting inside each one. Behind the temple grows a fig tree, and people come from all over the world to sit quietly underneath it.",
-        "cues": [{ "word": 29, "do": "playSfx", "arg": "temple-bell" }]
+        "text": "This is Mahabodhi Temple, Bodh Gaya. A tall pointed tower stands here, and its sides are covered in row upon row of little carved niches, with a stone figure sitting inside each one. Behind the temple grows a fig tree, and people come from all over the world to sit quietly underneath it.",
+        "cues": [
+          {
+            "word": 35,
+            "do": "playSfx",
+            "arg": "temple-bell"
+          }
+        ]
       }
     },
     {
@@ -64,7 +86,7 @@
       "line": {
         "id": "bihar.golghar.line",
         "kind": "landmark",
-        "text": "This is a giant bowl turned upside down, built long ago to hold grain so that nobody would go hungry. A stair spirals up the outside of it. Men carried sacks up that stair, tipped the grain in through a hole at the top, and came down the other one."
+        "text": "This is Golghar, Patna. This is a giant bowl turned upside down, built long ago to hold grain so that nobody would go hungry. A stair spirals up the outside of it. Men carried sacks up that stair, tipped the grain in through a hole at the top, and came down the other one."
       }
     },
     {
@@ -76,7 +98,7 @@
       "line": {
         "id": "bihar.barabar-caves.line",
         "kind": "landmark",
-        "text": "These rooms were cut into the inside of one lump of granite, which is a very hard rock. Then somebody rubbed the walls until they shone like a mirror. Speak in there and your voice comes straight back at you, over and over again."
+        "text": "These are Barabar Caves. These rooms were cut into the inside of one lump of granite, which is a very hard rock. Then somebody rubbed the walls until they shone like a mirror. Speak in there and your voice comes straight back at you, over and over again."
       }
     },
     {
@@ -88,8 +110,14 @@
       "line": {
         "id": "bihar.rajgir-ropeway.line",
         "kind": "landmark",
-        "text": "You go up this hill sitting on a little chair hung from a wire, one person to a chair, with nothing under your feet at all but green hillside. At the top there is a big round white tower, looking out over the valley.",
-        "cues": [{ "word": 5, "do": "playSfx", "arg": "whoosh-soft" }]
+        "text": "This is Rajgir Ropeway. You go up this hill sitting on a little chair hung from a wire, one person to a chair, with nothing under your feet at all but green hillside. At the top there is a big round white tower, looking out over the valley.",
+        "cues": [
+          {
+            "word": 9,
+            "do": "playSfx",
+            "arg": "whoosh-soft"
+          }
+        ]
       }
     },
     {
@@ -102,7 +130,13 @@
         "id": "bihar.ganga-dolphins.line",
         "kind": "landmark",
         "text": "Sixty kilometres of this river are kept safe for the dolphins. You sit in a boat and you wait, and mostly what you get is a tail: up, over, and gone. Then the water closes and you are watching an empty river again.",
-        "cues": [{ "word": 34, "do": "playSfx", "arg": "water-ripple" }]
+        "cues": [
+          {
+            "word": 34,
+            "do": "playSfx",
+            "arg": "water-ripple"
+          }
+        ]
       }
     }
   ]

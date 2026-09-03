@@ -9,10 +9,26 @@
     "kind": "intro",
     "text": "This is Puducherry, and it comes in four separate pieces that are nowhere near each other. Two of them sit inside Tamil Nadu, one sits inside Andhra Pradesh, and one sits inside Kerala. For a very long time all four of them belonged to France and not to India. The main town is Puducherry, down by the sea.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "puducherry" },
-      { "word": 21, "do": "lightNeighbour", "arg": "tamil-nadu" },
-      { "word": 26, "do": "lightNeighbour", "arg": "andhra-pradesh" },
-      { "word": 32, "do": "lightNeighbour", "arg": "kerala" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "puducherry"
+      },
+      {
+        "word": 21,
+        "do": "lightNeighbour",
+        "arg": "tamil-nadu"
+      },
+      {
+        "word": 26,
+        "do": "lightNeighbour",
+        "arg": "andhra-pradesh"
+      },
+      {
+        "word": 32,
+        "do": "lightNeighbour",
+        "arg": "kerala"
+      }
     ]
   },
   "card": {
@@ -50,7 +66,7 @@
       "line": {
         "id": "puducherry.sacred-heart.line",
         "kind": "landmark",
-        "text": "The windows of this church are not clear glass. They are little coloured panes with pictures set into them, telling stories, so the light that comes through falls on the floor in colours. It was finished a hundred and twenty years ago."
+        "text": "This is Basilica of the Sacred Heart. The windows of this church are not clear glass. They are little coloured panes with pictures set into them, telling stories, so the light that comes through falls on the floor in colours. It was finished a hundred and twenty years ago."
       }
     },
     {
@@ -62,7 +78,7 @@
       "line": {
         "id": "puducherry.old-lighthouse.line",
         "kind": "landmark",
-        "text": "This white tower with a green top stood on the shore for nearly a hundred and fifty years, showing ships in the dark where the land was. Then a new lighthouse was built along the coast, and this one was switched off. It is still standing there."
+        "text": "This is the Old Lighthouse. This white tower with a green top stood on the shore for nearly a hundred and fifty years, showing ships in the dark where the land was. Then a new lighthouse was built along the coast, and this one was switched off. It is still standing there."
       }
     },
     {
@@ -74,7 +90,7 @@
       "line": {
         "id": "puducherry.rock-beach.line",
         "kind": "landmark",
-        "text": "There used to be sand here. Now there is a wall of enormous granite boulders, two kilometres of them piled along the front of the town to keep the sea out. When one slips down into the water, somebody comes and puts another one on."
+        "text": "This is Rock Beach. There used to be sand here. Now there is a wall of enormous granite boulders, two kilometres of them piled along the front of the town to keep the sea out. When one slips down into the water, somebody comes and puts another one on."
       }
     },
     {
@@ -86,7 +102,7 @@
       "line": {
         "id": "puducherry.garden-train.line",
         "kind": "landmark",
-        "text": "This garden was laid out two hundred years ago in the French way, with clipped trees, gravel paths and fountains. There is a little train that runs round it, built the right size for children, and a fountain that plays music at the weekend."
+        "text": "This is the Botanical Garden. This garden was laid out two hundred years ago in the French way, with clipped trees, gravel paths and fountains. There is a little train that runs round it, built the right size for children, and a fountain that plays music at the weekend."
       }
     },
     {

@@ -9,10 +9,26 @@
     "kind": "intro",
     "text": "This is Rajasthan, the biggest state in all of India. Much of it is desert. A desert is a huge dry place where it hardly ever rains and the sun beats down all day. Lots of this one is sand. Gujarat sits below it and Punjab sits up above. The main city is Jaipur, and old Jaipur is painted pink.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "rajasthan" },
-      { "word": 14, "do": "revealSymbol", "arg": "dune" },
-      { "word": 40, "do": "lightNeighbour", "arg": "gujarat" },
-      { "word": 45, "do": "lightNeighbour", "arg": "punjab" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "rajasthan"
+      },
+      {
+        "word": 14,
+        "do": "revealSymbol",
+        "arg": "dune"
+      },
+      {
+        "word": 40,
+        "do": "lightNeighbour",
+        "arg": "gujarat"
+      },
+      {
+        "word": 45,
+        "do": "lightNeighbour",
+        "arg": "punjab"
+      }
     ]
   },
   "card": {
@@ -51,7 +67,7 @@
       "line": {
         "id": "rajasthan.thar.line",
         "kind": "landmark",
-        "text": "These hills are not made of mud or of rock. They are made of sand. The wind keeps pushing at them, a little at a time, so the desert is slowly changing shape. Come back in a few years and some of these hills will have moved."
+        "text": "This is the Thar Desert. These hills are not made of mud or of rock. They are made of sand. The wind keeps pushing at them, a little at a time, so the desert is slowly changing shape. Come back in a few years and some of these hills will have moved."
       }
     },
     {
@@ -63,7 +79,7 @@
       "line": {
         "id": "rajasthan.hawa-mahal.line",
         "kind": "landmark",
-        "text": "Count the windows. There are nine hundred and fifty-three of them. The wind blows in at one side and out at the other, and that keeps the whole place cool, which is why it is called Hawa Mahal. Hawa means wind. Mahal means palace."
+        "text": "This is Hawa Mahal. Count the windows. There are nine hundred and fifty-three of them. The wind blows in at one side and out at the other, and that keeps the whole place cool, which is why it is called Hawa Mahal. Hawa means wind. Mahal means palace."
       }
     },
     {
@@ -75,7 +91,7 @@
       "line": {
         "id": "rajasthan.amber-fort.line",
         "kind": "landmark",
-        "text": "This fort sits high up on a hill, so the people inside could see anybody coming from far away. One hall in there is lined with thousands of tiny mirrors. Carry a small light into that room and it comes back at you from everywhere at once."
+        "text": "This is Amber Fort. This fort sits high up on a hill, so the people inside could see anybody coming from far away. One hall in there is lined with thousands of tiny mirrors. Carry a small light into that room and it comes back at you from everywhere at once."
       }
     },
     {
@@ -87,7 +103,7 @@
       "line": {
         "id": "rajasthan.chand-baori.line",
         "kind": "landmark",
-        "text": "This is a well, but instead of a bucket it has stairs. Three thousand five hundred narrow steps zigzag down thirteen levels, like a staircase folded up inside a deep square hole, until they reach the cool water. In a dry place, water is the most precious thing there is."
+        "text": "This is Chand Baori. This is a well, but instead of a bucket it has stairs. Three thousand five hundred narrow steps zigzag down thirteen levels, like a staircase folded up inside a deep square hole, until they reach the cool water. In a dry place, water is the most precious thing there is."
       }
     },
     {
@@ -99,8 +115,14 @@
       "line": {
         "id": "rajasthan.ranthambore.line",
         "kind": "landmark",
-        "text": "Real tigers live here, in a forest with an old broken fort standing in the middle of it. Tigers like to lie in the shade near the water, where it is cool. If you are very lucky and very quiet, you might see one.",
-        "cues": [{ "word": 1, "do": "playSfx", "arg": "tiger-growl" }]
+        "text": "This is Ranthambore. Real tigers live here, in a forest with an old broken fort standing in the middle of it. Tigers like to lie in the shade near the water, where it is cool. If you are very lucky and very quiet, you might see one.",
+        "cues": [
+          {
+            "word": 4,
+            "do": "playSfx",
+            "arg": "tiger-growl"
+          }
+        ]
       }
     }
   ]

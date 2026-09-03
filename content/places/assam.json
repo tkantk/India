@@ -57,10 +57,10 @@
       "line": {
         "id": "assam.kaziranga.line",
         "kind": "landmark",
-        "text": "More one-horned rhinoceroses live here than anywhere else in the world. Nobody is allowed to walk about in this park. You go through the tall grass in a jeep or on the back of an elephant, and look down at the rhinos from up there.",
+        "text": "This is Kaziranga National Park. More one-horned rhinoceroses live here than anywhere else in the world. Nobody is allowed to walk about in this park. You go through the tall grass in a jeep or on the back of an elephant, and look down at the rhinos from up there.",
         "cues": [
           {
-            "word": 41,
+            "word": 46,
             "do": "playSfx",
             "arg": "rhino"
           }
@@ -88,7 +88,7 @@
       "line": {
         "id": "assam.tea-gardens.line",
         "kind": "landmark",
-        "text": "The tea here grows on flat land, not up in hills, and the bushes run on and on past where you can see. It comes out strong and dark brown, which is why it goes into the tea people drink at breakfast."
+        "text": "These are the Tea Gardens of Assam. The tea here grows on flat land, not up in hills, and the bushes run on and on past where you can see. It comes out strong and dark brown, which is why it goes into the tea people drink at breakfast."
       }
     },
     {
@@ -100,7 +100,7 @@
       "line": {
         "id": "assam.bogibeel.line",
         "kind": "landmark",
-        "text": "This bridge crosses the Brahmaputra and it has two floors. Trains run along the bottom one and cars along the top. It is nearly five kilometres from one bank to the other, which is how wide the river is here."
+        "text": "This is Bogibeel Bridge. This bridge crosses the Brahmaputra and it has two floors. Trains run along the bottom one and cars along the top. It is nearly five kilometres from one bank to the other, which is how wide the river is here."
       }
     },
     {
@@ -112,10 +112,10 @@
       "line": {
         "id": "assam.gibbons.line",
         "kind": "landmark",
-        "text": "This is the only ape in the whole of India. It swings through the treetops hand over hand on very long arms, and hardly ever comes down. A family calls to each other across the forest, to say where they are and to tell other gibbons to keep off.",
+        "text": "This is Hoollongapar Gibbon Sanctuary. This is the only ape in the whole of India. It swings through the treetops hand over hand on very long arms, and hardly ever comes down. A family calls to each other across the forest, to say where they are and to tell other gibbons to keep off.",
         "cues": [
           {
-            "word": 29,
+            "word": 34,
             "do": "playSfx",
             "arg": "gibbon"
           }

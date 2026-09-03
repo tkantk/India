@@ -9,9 +9,21 @@
     "kind": "intro",
     "text": "This is Maharashtra, over on the west side of India. A long wall of hills runs down beside the sea, and behind those hills the land lifts up into a high flat plateau. Goa is just below it. The main city is Mumbai, right on the coast, and more people live there than in any other city in India.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "maharashtra" },
-      { "word": 19, "do": "revealSymbol", "arg": "arabian-sea" },
-      { "word": 33, "do": "lightNeighbour", "arg": "goa" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "maharashtra"
+      },
+      {
+        "word": 19,
+        "do": "revealSymbol",
+        "arg": "arabian-sea"
+      },
+      {
+        "word": 33,
+        "do": "lightNeighbour",
+        "arg": "goa"
+      }
     ]
   },
   "card": {
@@ -50,7 +62,7 @@
       "line": {
         "id": "maharashtra.kailasa-temple.line",
         "kind": "landmark",
-        "text": "Nobody built this temple. They cut it out. The workers started at the very top of the rock and dug downwards, taking away everything that was not temple, until the whole thing stood there on its own."
+        "text": "This is Kailasa Temple, Ellora. Nobody built this temple. They cut it out. The workers started at the very top of the rock and dug downwards, taking away everything that was not temple, until the whole thing stood there on its own."
       }
     },
     {
@@ -62,7 +74,7 @@
       "line": {
         "id": "maharashtra.ajanta-caves.line",
         "kind": "landmark",
-        "text": "Thirty caves are cut into a cliff that curves round above a river, and there are paintings on the walls inside them still. The jungle covered them over for hundreds of years, until a man out hunting tigers was shown the way in."
+        "text": "These are Ajanta Caves. Thirty caves are cut into a cliff that curves round above a river, and there are paintings on the walls inside them still. The jungle covered them over for hundreds of years, until a man out hunting tigers was shown the way in."
       }
     },
     {
@@ -74,7 +86,7 @@
       "line": {
         "id": "maharashtra.lonar-lake.line",
         "kind": "landmark",
-        "text": "A rock came down out of the sky and punched a hole in the ground here, a very long time ago. The hole is nearly two kilometres across, and a round lake sits in the bottom of it now, with trees all round the rim."
+        "text": "This is Lonar Crater Lake. A rock came down out of the sky and punched a hole in the ground here, a very long time ago. The hole is nearly two kilometres across, and a round lake sits in the bottom of it now, with trees all round the rim."
       }
     },
     {
@@ -86,7 +98,7 @@
       "line": {
         "id": "maharashtra.kaas-plateau.line",
         "kind": "landmark",
-        "text": "This is a bare tabletop of rock, and then in August and September it goes purple and pink all over. Thousands of tiny flowers come up at once. A few weeks later they are gone and it is bare rock again."
+        "text": "This is Kaas Plateau. This is a bare tabletop of rock, and then in August and September it goes purple and pink all over. Thousands of tiny flowers come up at once. A few weeks later they are gone and it is bare rock again."
       }
     },
     {
@@ -98,8 +110,14 @@
       "line": {
         "id": "maharashtra.sea-link.line",
         "kind": "landmark",
-        "text": "This road runs straight out across the open sea on legs, hung from cables that fan up to two tall towers. Driving over it you can look out of the window and see nothing at all but water.",
-        "cues": [{ "word": 21, "do": "playSfx", "arg": "whoosh-soft" }]
+        "text": "This is Bandra-Worli Sea Link. This road runs straight out across the open sea on legs, hung from cables that fan up to two tall towers. Driving over it you can look out of the window and see nothing at all but water.",
+        "cues": [
+          {
+            "word": 26,
+            "do": "playSfx",
+            "arg": "whoosh-soft"
+          }
+        ]
       }
     }
   ]

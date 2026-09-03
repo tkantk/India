@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Lakshadweep, thirty-six little islands out in the sea off the west side of India. The name means a hundred thousand islands, which is rather more than there really are. Add up every scrap of land and it comes to about thirty square kilometres. Only ten of the islands have anybody on them. The main one is Kavaratti.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "lakshadweep" },
-      { "word": 9, "do": "revealSymbol", "arg": "arabian-sea" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "lakshadweep"
+      },
+      {
+        "word": 9,
+        "do": "revealSymbol",
+        "arg": "arabian-sea"
+      }
     ]
   },
   "card": {
@@ -48,7 +56,7 @@
       "line": {
         "id": "lakshadweep.agatti.line",
         "kind": "landmark",
-        "text": "This island is seven and a half kilometres long and less than one kilometre across. Somebody has laid an aeroplane runway a kilometre and a half long down one end of it, with the sea close on both sides. It is the only airport in Lakshadweep."
+        "text": "This is Agatti Island. This island is seven and a half kilometres long and less than one kilometre across. Somebody has laid an aeroplane runway a kilometre and a half long down one end of it, with the sea close on both sides. It is the only airport in Lakshadweep."
       }
     },
     {
@@ -72,7 +80,7 @@
       "line": {
         "id": "lakshadweep.sea-turtles.line",
         "kind": "landmark",
-        "text": "A green turtle out here can weigh more than a grown-up does. It does not paddle like a duck. It rows, with the two flippers at the front, and it goes down into the shallow water to eat the grass growing on the bottom."
+        "text": "These are the Sea Turtles. A green turtle out here can weigh more than a grown-up does. It does not paddle like a duck. It rows, with the two flippers at the front, and it goes down into the shallow water to eat the grass growing on the bottom."
       }
     },
     {
@@ -84,7 +92,7 @@
       "line": {
         "id": "lakshadweep.minicoy.line",
         "kind": "landmark",
-        "text": "You can see exactly where the reef is without going near it. Out there the waves stand up and break in a white line. Inside that line the water is quiet and pale and shallow, and it hardly ever gets deeper than four metres."
+        "text": "This is Minicoy Island. You can see exactly where the reef is without going near it. Out there the waves stand up and break in a white line. Inside that line the water is quiet and pale and shallow, and it hardly ever gets deeper than four metres."
       }
     },
     {

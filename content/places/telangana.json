@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Telangana, up on top of a great slab of old rock called the Deccan. It is hot and dry here, and the rock under it is grey and pink granite that pushes up into little hills. Andhra Pradesh is just below it. Telangana is one of the newest states in India. It only began in two thousand and fourteen. The main city is Hyderabad.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "telangana" },
-      { "word": 38, "do": "lightNeighbour", "arg": "andhra-pradesh" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "telangana"
+      },
+      {
+        "word": 38,
+        "do": "lightNeighbour",
+        "arg": "andhra-pradesh"
+      }
     ]
   },
   "card": {
@@ -60,7 +68,7 @@
       "line": {
         "id": "telangana.golconda-fort.line",
         "kind": "landmark",
-        "text": "Stand under the arch of the gate at the bottom of this hill and clap your hands, once. Up at the top of the fort, almost a whole kilometre away, somebody can hear that clap."
+        "text": "This is Golconda Fort. Stand under the arch of the gate at the bottom of this hill and clap your hands, once. Up at the top of the fort, almost a whole kilometre away, somebody can hear that clap."
       }
     },
     {
@@ -72,7 +80,7 @@
       "line": {
         "id": "telangana.bhongir-fort.line",
         "kind": "landmark",
-        "text": "This whole hill is one single rock, shaped like an enormous egg lying on its side, and it is higher than a hundred and fifty metres. On the top of it is a fort, and the steps that go up the bare curve have been there a thousand years."
+        "text": "This is Bhongir Fort. This whole hill is one single rock, shaped like an enormous egg lying on its side, and it is higher than a hundred and fifty metres. On the top of it is a fort, and the steps that go up the bare curve have been there a thousand years."
       }
     },
     {
@@ -84,7 +92,7 @@
       "line": {
         "id": "telangana.kuntala-falls.line",
         "kind": "landmark",
-        "text": "The river comes to a ledge here and goes over it in two steps, one drop and then another, forty-five metres of falling altogether. After heavy rain there is so much water that it splits and comes down as two falls side by side."
+        "text": "This is Kuntala Falls. The river comes to a ledge here and goes over it in two steps, one drop and then another, forty-five metres of falling altogether. After heavy rain there is so much water that it splits and comes down as two falls side by side."
       }
     },
     {
@@ -96,7 +104,7 @@
       "line": {
         "id": "telangana.lake-buddha.line",
         "kind": "landmark",
-        "text": "There is a lake in the middle of this city, and people dug it, hundreds of years ago. In the middle of the lake is a rock, and standing on the rock is a stone man eighteen metres tall, carved out of one whole block of white granite."
+        "text": "This is the Buddha in Hussain Sagar. There is a lake in the middle of this city, and people dug it, hundreds of years ago. In the middle of the lake is a rock, and standing on the rock is a stone man eighteen metres tall, carved out of one whole block of white granite."
       }
     }
   ]

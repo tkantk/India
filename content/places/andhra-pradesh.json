@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This is Andhra Pradesh, on the east coast of the south of India. The sea runs along its whole east side, almost a thousand kilometres of it, and big rivers come down and empty into the sea. Telangana, next door, used to be part of this state until it was made a state of its own. The main city is Amaravati.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "andhra-pradesh" },
-      { "word": 37, "do": "lightNeighbour", "arg": "telangana" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "andhra-pradesh"
+      },
+      {
+        "word": 37,
+        "do": "lightNeighbour",
+        "arg": "telangana"
+      }
     ]
   },
   "card": {
@@ -48,7 +56,7 @@
       "line": {
         "id": "andhra-pradesh.borra-caves.line",
         "kind": "landmark",
-        "text": "This is a hole in a hillside that you can walk down into, and it goes eighty metres under the ground. A river made it, dripping through the rock. Stones hang down from the roof like icicles, and other stones grow up off the floor to meet them."
+        "text": "These are Borra Caves. This is a hole in a hillside that you can walk down into, and it goes eighty metres under the ground. A river made it, dripping through the rock. Stones hang down from the roof like icicles, and other stones grow up off the floor to meet them."
       }
     },
     {
@@ -60,7 +68,7 @@
       "line": {
         "id": "andhra-pradesh.gandikota.line",
         "kind": "landmark",
-        "text": "A river has sawn a slot down through the red rock here. In one place the hills squeeze so close together that the water has only a hundred metres to get through. There is an old fort on the top, and you can stand at the edge and look straight down."
+        "text": "This is Gandikota. A river has sawn a slot down through the red rock here. In one place the hills squeeze so close together that the water has only a hundred metres to get through. There is an old fort on the top, and you can stand at the edge and look straight down."
       }
     },
     {
@@ -84,7 +92,7 @@
       "line": {
         "id": "andhra-pradesh.talakona-falls.line",
         "kind": "landmark",
-        "text": "The water comes over the lip of a cliff here and drops eighty metres to the forest below, one long white rope of it. Down in those trees, if you are lucky, you might see a mouse deer, or a slow little animal with huge round eyes called a loris."
+        "text": "This is Talakona Falls. The water comes over the lip of a cliff here and drops eighty metres to the forest below, one long white rope of it. Down in those trees, if you are lucky, you might see a mouse deer, or a slow little animal with huge round eyes called a loris."
       }
     },
     {

@@ -9,8 +9,16 @@
     "kind": "intro",
     "text": "This place has a very long name: Dadra and Nagar Haveli and Daman and Diu. It is in four pieces. Daman sits on the coast of Gujarat, Diu is an island just off it, and the other two are inland, inside Gujarat. And inside one of those there is a little piece of Gujarat again. The main town is Daman.",
     "cues": [
-      { "word": 7, "do": "highlightState", "arg": "dadra-and-nagar-haveli-and-daman-and-diu" },
-      { "word": 26, "do": "lightNeighbour", "arg": "gujarat" }
+      {
+        "word": 7,
+        "do": "highlightState",
+        "arg": "dadra-and-nagar-haveli-and-daman-and-diu"
+      },
+      {
+        "word": 26,
+        "do": "lightNeighbour",
+        "arg": "gujarat"
+      }
     ]
   },
   "card": {
@@ -48,7 +56,7 @@
       "line": {
         "id": "dadra-and-nagar-haveli-and-daman-and-diu.diu-fort.line",
         "kind": "landmark",
-        "text": "This fort was built beside the sea nearly five hundred years ago, on a hill above the water. The cannons are still up on the wall. They are made of brass, and they are still pointing out at the sea."
+        "text": "This is Diu Fort. This fort was built beside the sea nearly five hundred years ago, on a hill above the water. The cannons are still up on the wall. They are made of brass, and they are still pointing out at the sea."
       }
     },
     {
@@ -60,7 +68,7 @@
       "line": {
         "id": "dadra-and-nagar-haveli-and-daman-and-diu.panikotha.line",
         "kind": "landmark",
-        "text": "This little fort stands out in the water, in the channel between the island and the mainland, with nothing at all around it. It is shaped rather like a ship. The only way to get to it is in a boat."
+        "text": "This is Panikotha. This little fort stands out in the water, in the channel between the island and the mainland, with nothing at all around it. It is shaped rather like a ship. The only way to get to it is in a boat."
       }
     },
     {
@@ -72,7 +80,7 @@
       "line": {
         "id": "dadra-and-nagar-haveli-and-daman-and-diu.naida-caves.line",
         "kind": "landmark",
-        "text": "Somebody cut great yellow rooms out of this hillside, one opening into the next, and then left them. Daylight comes down through the gaps in the roof. Tree roots hang all the way through from the top, still looking for the ground."
+        "text": "These are Naida Caves. Somebody cut great yellow rooms out of this hillside, one opening into the next, and then left them. Daylight comes down through the gaps in the roof. Tree roots hang all the way through from the top, still looking for the ground."
       }
     },
     {
@@ -84,7 +92,7 @@
       "line": {
         "id": "dadra-and-nagar-haveli-and-daman-and-diu.nagoa-beach.line",
         "kind": "landmark",
-        "text": "This beach is bent right round in a curve, the shape of a horseshoe, with the sea in the middle of it. It is the beach everybody in Diu goes to, so on a warm day there are a great many people on it."
+        "text": "This is Nagoa Beach. This beach is bent right round in a curve, the shape of a horseshoe, with the sea in the middle of it. It is the beach everybody in Diu goes to, so on a warm day there are a great many people on it."
       }
     },
     {
@@ -96,7 +104,7 @@
       "line": {
         "id": "dadra-and-nagar-haveli-and-daman-and-diu.ghoghla-limpets.line",
         "kind": "landmark",
-        "text": "Every one of these little ridged shells has a snail underneath it, holding on to the rock with one big muscly foot. It holds so hard that you cannot pull it off without hurting it. So do not. Crouch down and look at it instead."
+        "text": "These are the Limpets of Ghoghla. Every one of these little ridged shells has a snail underneath it, holding on to the rock with one big muscly foot. It holds so hard that you cannot pull it off without hurting it. So do not. Crouch down and look at it instead."
       }
     }
   ]

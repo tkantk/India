@@ -9,9 +9,21 @@
     "kind": "intro",
     "text": "This is Madhya Pradesh, right in the middle of India. The river Narmada crosses it, with a line of hills on each side, and it runs the wrong way. Nearly every other big river round here goes east. This one goes west. Rajasthan is up above it and Chhattisgarh is beside it. The main city is Bhopal.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "madhya-pradesh" },
-      { "word": 42, "do": "lightNeighbour", "arg": "rajasthan" },
-      { "word": 48, "do": "lightNeighbour", "arg": "chhattisgarh" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "madhya-pradesh"
+      },
+      {
+        "word": 42,
+        "do": "lightNeighbour",
+        "arg": "rajasthan"
+      },
+      {
+        "word": 48,
+        "do": "lightNeighbour",
+        "arg": "chhattisgarh"
+      }
     ]
   },
   "card": {
@@ -61,8 +73,14 @@
       "line": {
         "id": "madhya-pradesh.sanchi-stupa.line",
         "kind": "landmark",
-        "text": "This is a great dome of brick, like a bowl turned upside down and left on a hill. Four stone gateways stand around it, and every bit of them is carved: elephants, trees, and little crowds of people going somewhere.",
-        "cues": [{ "word": 6, "do": "playSfx", "arg": "temple-bell" }]
+        "text": "This is Sanchi Stupa. This is a great dome of brick, like a bowl turned upside down and left on a hill. Four stone gateways stand around it, and every bit of them is carved: elephants, trees, and little crowds of people going somewhere.",
+        "cues": [
+          {
+            "word": 10,
+            "do": "playSfx",
+            "arg": "temple-bell"
+          }
+        ]
       }
     },
     {
@@ -75,7 +93,13 @@
         "id": "madhya-pradesh.marble-rocks.line",
         "kind": "landmark",
         "text": "You go down this river in a rowing boat, and pale marble cliffs stand up on both sides of you for kilometre after kilometre. People come on the night of the full moon, when the moon makes all that white stone shine.",
-        "cues": [{ "word": 8, "do": "playSfx", "arg": "water-ripple" }]
+        "cues": [
+          {
+            "word": 8,
+            "do": "playSfx",
+            "arg": "water-ripple"
+          }
+        ]
       }
     },
     {
@@ -87,8 +111,14 @@
       "line": {
         "id": "madhya-pradesh.kanha.line",
         "kind": "landmark",
-        "text": "Tigers live in this forest, and people do see them, out on the track. There is a deer here called barasingha, which means twelve horns. Once there were only sixty-six of them left, every one of them here.",
-        "cues": [{ "word": 0, "do": "playSfx", "arg": "tiger-growl" }]
+        "text": "This is Kanha National Park. Tigers live in this forest, and people do see them, out on the track. There is a deer here called barasingha, which means twelve horns. Once there were only sixty-six of them left, every one of them here.",
+        "cues": [
+          {
+            "word": 5,
+            "do": "playSfx",
+            "arg": "tiger-growl"
+          }
+        ]
       }
     },
     {
@@ -100,7 +130,7 @@
       "line": {
         "id": "madhya-pradesh.gwalior-fort.line",
         "kind": "landmark",
-        "text": "This fort stands on top of a rocky hill all on its own, so you can see it from a long way off. Along one of its palace walls run bands of tiles, turquoise and green and yellow, laid out in patterns."
+        "text": "This is Gwalior Fort. This fort stands on top of a rocky hill all on its own, so you can see it from a long way off. Along one of its palace walls run bands of tiles, turquoise and green and yellow, laid out in patterns."
       }
     }
   ]

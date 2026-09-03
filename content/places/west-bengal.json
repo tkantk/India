@@ -9,9 +9,21 @@
     "kind": "intro",
     "text": "This is West Bengal, and it is a long tall state. Right at the top are the Himalaya. Right at the bottom is the sea, the Bay of Bengal, with a forest standing in the salt water. Bihar is one of its neighbours. The main city is Kolkata, and Kolkata is the only city left in India that still has trams.",
     "cues": [
-      { "word": 2, "do": "highlightState", "arg": "west-bengal" },
-      { "word": 26, "do": "revealSymbol", "arg": "bay-of-bengal" },
-      { "word": 37, "do": "lightNeighbour", "arg": "bihar" }
+      {
+        "word": 2,
+        "do": "highlightState",
+        "arg": "west-bengal"
+      },
+      {
+        "word": 26,
+        "do": "revealSymbol",
+        "arg": "bay-of-bengal"
+      },
+      {
+        "word": 37,
+        "do": "lightNeighbour",
+        "arg": "bihar"
+      }
     ]
   },
   "card": {
@@ -49,8 +61,14 @@
       "line": {
         "id": "west-bengal.sundarbans.line",
         "kind": "landmark",
-        "text": "This forest grows in salt water, and it is the biggest forest of its kind anywhere in the world. Water cuts it up into islands. Tigers live in it, and these tigers swim, going from one island across to the next.",
-        "cues": [{ "word": 25, "do": "playSfx", "arg": "tiger-growl" }]
+        "text": "This is the Sundarbans. This forest grows in salt water, and it is the biggest forest of its kind anywhere in the world. Water cuts it up into islands. Tigers live in it, and these tigers swim, going from one island across to the next.",
+        "cues": [
+          {
+            "word": 29,
+            "do": "playSfx",
+            "arg": "tiger-growl"
+          }
+        ]
       }
     },
     {
@@ -62,7 +80,7 @@
       "line": {
         "id": "west-bengal.howrah-bridge.line",
         "kind": "landmark",
-        "text": "This bridge is a huge cage of steel across the river. Its two towers stand one on each bank, and the whole middle of it hangs between them. And there is not a single nut or bolt in it. Every piece is held on with rivets."
+        "text": "This is Howrah Bridge. This bridge is a huge cage of steel across the river. Its two towers stand one on each bank, and the whole middle of it hangs between them. And there is not a single nut or bolt in it. Every piece is held on with rivets."
       }
     },
     {
@@ -75,7 +93,13 @@
         "id": "west-bengal.toy-train.line",
         "kind": "landmark",
         "text": "A steam engine still pulls some of these trains up the mountain to Darjeeling. The rails are two feet apart, closer together than you can stretch your arms, and where the hill is steepest the track goes round in a loop to climb.",
-        "cues": [{ "word": 1, "do": "playSfx", "arg": "whoosh-soft" }]
+        "cues": [
+          {
+            "word": 1,
+            "do": "playSfx",
+            "arg": "whoosh-soft"
+          }
+        ]
       }
     },
     {
@@ -88,7 +112,13 @@
         "id": "west-bengal.great-banyan.line",
         "kind": "landmark",
         "text": "This is one single tree, and it looks like a whole wood. Roots come down out of its branches, straight down to the ground, and stand there like new trunks. The first trunk had to be taken away long ago, so now the tree stands on those instead.",
-        "cues": [{ "word": 4, "do": "revealSymbol", "arg": "banyan" }]
+        "cues": [
+          {
+            "word": 4,
+            "do": "revealSymbol",
+            "arg": "banyan"
+          }
+        ]
       }
     },
     {
@@ -100,7 +130,7 @@
       "line": {
         "id": "west-bengal.hazarduari.line",
         "kind": "landmark",
-        "text": "They call this the palace of a thousand doors. Some of those doors are not doors at all. They are made to look exactly like the real ones, so you can walk up to one and push it and find it does not go anywhere."
+        "text": "This is Hazarduari Palace. They call this the palace of a thousand doors. Some of those doors are not doors at all. They are made to look exactly like the real ones, so you can walk up to one and push it and find it does not go anywhere."
       }
     }
   ]
