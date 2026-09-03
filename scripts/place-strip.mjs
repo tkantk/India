@@ -668,9 +668,23 @@ async function measureReadAlong(slug) {
   // Short window on purpose: long enough for a clip that exists, short
   // enough that the genuinely-absent case does not cost 20s x 36 places.
   const hasClip = await until(
-    () => chrome.eval(`(${READALONG_SNAPSHOT})().total > 0`).catch(() => false),
+    async () => ((await chrome.eval(READALONG_SNAPSHOT))?.total ?? 0) > 0,
     { every: 100, limit: 4000, what: `${slug}'s intro clip to load` },
-  ).catch(() => false)
+  ).catch((err) => {
+    // ONLY a timeout may be read as "no audio". Anything else is a fault in
+    // this gate and must be heard, which is the whole lesson of this bug:
+    // the previous version wrapped the snapshot in "(<SNAPSHOT>)()" — and
+    // READALONG_SNAPSHOT is ALREADY a self-invoking expression ending in
+    // `})()`, so that called its own return value and threw a TypeError on
+    // every single invocation. A bare `.catch(() => false)` turned that
+    // TypeError into "no audio yet", permanently, and the check reported
+    // itself skipped on all 72 phone rows from the day it was written.
+    // The expression is no longer built by string surgery at all: this uses
+    // the identical `chrome.eval(READALONG_SNAPSHOT)` the working call site
+    // below uses, so the two cannot diverge again.
+    if (!/timed out/.test(err.message)) throw err
+    return false
+  })
   // Same shape every other return uses. Returning a bare {readAlong:...} here
   // once made all 74 phone rows report BAD with undefined fields, because the
   // caller reads `.visible` — a guard that fails louder than the thing it
