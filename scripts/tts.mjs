@@ -219,6 +219,29 @@ async function renderOneLine(line, key, { previousRequestIds, nextText }) {
     ? timingsFromAlignment(line.text, alignment)
     : estimateTimings(line.text, duration)
 
+  // THE WORDS THE CHILD READS ARE THE REAL SPELLING, not the one the voice
+  // was given. `line.text` is the SPOKEN text — respelled where
+  // content/pronounce.json says a name misleads the model — and the
+  // alignment above is necessarily against that. `line.display` is the
+  // authored spelling, and it is what `timings.json`'s `words` must carry,
+  // because `ReadAlong.tsx` prints them one span per word and a child
+  // learning to read must never see "Kozhi-kode".
+  //
+  // Safe by construction, not by luck: `respell` refuses any replacement
+  // containing whitespace and re-checks the word count, so word i of the
+  // spoken text is always word i of the displayed text. Only the SPELLING of
+  // a word changes; every start and end time still belongs to it.
+  if (line.display) {
+    const shown = line.display.trim().split(/\s+/)
+    if (shown.length !== t.words.length) {
+      throw new Error(
+        `pronunciation desync on ${line.id}: ${t.words.length} spoken words but ` +
+        `${shown.length} displayed. content/pronounce.json must map one word to one word.`,
+      )
+    }
+    t.words = shown
+  }
+
   timings[line.id] = {
     audio: rel,
     duration,

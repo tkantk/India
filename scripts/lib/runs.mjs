@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { isFresh, readCacheEntry } from './cache.mjs'
+import { respell } from './pronounce.mjs'
 
 /**
  * Every narrated line in the whole corpus, grouped into RUNS: an ordered
@@ -34,21 +35,41 @@ export function collectRuns({
   placesDir = 'content/places',
   tourPath = 'content/tour.json',
   uiPath = 'content/ui.json',
+  pronouncePath = 'content/pronounce.json',
 } = {}) {
+  // SPOKEN SPELLING IN, DISPLAYED SPELLING KEPT. Every line's `text` becomes
+  // what the provider is asked to SAY, and `display` holds what the child
+  // SEES. They differ only where `content/pronounce.json` has an entry, and
+  // only ever word-for-word — see scripts/lib/pronounce.mjs for why that
+  // constraint is load-bearing rather than tidiness.
+  //
+  // Doing it HERE, rather than at the moment of synthesis, is what makes a
+  // pronunciation fix behave like any other content edit: `keysForRun` hashes
+  // `text`, so changing a respelling re-renders exactly the lines that say
+  // that word and nothing else, and `selectRuns`/`applyBatching` then widen
+  // that to whole places on their own existing rules.
+  const table = existsSync(pronouncePath)
+    ? JSON.parse(readFileSync(pronouncePath, 'utf8'))
+    : null
+  if (table) delete table._comment
+  const say = (line) => {
+    const spoken = respell(line.text, table)
+    return spoken === line.text ? line : { ...line, text: spoken, display: line.text }
+  }
   const runs = []
   for (const f of readdirSync(placesDir).filter((f) => f.endsWith('.json')).sort()) {
     const p = JSON.parse(readFileSync(join(placesDir, f), 'utf8'))
-    runs.push([{ ...p.intro, place: p.id }])
-    for (const l of Object.values(p.card)) runs.push([{ ...l, place: p.id }])
-    for (const lm of p.landmarks) runs.push([{ ...lm.line, place: p.id }])
+    runs.push([say({ ...p.intro, place: p.id })])
+    for (const l of Object.values(p.card)) runs.push([say({ ...l, place: p.id })])
+    for (const lm of p.landmarks) runs.push([say({ ...lm.line, place: p.id })])
   }
   // Tolerate these being absent, same as the pipeline always has: it is
   // built and tested before the tour and interface copy exist.
   if (existsSync(tourPath)) {
-    runs.push(JSON.parse(readFileSync(tourPath, 'utf8')).beats)
+    runs.push(JSON.parse(readFileSync(tourPath, 'utf8')).beats.map(say))
   }
   if (existsSync(uiPath)) {
-    for (const l of JSON.parse(readFileSync(uiPath, 'utf8')).lines) runs.push([l])
+    for (const l of JSON.parse(readFileSync(uiPath, 'utf8')).lines) runs.push([say(l)])
   }
   return runs
 }
