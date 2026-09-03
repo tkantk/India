@@ -576,6 +576,14 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
         // printed in one run.
         subject={subjectKey ?? null}
         onPickState={goToNeighbour}
+        // THIS SCREEN ARRIVES ZOOMED ONTO ONE STATE, which by construction
+        // pushes the rest of the country off the edges — fly to Kerala and
+        // everything north of it is gone, with nothing on screen offering it
+        // back. A finger can now drag and pinch the map to go and look, and
+        // `clampView` keeps the country findable: no zooming out past the
+        // whole of India, no pinching past MAX_SCALE, and the map can never
+        // be dragged off the screen entirely.
+        explorable
       >
         {/* The state's own border, drawn on the geography and traceable. */}
         {land && <StateShape d={land.d} subject={subjectKey} />}

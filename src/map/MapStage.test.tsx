@@ -157,6 +157,23 @@ describe('MapStage', () => {
    * below read `map.css` directly rather than trusting jsdom's styling,
    * which it does not apply.
    */
+  // OPT-IN, PER SCREEN. The place screen arrives zoomed onto one state and
+  // needs a finger to reach the rest of the country; the tour flies its own
+  // camera on cue and a dragging child would be fighting the narration for
+  // the same viewBox. jsdom cannot exercise the gesture itself (no
+  // getScreenCTM, no createSVGPoint, no DOMMatrix — see this file's own note
+  // below, and scripts/probe-pan.mjs, which covers the real thing), but the
+  // opt-in itself is plain DOM and belongs here.
+  it('does not let a finger drag the map unless the screen asks for it', () => {
+    const { container } = render(<MapStage onPick={() => {}} />)
+    expect(container.querySelector(`.${PICK_ROOT}`)!.getAttribute('data-explorable')).toBeNull()
+  })
+
+  it('marks the map explorable when the screen opts in', () => {
+    const { container } = render(<MapStage onPick={() => {}} explorable />)
+    expect(container.querySelector(`.${PICK_ROOT}`)!.getAttribute('data-explorable')).toBe('true')
+  })
+
   it('draws the neighbouring land beneath India, and never taps it', () => {
     const { container } = mount()
     const stage = container.querySelector(`.${PICK_ROOT}`)!

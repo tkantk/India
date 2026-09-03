@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { frame, committedRect, flyTo, bindCamera, camera, MAX_SCALE } from './camera'
+import { frame, committedRect, flyTo, bindCamera, camera, clampView, MAX_SCALE } from './camera'
 import type { Bbox } from '../types'
 
 const VIEW: [number, number, number, number] = [0, 0, 1000, 1100]
@@ -388,6 +388,45 @@ describe('what the flight assumes about the stylesheet', () => {
 
 // -------------------------------------------------------------- the binding
 
+describe('clampView — what a finger is allowed to reach', () => {
+  const HOME: Bbox = [0, 0, 1000, 1100]
+
+  it('leaves a sane view exactly where it is', () => {
+    expect(clampView([200, 300, 100, 110], HOME)).toEqual([200, 300, 100, 110])
+  })
+
+  // There is nothing out there. `world.json`'s neighbours are a painted
+  // backdrop for the country, not a map to explore, so zooming out past the
+  // whole of India would put it in a corner of an empty sea.
+  it('refuses to zoom out past the whole country', () => {
+    expect(clampView([-500, -500, 4000, 4400], HOME)).toEqual(HOME)
+  })
+
+  // The same ceiling `frame()` respects, enforced here because a pinch can
+  // ask for far more zoom than any authored flight ever does.
+  it('refuses to pinch tighter than MAX_SCALE', () => {
+    const [, , w, h] = clampView([500, 500, 0.5, 0.55], HOME)
+    expect(w).toBeCloseTo(HOME[2] / MAX_SCALE, 6)
+    expect(h).toBeCloseTo(HOME[3] / MAX_SCALE, 6)
+  })
+
+  // The failure a six-year-old cannot get himself out of: there is no
+  // scrollbar to tell him the country is off to the left somewhere.
+  it('will not let the country be dragged off the screen', () => {
+    expect(clampView([9000, 9000, 200, 220], HOME)).toEqual([800, 880, 200, 220])
+    expect(clampView([-9000, -9000, 200, 220], HOME)).toEqual([0, 0, 200, 220])
+  })
+
+  it('keeps the aspect ratio when it clamps the size', () => {
+    const [, , w, h] = clampView([0, 0, 4000, 4400], HOME)
+    expect(w / h).toBeCloseTo(HOME[2] / HOME[3], 6)
+  })
+
+  it('treats a degenerate rect as "go home" rather than dividing by zero', () => {
+    expect(clampView([0, 0, 0, 0], HOME)).toEqual(HOME)
+  })
+})
+
 describe('the bound camera', () => {
   it('is inert until a map hands it a stage', async () => {
     bindCamera(null)
@@ -405,6 +444,39 @@ describe('the bound camera', () => {
     const flown = base.getAttribute('viewBox')
     expect(flown).not.toBe('0 0 1000 1100')
     for (const l of [hit, glow]) expect(l.getAttribute('viewBox')).toBe(flown)
+  })
+
+  it('setView commits immediately, to every layer, and clamps', () => {
+    const { stage, base, hit, glow } = map()
+    bindCamera(stage)
+    const got = camera.setView([100, 200, 50, 55])
+    expect(got).toEqual([100, 200, 50, 55])
+    expect(base.getAttribute('viewBox')).toBe('100 200 50 55')
+    for (const l of [hit, glow]) expect(l.getAttribute('viewBox')).toBe(base.getAttribute('viewBox'))
+    // Asked for the impossible, given back what it actually did — the caller
+    // needs the truth to compute the next frame's delta from. The rect comes
+    // back home-SHAPED here because the request was home-shaped: the clamp
+    // scales width and height by one factor, so it fits the asked-for shape
+    // inside home rather than replacing it. A real gesture always asks in
+    // the current view's own aspect (it scales it uniformly), so this is the
+    // case that actually occurs.
+    expect(camera.setView([-9999, -9999, 90000, 99000])).toEqual([0, 0, 1000, 1100])
+  })
+
+  it('setView tells the watchers, like a flight does', () => {
+    const { stage } = map()
+    bindCamera(stage)
+    const seen: (Bbox | null)[] = []
+    const off = camera.watch((v) => seen.push(v))
+    seen.length = 0
+    camera.setView([10, 20, 30, 33])
+    expect(seen).toEqual([[10, 20, 30, 33]])
+    off()
+  })
+
+  it('setView is inert with no map bound', () => {
+    bindCamera(null)
+    expect(camera.setView([0, 0, 10, 10])).toBeNull()
   })
 
   it('gives a place room to breathe by default', async () => {

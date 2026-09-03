@@ -17,6 +17,9 @@ type Props = {
    *  Task 10's tour sequencer decides what "picking a state" means (it
    *  abandons the tour and goes there). */
   onPickState?: (slug: string) => void
+  /** Passed straight to `MapStage` — see its own `explorable` note for why
+   *  the place screen wants a draggable map and the tour does not. */
+  explorable?: boolean
   /**
    * Every cue, after the registry has dispatched it.
    *
@@ -90,7 +93,7 @@ type Props = {
  * for the same reason: a cue arriving after this component is gone must not
  * touch a stale `setOverlay` or a map nobody is showing.
  */
-export function TourStage({ onPickState, onCue, scene, subject, children }: Props) {
+export function TourStage({ onPickState, onCue, scene, subject, explorable, children }: Props) {
   // Hoisted out of the effect below (which used to call this itself) so it
   // is also here to hand `MediaClockProvider` the engine's real
   // `scheduleAfter` — see that seam's own note in `Reveal.tsx`. Safe to call
@@ -181,7 +184,7 @@ export function TourStage({ onPickState, onCue, scene, subject, children }: Prop
   return (
     <MediaClockProvider value={n.scheduleAfter}>
       <div className="tour-stage" style={subjectVars(subject)}>
-        <MapStage onPick={onPickState ?? NOOP} />
+        <MapStage onPick={onPickState ?? NOOP} explorable={explorable} />
         {overlay && (
           <div className="tour-overlay" data-sweeping={sweeping ? 'true' : undefined}>
             {overlay}

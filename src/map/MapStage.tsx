@@ -4,7 +4,7 @@ import geo from '../data/geo.json'
 import hitData from '../data/hit.json'
 import world from '../data/world.json'
 import { isCheap } from '../lib/cheapMode'
-import { bindCamera } from './camera'
+import { bindCamera, camera } from './camera'
 import { bindMapNodes } from './useMapNodes'
 import {
   PICK_ROOT, SNAP_PX, describeTap,
@@ -107,9 +107,25 @@ type Props = {
    *  whatever was playing; `click` would cost the responsiveness that makes
    *  a map feel alive, and still would not tell a scroll attempt from a tap. */
   onPick: (slug: string) => void
+  /**
+   * May a finger drag and pinch this map? Off by default, and opt-in per
+   * screen rather than global, because the two screens want opposite things.
+   *
+   * The PLACE screen wants it: it arrives zoomed onto one state, which by
+   * construction pushes the rest of the country off the edges — fly to
+   * Kerala and everything north of it is simply gone, with no way back to it
+   * short of leaving the screen. That is the report this was built for.
+   *
+   * The TOUR does not: it is a narrated sequence that flies the camera on
+   * cue, and a child who drags mid-beat would be fighting the narration for
+   * control of the same viewBox — the next cue would yank it back anyway,
+   * which reads as the map snatching itself away rather than as an
+   * interaction.
+   */
+  explorable?: boolean
 }
 
-export function MapStage({ onPick }: Props) {
+export function MapStage({ onPick, explorable = false }: Props) {
   const root = useRef<HTMLDivElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const hitSvg = useRef<SVGSVGElement>(null)
@@ -175,6 +191,93 @@ export function MapStage({ onPick }: Props) {
   }
 
   /**
+   * WHERE ON THE MAP EACH FINGER FIRST LANDED, in viewBox units, kept only
+   * while `explorable`. The model is "the land under your finger stays under
+   * your finger": every move recomputes the view that would put this anchor
+   * back beneath the live pointer, rather than accumulating deltas. That is
+   * what makes a clamped drag self-correcting — once `clampView` refuses to
+   * go further, an accumulating drag would keep banking movement the map
+   * never made and the country would slide out from under the fingertip the
+   * moment the child dragged back.
+   */
+  const anchors = useRef(new Map<number, { x: number; y: number }>())
+  /** Live client positions, so a two-finger gesture can read the OTHER
+   *  finger's current position during this finger's move event. */
+  const live = useRef(new Map<number, { x: number; y: number }>())
+  /** Did this gesture actually move the camera? A pan already fails
+   *  `describeTap`'s 20px slop, but a PINCH can zoom the map a long way
+   *  while either finger individually stays inside it, and that must not
+   *  also count as a tap on whatever was underneath. Cleared when the last
+   *  finger lifts, not on each one, or the second lift would pick. */
+  const explored = useRef(false)
+
+  /** A client point in the map's own viewBox coordinates, via the same hit
+   *  layer CTM `pick` uses — not a ratio of the stage's box, because the
+   *  layers letterbox by `preserveAspectRatio` and a ratio would drift by
+   *  the letterbox on any screen whose shape is not the viewBox's. */
+  const toMap = (clientX: number, clientY: number) => {
+    const svg = hitSvg.current
+    const ctm = svg?.getScreenCTM?.()
+    if (!svg || !ctm) return null
+    const point = svg.createSVGPoint()
+    point.x = clientX
+    point.y = clientY
+    return point.matrixTransform(ctm.inverse())
+  }
+
+  /**
+   * One finger drags, two fingers pinch. Both are solved the same way: find
+   * the view that puts the anchors back under the fingers.
+   *
+   * For a drag that is a straight translation. For a pinch, the scale is how
+   * much the gap between the two anchors has to shrink to match the gap
+   * between the live fingers, and the position then places the anchors'
+   * midpoint under the fingers' midpoint. Positions are expressed as a
+   * FRACTION of the current view before being re-applied at the new size,
+   * which is what keeps the zoom centred between the fingers instead of on
+   * the middle of the screen.
+   */
+  const explore = () => {
+    if (!explorable) return
+    const view = camera.view()
+    if (!view) return
+    const ids = [...anchors.current.keys()].filter((id) => live.current.has(id))
+    if (ids.length === 0) return
+
+    const at = (id: number) => {
+      const l = live.current.get(id)!
+      return toMap(l.x, l.y)
+    }
+
+    if (ids.length === 1) {
+      const a = anchors.current.get(ids[0])!
+      const q = at(ids[0])
+      if (!q) return
+      if (camera.setView([view[0] + (a.x - q.x), view[1] + (a.y - q.y), view[2], view[3]])) {
+        explored.current = true
+      }
+      return
+    }
+
+    const [i, j] = ids
+    const a1 = anchors.current.get(i)!, a2 = anchors.current.get(j)!
+    const q1 = at(i), q2 = at(j)
+    if (!q1 || !q2) return
+    const spread = Math.hypot(q1.x - q2.x, q1.y - q2.y)
+    // Two fingers on the same pixel would divide by zero and throw the view
+    // to infinity; there is nothing sensible to do with that gesture anyway.
+    if (spread < 1e-6) return
+    const scale = Math.hypot(a1.x - a2.x, a1.y - a2.y) / spread
+    const w = view[2] * scale
+    const h = view[3] * scale
+    const qMid = { x: (q1.x + q2.x) / 2, y: (q1.y + q2.y) / 2 }
+    const aMid = { x: (a1.x + a2.x) / 2, y: (a1.y + a2.y) / 2 }
+    const fx = (qMid.x - view[0]) / view[2]
+    const fy = (qMid.y - view[1]) / view[3]
+    if (camera.setView([aMid.x - fx * w, aMid.y - fy * h, w, h])) explored.current = true
+  }
+
+  /**
    * Every gesture currently down, keyed by its own `pointerId` — NOT one
    * slot. Children rest a palm on the map and use two hands constantly, so
    * a second finger landing before the first lifts is routine, not an edge
@@ -192,6 +295,16 @@ export function MapStage({ onPick }: Props) {
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     down.current.set(e.pointerId, sample(e))
+    if (!explorable) return
+    live.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const q = toMap(e.clientX, e.clientY)
+    if (q) anchors.current.set(e.pointerId, { x: q.x, y: q.y })
+  }
+
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!explorable || !live.current.has(e.pointerId)) return
+    live.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    explore()
   }
 
   /** The other half of the gate. A pick only ever fires from here, once the
@@ -202,9 +315,26 @@ export function MapStage({ onPick }: Props) {
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
     const started = down.current.get(e.pointerId)
     down.current.delete(e.pointerId)
+    const wasExploring = forget(e.pointerId)
     if (!started) return
+    // A gesture that moved the camera is never also a tap on what was under
+    // it. Checked BEFORE describeTap because a pinch can leave either finger
+    // well inside the tap slop while having zoomed the map a long way.
+    if (wasExploring) return
     const verdict = describeTap(started, sample(e))
     if (verdict.tap) pick(e)
+  }
+
+  /** Drop one finger from the gesture and report whether the gesture it
+   *  belonged to had moved the camera. The `explored` flag is only cleared
+   *  once the LAST finger is up: clearing it per finger would let the second
+   *  lift of a pinch register as a tap. */
+  const forget = (pointerId: number): boolean => {
+    const moved = explored.current
+    anchors.current.delete(pointerId)
+    live.current.delete(pointerId)
+    if (live.current.size === 0) explored.current = false
+    return moved
   }
 
   /** The browser cancels ONE gesture out from under us — a native scroll
@@ -213,6 +343,7 @@ export function MapStage({ onPick }: Props) {
    *  not a tap, and there is no `pointerup` coming to say so for this one. */
   const onPointerCancel = (e: PointerEvent<HTMLDivElement>) => {
     down.current.delete(e.pointerId)
+    forget(e.pointerId)
   }
 
   return (
@@ -221,7 +352,13 @@ export function MapStage({ onPick }: Props) {
         <div
           className={PICK_ROOT}
           ref={stage}
+          // `touch-action: none` (map.css) only where the map is explorable:
+          // without it the browser claims the drag as a page scroll and the
+          // pan never gets its move events, and WITH it on a screen that
+          // does not pan the child would lose the page scroll for nothing.
+          data-explorable={explorable ? 'true' : undefined}
           onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
         >

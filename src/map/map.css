@@ -282,3 +282,13 @@
   text-underline-offset: 2px;
   white-space: nowrap;
 }
+
+/* A MAP A FINGER CAN DRAG must first stop the browser treating that drag as
+   a page scroll: without `touch-action: none` the scroll wins the gesture
+   and the pan never receives a single move event. Scoped to the explorable
+   case (the place screen) rather than applied to `.stage` outright — on a
+   screen that does not pan, taking the page scroll away would cost the child
+   the ability to reach the rest of the page and give nothing back. */
+.stage[data-explorable='true'] {
+  touch-action: none;
+}
