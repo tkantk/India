@@ -996,3 +996,93 @@ lets the whole site be built against a free draft voice and then re-rendered wit
 the paid one — every timestamp changes, no index does. `cueTimes()` in
 `scripts/lib/words.mjs` is the seam. If someone "simplifies" cues to timestamps,
 the final render silently desynchronises every animation in the project.
+
+---
+
+# STATE AT SESSION CLOSE — 3 September 2026
+
+Written so a cold start can pick up without reading the conversation. Everything
+below was verified at the time of writing, not remembered.
+
+## Where the work is
+
+- Branch **`plan-3-make-it-work`** at `e2c050f`. Working tree clean.
+- **`main` is at `673f5ee`**, which is what is deployed and live.
+- **Two commits are unmerged**: `15638e4` (the approved landmark set) and
+  `e2c050f` (all 36 state pages + the camera fix).
+
+**The 32 new states are NOT deployed, deliberately.** See "Do not deploy yet".
+
+## Verified green at close
+
+| gate | result |
+|---|---|
+| `npx tsc -b` | clean |
+| `npm test` | **840 passing**, 32 skipped, 0 failures |
+| `npm run validate` | 36 places · 393 lines · 77,793 chars (ceiling 99,100) |
+| `npm run colour:check` | clean |
+| `npm run fact:check` | **716 rows — 633 fetched, 45 cited, 38 derived** |
+| `npm run place:strip` | see below — was still running at close |
+
+The 32 skips are the speech-synthesis suites, gated behind `CI || TTS_TESTS=1`
+because they are fifteen minutes of real `say` calls. That gating is deliberate.
+
+## DO NOT DEPLOY YET — and why
+
+All 36 places have **text but only 4 have audio**. The narration render for the
+32 new places has not run. Deploying now would give a child 32 screens whose
+Play button has nothing to play, which breaks the invariant this project spent a
+whole task establishing: *no control may be pressable and produce no observable
+effect*. **Render first, then deploy.**
+
+## What is left, in order
+
+1. **160 landmark photographs.** The pipeline exists and is proven on 4 animals
+   (`scripts/fetch-photos.mjs`, locality-checked via Commons categories and
+   coordinates, contact sheet at `scripts/contact-sheet-animals.mjs`). The 32
+   animal photographs are also outstanding. **The owner must look at contact
+   sheets** and answer only "is that actually the thing in the picture" — the
+   check a machine cannot do, and the one that caught Konark's missing wheel.
+   Expect **Tripura's Phayre's langur to have no usable photograph**: the only
+   Commons image is from Thailand and the locality check will reject it.
+2. **The narration render.** ~$7 for the 32 places, likely nearer $4 — both real
+   bills so far came in at ~55% of estimate. Each place is its own run, so a
+   place costs only itself. **Show the owner the preflight figure before
+   spending.** A place re-renders as a UNIT: the provider does not reproduce its
+   own previous take, so a line re-rendered alone comes back audibly different.
+3. **Deploy.**
+
+## Open, waiting on the owner
+
+- **The tour is 3:32, down from 4:05.** The re-render normalised the pace; his
+  original brief asked for "soothing and slow". Lowering the default playback
+  rate is one line and free — Plan 4 put timed art on the media clock precisely
+  so this is safe. Waiting on his ear, not on a plan.
+- **Two hello cards do not show a greeting.** Nagaland's says "Hello" because no
+  single language works there and everything is written in English; Manipur's
+  shows four Meitei letters because every letter is named after a body part.
+  Both were flagged by their writer as convention failures. Both are, on
+  reflection, better than the convention. His call.
+- **Sikkim's animal card is a yak, not its state animal the red panda**, because
+  the red panda is already one of Sikkim's five landmarks. One-line change.
+
+## Traps a cold start will otherwise walk into
+
+- **`place:strip` now runs 36 places × 12 devices = 432 measurements** and takes
+  the better part of an hour, printing nothing until it finishes. **Run it once,
+  in the foreground.** Two concurrent runs collide on a hardcoded port and both
+  produce garbage — this happened twice in one session.
+- **Check `uptime` before believing a red run.** A loaded machine produces
+  nondeterministic timeouts indistinguishable from real failures; hours were
+  lost to this once. This is the owner's own working machine.
+- **`shot.mjs` without `--build` runs in dev mode**, where React StrictMode
+  double-fires the place screen's arrival flight and compounds the zoom past
+  `MAX_SCALE` entirely. Production builds are unaffected. A dev screenshot will
+  lie to you about camera framing.
+- **Never run `npm run tts:draft`.** It renders with the macOS `say` voice, and
+  a provider-change guard now exists — but the underlying hazard is why.
+- **`scene` keys in `content/vocab.json` are validated but nothing in `src/`
+  reads them.** 157 exist. An earlier handover sentence claimed adding one
+  without a `SUBJECTS` row breaks the build; that is not true — `REQUIRED_KEYS`
+  is built from `revealSymbol`, `rivers` and the verb keys only. Either the
+  claim or the code should change.
