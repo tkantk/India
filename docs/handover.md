@@ -1269,3 +1269,101 @@ about camera framing; never run `npm run tts:draft`. Add one:
   skips anything already in `photo-credits.json` with a file on disk. To
   replace one, delete BOTH the credit entry and `public/photos/<id>.jpg`, or
   the fix silently does nothing.
+
+---
+
+# AFTER THE FIRST REAL LISTEN — four reports from the owner
+
+He used the deployed app and came back with four things. All four are fixed;
+the first two are the ones with a lesson in them.
+
+## 1. `place:strip`'s read-along check had NEVER run — a double invocation
+
+The previous note left this open with the evidence but not the cause. The
+cause is one pair of brackets.
+
+`READALONG_SNAPSHOT` is an already-self-invoking expression: it ends in
+`})()`. The check called it as `` chrome.eval(`(${READALONG_SNAPSHOT})().total > 0`) ``,
+which invokes the IIFE's own RETURN VALUE — `((() => {...})())()` — and
+throws `TypeError: (intermediate value)(...) is not a function` every single
+time. A bare `.catch(() => false)` then reported that as "no audio yet". The
+working call site four lines below uses it bare (`chrome.eval(READALONG_SNAPSHOT)`),
+which is why the two behaved differently.
+
+**Diagnosed with `scripts/probe-readalong.mjs`** (new): it replays
+`measureReadAlong`'s exact sequence against one phone row and prints the DOM
+at each step. It showed **61 word spans present** at the precise moment the
+gate reported none. That probe borrows `CLOCK` and `READALONG_SNAPSHOT` out of
+`place-strip.mjs` at runtime rather than copying them, so it cannot drift from
+the thing it diagnoses.
+
+The catch now rethrows anything that is not a timeout. **The lesson is the
+catch, not the brackets:** `.catch(() => false)` on a probe expression turns
+every programming error into a plausible-looking negative result.
+
+## 2. The map is explorable on the place screen
+
+*"I clicked on Kerala... the north part gets hidden... no pinch works here."*
+Correct, and it had never been possible: `MapStage` only ever recognised taps.
+
+`camera.setView()` (new) commits a viewBox immediately with no flight, because
+a finger has to be tracked frame by frame. `clampView()` (new, and unit
+tested) is what keeps a child from getting lost: never wider than home, never
+tighter than `MAX_SCALE`, never off the edge. It returns the rect it actually
+committed, and the caller needs that — the gesture recomputes from the live
+view every frame ("the land under your finger stays under your finger"), so a
+clamped drag self-corrects instead of banking movement the map never made.
+
+**Opt-in per screen (`explorable`), and the tour deliberately does not get
+it**: the tour flies its own camera on cue, so a dragging child would be
+fighting the narration for the same viewBox and the next cue would yank it
+back.
+
+jsdom cannot test the gesture (no `getScreenCTM`, `createSVGPoint` or
+`DOMMatrix`), so `scripts/probe-pan.mjs` (new) drives it in real headless
+Chrome — drag pans, pinch zooms, a huge drag stays inside India, and a drag is
+not mistaken for a tap. The jsdom tests cover the opt-in and the clamp maths.
+
+## 3. Landmarks now say their own name first
+
+*"Konark... it does not say This is the Sun temple Konark and then describe."*
+Measured: **141 of 180 landmark lines never named their landmark**, while
+every place intro and every card names its subject.
+
+`scripts/name-the-landmarks.mjs` (new, dry-run by default) generates the
+openings. Two things it has to get right:
+
+- **Grammar.** The article comes from the NAME, never from the head noun:
+  English drops "the" when a proper name modifies a common one ("Sukhna Lake",
+  not "the Sukhna Lake"), and the first run produced exactly that error three
+  times. Plurality excludes `-ss` ("Sela Pass" came back as "These are").
+- **CUES ARE WORD INDICES.** 19 of those lines carry cues, and prepending
+  words shifts every one. Verified: Pakke's hornbill fired on word 30
+  ("father") and now fires on word 35 — still "father".
+
+## 4. Pronunciation: spoken spelling and displayed spelling are now separate
+
+The voice was never the problem — it is already Indian-accented ("Tripti",
+`accent: indian`). Specific proper nouns are.
+
+`content/pronounce.json` maps a name to how it should be SAID
+("Bhubaneswar" → "Bhuba-neshwar"). `scripts/lib/pronounce.mjs` applies it in
+`collectRuns`, so the spoken text is what gets hashed into the cache key and a
+pronunciation fix re-renders exactly the places that say that word.
+
+**The constraint that shapes the whole design:** `timings.json`'s `words` feed
+the read-along, and a child learning to read must never see "Bhuba-neshwar".
+So the spoken and displayed spellings are joined BY WORD INDEX, which is why
+`respell` refuses any replacement containing whitespace and re-checks the word
+count — splitting one word into two would shift every later word's highlight
+in that line, silently, and only audibly wrong on a device.
+
+**A table entry that matches nothing is silently useless**, so a test asserts
+every name in the table actually occurs in the narration. It caught 43 names
+written from general knowledge of India rather than from this content.
+
+**How to add more.** Add the name to `content/pronounce.json`, run
+`npm test` (the guard rejects whitespace, self-mappings and orphans), then
+`npm run tts:final -- --only=<place>`. Only the places that say that word
+re-render, because of the cache key — but each of those re-renders as a whole
+batch, so a one-word fix costs that place's ten lines, not one.
