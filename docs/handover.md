@@ -161,10 +161,25 @@ promises content is allowed to name.
 `VERB_SUBJECT_KEYS` requires. This project has been bitten twice before by a
 hand-copied list that failed silently instead (`ART_VERBS` in the timings
 generator is the other one) — so this fails loudly, at build time, before a
-gap ever reaches a child's iPad. If you add a landmark's `scene` key to
-`vocab.json` before giving it a row here, the whole app refuses to build.
-That is the point: it is telling you the row is missing, not that something
-is broken.
+gap ever reaches a child's iPad. What it actually covers is derived, in
+`REQUIRED_KEYS`, from `vocab.json`'s `revealSymbol` (11 keys) and `rivers`
+(1) lists plus `VERB_SUBJECT_KEYS` — add one of *those* without a row here
+and the whole app refuses to build. That is the point: it is telling you the
+row is missing, not that something is broken.
+
+**`scene` keys are NOT covered, and an earlier version of this document
+claimed they were.** Corrected 2026-09-03, by reading the code rather than
+trusting the sentence: `vocab.json`'s `scenes` list (157 keys today) is read
+by exactly one thing — `scripts/validate-content.mjs`, which checks that a
+landmark's `scene` is a declared vocabulary word — and by nothing in `src/`
+at all. `REQUIRED_KEYS` does not include it. Adding a landmark's `scene` key
+without a `SUBJECTS` row does not break the build and never did. **The code
+is right and the claim was wrong**, which is the way round it had to be
+resolved: covering all 157 would demand 157 bespoke illustrations, exactly
+the work that "the illustration contract is bigger than the plan assumed"
+(below) deliberately deferred. Landmarks are photographs today, not drawn
+scenes, and the `scenes` vocabulary is a reservation for art that does not
+exist yet.
 
 Every colour in the table is a literal hex from `src/tour/effects/art/palette.ts`,
 never a CSS `var()` — see "standing rules" below for why. `Symbol.test.tsx`
@@ -999,90 +1014,258 @@ the final render silently desynchronises every animation in the project.
 
 ---
 
-# STATE AT SESSION CLOSE — 3 September 2026
+# STATE AT SESSION CLOSE — 3 September 2026 (second session of the day)
 
-Written so a cold start can pick up without reading the conversation. Everything
-below was verified at the time of writing, not remembered.
+Supersedes the earlier close note from the same date. Everything below was
+verified at the time of writing, not remembered.
 
-## Where the work is
+## The headline: the deploy blocker is gone, and the photographs are not fake
 
-- Branch **`plan-3-make-it-work`** at `e2c050f`. Working tree clean.
-- **`main` is at `673f5ee`**, which is what is deployed and live.
-- **Two commits are unmerged**: `15638e4` (the approved landmark set) and
-  `e2c050f` (all 36 state pages + the camera fix).
+The previous close said "DO NOT DEPLOY YET" because all 36 places had text and
+only 4 had audio. **That is fixed.** It also listed 160 landmark photographs as
+the first outstanding item. **That is fixed too**, and doing it surfaced six
+real accuracy defects that had already been written to disk.
 
-**The 32 new states are NOT deployed, deliberately.** See "Do not deploy yet".
+## What was done
+
+**1. The narration rendered.** All 32 new places, in one pass.
+
+| | |
+|---|---|
+| clips | **393** (320 rendered, 73 reused from cache — nothing re-billed) |
+| narration | **121.1 minutes** |
+| billed | **36,310 characters, $3.63** against a $6.60 preflight estimate |
+
+Every one of the 393 `timings.json` entries was checked to have its audio file
+actually on disk. The ~55%-of-estimate pattern from the two previous bills held
+exactly. **Worth one look:** the provider billed 29,694 characters FEWER than
+the sum of the submitted text. That direction proves `next_text` is not billed
+on top of the primary text, but the shortfall is not explained by anything the
+script can see — compare against the account's own usage page.
+
+**2. The photographs.** 213 wanted (180 landmarks + 33 distinct species), **210
+fetched, 3 deliberately absent**, 0 unresolved failures.
+
+**3. Six accuracy defects found and fixed.** The automatic fetch wrote all six
+to disk, and every one of them passed every gate that existed at the time. They
+are listed here because the pattern matters more than the individual files:
+**each gate this project has built asks a question, and a file that is wrong in
+a way nobody has yet asked about sails straight through.**
+
+| what shipped | what it actually was |
+|---|---|
+| `western-tragopan` | a 17th-century Mughal painting (St. Petersburg Muraqqa) |
+| `sangai` | a photograph of a **replica** — then, on the next pass, of the Sangai **Festival** |
+| `mishmi-takin` | *"Idu Mishmi **man** on track from Anini"* — a person, matched on the word "Mishmi" |
+| `gayal` | the **identical file** as Goa's `gaur`, captioned as a gaur |
+| `blackbuck` | correct species, photographed in **Bardiya, Nepal** |
+| `lakshadweep.minicoy` | the same NASA MODIS frame as `lakshadweep.from-space` — one place, two tiles, one picture |
+
+## Three fixes to `scripts/lib/wiki.mjs`, all test-first
+
+**A. An explicit statement now outranks a crude rectangle.** `INDIA_BBOX` is
+one flat 6–36°N by 68–98°E rectangle, so it contains Nepal, Bhutan, Bangladesh
+and much of Pakistan, Tibet and Myanmar entirely; only Sri Lanka had ever been
+carved out, and that carve-out's own comment says in as many words that the
+others were not guarded. The Nepal blackbuck was geotagged 28.248°N 81.325°E —
+genuinely inside the box — while its only Commons category read `Antilope
+cervicapra in Nepal`. `localityVerdict` now refutes on that text **before**
+consulting the coordinate. Carving Nepal out by bbox is not available as a fix
+and should not be attempted: a Nepal rectangle overlaps Bihar, Uttar Pradesh,
+Sikkim and north Bengal, so it would reject genuinely Indian photographs.
+Requiring the text to name another country **and not India** keeps a range
+category ("Mammals of India and Nepal") from refuting anything.
+
+**B. `isZooPhoto` learned the zoos that avoid the word "zoo".** Disney's Animal
+Kingdom, Tierpark, Bioparc, aviary, vivarium, breeding centre, pheasantry,
+rescue and rehabilitation centres. The Sarahan Pheasantry and Berlin Tierpark
+candidates for the two Himalayan birds were passing before this.
+
+**C. `vetAnimal` now asks whether the subject is a living animal at all.** New
+`isNotLivingAnimal` rejects paintings, illustrations, engravings, manuscripts,
+taxidermied and museum specimens, skeletons, statues, sculptures and replicas.
+**It is animal-only, and that restriction is load-bearing** — Jharkhand's
+Sohrai houses are a landmark whose whole subject IS a wall painting, so `vet()`
+must never learn this rule. There is a named test pinning exactly that.
+
+## Two things that are NOT bugs
+
+**`NO_PHOTOGRAPH` (in `scripts/fetch-photos.mjs`) is a supported end state.**
+Three species have no honest free photograph and now say so by name, with the
+reason: `Western tragopan` (every candidate captive at the Sarahan Pheasantry,
+a 1915 book plate, a GODL stamp, or the Mughal painting), `Markhor` (Augsburg
+Zoo, Berlin Tierpark, Padmaja Naidu, or 1904 hunting books), `Sangai` (a
+replica, an illustration, a 240px thumbnail, a deer at Disney's Animal Kingdom,
+or the festival that shares its name). This table is deliberately separate from
+`OVERRIDES`: an override says "the pick was wrong, here is the right file", an
+entry here says "every candidate is wrong and the correct answer is none."
+**Without it each run re-picks the least-bad wrong file and ships it** — which
+is exactly how the sangai arrived at a replica, and then at a festival.
+`PlaceScreen.tsx`'s `photo` field is explicitly allowed to be undefined and
+renders nothing rather than a stand-in, so this is honest, not a hole.
+
+**The landmark path only ever examined the top search hit.** An animal vets a
+pool of ten; a landmark took `commonsSearchMany(name, 10)[0]` and gave up if it
+failed. That asymmetry is why all 24 landmark failures reported "NO USABLE
+IMAGE" while passing candidates sat directly behind the one that failed.
+`scripts/override-candidates.mjs` (new, read-only, writes nothing) vets the
+whole pool and prints what passes. **It does not auto-pick, on purpose** —
+`OVERRIDES`' own rule is that the script never guesses, and the picks it
+enabled prove why: the top-ranked hit was outright wrong in six of the 24. A
+British geograph.org.uk photograph outranked every Ladakhi cham dancer; a photo
+of Lucknow's *Residency* outranked the Bara Imambara; a waterfall captioned
+"**Near** Talakona" outranked Talakona; the Dzukou lily (a different species,
+in a different state) outranked the Shirui lily.
 
 ## Verified green at close
 
 | gate | result |
 |---|---|
 | `npx tsc -b` | clean |
-| `npm test` | **840 passing**, 32 skipped, 0 failures |
+| `npm test` | **850 passing**, 32 skipped, 0 failures, 53 files |
 | `npm run validate` | 36 places · 393 lines · 77,793 chars (ceiling 99,100) |
 | `npm run colour:check` | clean |
-| `npm run fact:check` | **716 rows — 633 fetched, 45 cited, 38 derived** |
-| `npm run place:strip` | see below — was still running at close |
+| photo integrity | 210 credits, 210 files, **0 duplicates**, 0 landmarks missing, 0 missing attribution HTML |
+| `npm run place:strip` | **no problems at any of 36 places x 12 devices** (432 rows) |
 
-The 32 skips are the speech-synthesis suites, gated behind `CI || TTS_TESTS=1`
-because they are fifteen minutes of real `say` calls. That gating is deliberate.
+`place:strip` measures the state's own drawn shape everywhere now — 73-75% of
+the map box on every row, far above the 0.10 floor — and the fill-fraction and
+clipping checks ran for the first time on the 32 new places, because both live
+behind the `ink` measurement that used to come back null. One check inside that
+gate is still not running; see "3." above.
 
-## DO NOT DEPLOY YET — and why
+The 32 skips are the speech suites behind `CI || TTS_TESTS=1`, as designed.
 
-All 36 places have **text but only 4 have audio**. The narration render for the
-32 new places has not run. Deploying now would give a child 32 screens whose
-Play button has nothing to play, which breaks the invariant this project spent a
-whole task establishing: *no control may be pressable and produce no observable
-effect*. **Render first, then deploy.**
+## `place:strip` — three defects IN THE GATE, found by the render landing
+
+The first full 36-place run after the narration landed reported **325 problem
+rows of 432**, every one of them *"the state's own shape is not drawn"*. **The
+app was fine.** The screenshots the gate itself writes to `build/place-strip/`
+show each page rendering correctly — one state lit, nine tiles, caption and
+credit in place. What was broken was the measurement, and it had been latent
+since the gate was written.
+
+**1. The ink measurement required EXACTLY ONE lit path in the whole map.** An
+intro names its neighbours as it plays (`lightNeighbour`), `useMapNodes.ts`'s
+`highlight()` only ever ADDS the class, and nothing clears the previous one
+until a different page opens — all deliberate, and all described in
+`measureReadAlong`'s own "LEAVE NO TRACE" comment. So Andhra Pradesh's intro
+lights Telangana, Delhi's lights Haryana, and the gate called every one of them
+"not drawn."
+
+The correlation is **36 of 36**, measured rather than argued: 34 places name at
+least one neighbour in their intro (33 in prose plus Ladakh, which says "Jammu
+and Kashmir is next door" and carries a `lightNeighbour` cue for it) and every
+one of those failed. The only two that never failed on any device are **Andaman
+& Nicobar and Lakshadweep** — the island territories whose intros name no
+neighbour at all.
+
+**It was the narration render that exposed this.** Before it, 32 of the 36
+places had no audio, so no cue ever fired and no neighbour ever lit. This is
+the second time in this project a gate turned out to have been passing because
+the thing it measures had never actually run.
+
+*Fixed by asking for the shape BY NAME.* Every state path carries `data-slug`
+(`hitLayer.ts` writes it), so the gate now selects
+`path.lit[data-slug="<slug>"]`. A neighbour being lit at the same time is
+correctly irrelevant — it is the app working.
+
+**2. The failure message was unreachable-dead-code wrong.** `litCount` was
+recorded only INSIDE the `ink` object, and `ink` is null exactly when the count
+is not 1 — so the reporter's `"N states lit, expected exactly 1"` branch could
+never execute, and every such row printed the misleading `"the state's own
+shape is not drawn"` instead. **"Nothing is drawn" and "three states are lit"
+are opposite faults with opposite fixes.** `litCount` and `litSlugs` are now
+recorded at row level, always, and the message names which fault it saw.
+
+**3. The read-along check silently skips itself — STILL OPEN, not fixed.**
+`hasClip` was a single instantaneous read taken the moment after Play was
+pressed, so a clip that had not yet rendered its words was recorded as "no
+audio yet" permanently, because the early return never looks again. It now
+polls for up to 4 seconds — **and that did not fix it.** Be precise about the
+evidence before spending time here:
+
+- **0 of 432 rows have EVER produced a read-along measurement.** All 72 phone
+  rows (36 places x 2 phones) report `skipped`, and no row in the file has
+  `readAlong.total > 0`. This check has never once run, on any place, before
+  or after the narration landed.
+- **The thing it checks demonstrably works.** `build/place-strip/west-bengal-390x844.png`,
+  written by that very row, shows the read-along mid-sentence with "Bengal,"
+  highlighted (`.word[data-current]`), the control bar reading **Pause**, and
+  one state lit. So at LAYOUT time the spans exist and narration is playing.
+- Therefore `document.querySelectorAll('.read-along .word')` returning 0
+  inside `measureReadAlong` is **not** "no audio". `ReadAlong.tsx` renders its
+  spans whenever `clip` is non-null (`if (!clip) return null`), independent of
+  playback, so either `clip` is null at that exact moment or the probe is not
+  seeing the page it thinks it is.
+
+**Why this matters more than it looks.** This is the regression guard for a
+real, named, already-shipped defect — read-along highlighting scrolling out of
+view on a phone, the thing commit `673f5ee` fixed. That fix is currently
+unguarded, and the gate reports "skipped" rather than failing, which is exactly
+the silent-pass pattern this project has been bitten by twice before.
+
+**Do not "fix" this by deleting the skip.** The early return exists for a good
+reason (a place with genuinely no audio must not hang the whole gate for 20s
+and take the other 35 places' layout checks down with it — that happened). The
+work is to find out why the spans are invisible to the probe, and the cheapest
+next step is a standalone CDP probe against one phone row rather than another
+one-hour gate run per iteration.
+
+**A trap for whoever edits `LAYOUT` next: it is a template literal, so a
+backslash in it is eaten before Chrome ever sees the source.** The first fix
+above used `/#\/place\/([^?/]+)/`, which arrived in the page as `/#/place//`
+and threw "Invalid regular expression flags" on the very first row. The slug is
+now derived with plain string operations and no backslash at all. If you must
+validate this script before a one-hour run, **evaluate the template literal and
+parse THAT** — checking the file's raw text passes happily while the string the
+browser receives is broken.
 
 ## What is left, in order
 
-1. **160 landmark photographs.** The pipeline exists and is proven on 4 animals
-   (`scripts/fetch-photos.mjs`, locality-checked via Commons categories and
-   coordinates, contact sheet at `scripts/contact-sheet-animals.mjs`). The 32
-   animal photographs are also outstanding. **The owner must look at contact
-   sheets** and answer only "is that actually the thing in the picture" — the
-   check a machine cannot do, and the one that caught Konark's missing wheel.
-   Expect **Tripura's Phayre's langur to have no usable photograph**: the only
-   Commons image is from Thailand and the locality check will reject it.
-2. **The narration render.** ~$7 for the 32 places, likely nearer $4 — both real
-   bills so far came in at ~55% of estimate. Each place is its own run, so a
-   place costs only itself. **Show the owner the preflight figure before
-   spending.** A place re-renders as a UNIT: the provider does not reproduce its
-   own previous take, so a line re-rendered alone comes back audibly different.
-3. **Deploy.**
+1. **The owner looks at the contact sheets.** `review/photos.html` (210
+   landmarks) and `review/animals.html` (33 species). This is the one check a
+   machine cannot do — "is that actually the thing in the picture" — and it is
+   the check that caught Konark's missing wheel. The six defects above were
+   caught by reading filenames against the narration; a filename can still be
+   wrong about its own contents.
+2. **Deploy.** No blocker remains once the sheets are approved.
 
 ## Open, waiting on the owner
 
-- **The tour is 3:32, down from 4:05.** The re-render normalised the pace; his
-  original brief asked for "soothing and slow". Lowering the default playback
-  rate is one line and free — Plan 4 put timed art on the media clock precisely
-  so this is safe. Waiting on his ear, not on a plan.
-- **Two hello cards do not show a greeting.** Nagaland's says "Hello" because no
-  single language works there and everything is written in English; Manipur's
-  shows four Meitei letters because every letter is named after a body part.
-  Both were flagged by their writer as convention failures. Both are, on
-  reflection, better than the convention. His call.
-- **Sikkim's animal card is a yak, not its state animal the red panda**, because
-  the red panda is already one of Sikkim's five landmarks. One-line change.
+- **Three animal cards have no photograph** (western tragopan, markhor,
+  sangai). Honest and supported, but he may prefer a different species for
+  Himachal, Jammu & Kashmir and Manipur — each is a one-line `species` change,
+  though it would re-render that place's ten narration lines as a batch.
+- **`File:Lost Identity -- Keibul Lamjao National Park.jpg`** passes every
+  check (4288×3216, CC BY-SA 4.0, categorised only to the sangai's only home)
+  but carries no description, so nothing can confirm it shows the deer rather
+  than the floating park. One human glance settles it.
+- **Twelve sound effects, still unsourced.** Needs a free Freesound account;
+  only the search endpoint needs a token. `content/sounds.json` is the list.
+- **The tour is 3:32, down from 4:05.** Waiting on his ear; the fix is a
+  playback-rate default, one line, free.
+- **Nobody has heard the narration, and nobody has read it to a child.** Now
+  121 minutes of it.
+
+## Decisions taken this session, so they are not re-opened
+
+- **Sikkim's animal card stays the yak.** The red panda is already one of
+  Sikkim's five landmarks; making it the animal card too would spend two of
+  that state's six slots on one creature.
+- **Both convention-breaking hello cards stay as written.** Nagaland shows
+  "Hello" in English because no single one of its languages is the state's;
+  Manipur shows four Meitei letters because each is named after a body part.
+  Both were judged better than the convention they break.
 
 ## Traps a cold start will otherwise walk into
 
-- **`place:strip` now runs 36 places × 12 devices = 432 measurements** and takes
-  the better part of an hour, printing nothing until it finishes. **Run it once,
-  in the foreground.** Two concurrent runs collide on a hardcoded port and both
-  produce garbage — this happened twice in one session.
-- **Check `uptime` before believing a red run.** A loaded machine produces
-  nondeterministic timeouts indistinguishable from real failures; hours were
-  lost to this once. This is the owner's own working machine.
-- **`shot.mjs` without `--build` runs in dev mode**, where React StrictMode
-  double-fires the place screen's arrival flight and compounds the zoom past
-  `MAX_SCALE` entirely. Production builds are unaffected. A dev screenshot will
-  lie to you about camera framing.
-- **Never run `npm run tts:draft`.** It renders with the macOS `say` voice, and
-  a provider-change guard now exists — but the underlying hazard is why.
-- **`scene` keys in `content/vocab.json` are validated but nothing in `src/`
-  reads them.** 157 exist. An earlier handover sentence claimed adding one
-  without a `SUBJECTS` row breaks the build; that is not true — `REQUIRED_KEYS`
-  is built from `revealSymbol`, `rivers` and the verb keys only. Either the
-  claim or the code should change.
+Everything in the previous close note still applies — `place:strip` takes the
+better part of an hour and two concurrent runs collide on a hardcoded port;
+check `uptime` before believing a red run; `shot.mjs` without `--build` lies
+about camera framing; never run `npm run tts:draft`. Add one:
+
+- **`fetch:photos` is incremental and will not revisit a bad photograph.** It
+  skips anything already in `photo-credits.json` with a file on disk. To
+  replace one, delete BOTH the credit entry and `public/photos/<id>.jpg`, or
+  the fix silently does nothing.
