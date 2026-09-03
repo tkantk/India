@@ -43,6 +43,154 @@ const OVERRIDES = {
   // `animals()` below), so this landmark override is still, and permanently,
   // the only real tiger photograph anywhere in the app.
   'Ranthambore National Park': 'File:Bengal tiger in Ranthambore National Park.jpg',
+  // ---- The 32-state pass, 2026-09-03 -------------------------------------
+  // 24 landmarks and 3 animals the automatic tiers could not place. Every
+  // one was picked from `scripts/override-candidates.mjs`, which vets the
+  // WHOLE Commons result pool against the real `vet()`/`vetAnimal()` rather
+  // than only the top hit the way this script's landmark path does — that
+  // asymmetry is why all 24 reported "NO USABLE IMAGE" while passing
+  // candidates sat directly behind the one that failed.
+  //
+  // The picks below are NOT "the first thing that passed". The top-ranked
+  // hit was wrong outright in six of them, and the reason is recorded next
+  // to each: a search engine ranks on words, and the words are frequently
+  // attached to the wrong object.
+
+  // The top hits were satellite frames (SentinelHub, NASA) and an 1885
+  // survey plate; the line is about an island volcano still erupting.
+  'Barren Island volcano Andaman': "File:Barren Island Active Volcano.jpg",
+  // Top hit was "Manasa Teertham Waterfalls NEAR Talakona" — a different
+  // waterfall, named as such.
+  'Talakona Waterfall Andhra Pradesh': "File:Talakona waterfall view 01.jpg",
+  'Ziro Valley Arunachal Pradesh': "File:Ziro valley of Aruncahl in summer season.jpg",
+  // The only dolphin in the pool; the runner-up was a duck (a red-crested
+  // pochard photographed in the same sanctuary).
+  'Ganges river dolphin Bihar': "File:Gangetic Dolphin.jpg",
+  'Sukhna Lake Chandigarh': "File:Sukhna Lake Chandigarh Evening.jpg",
+  'Diu Fort cannons': "File:Diu Fort Fixed Cannons.JPG",
+  // The line is about stone steps built "in a great curve... like the seats
+  // in a theatre", so the masonry of the kund itself, not the modern
+  // Surajkund Fair the top two hits show.
+  'Surajkund Faridabad reservoir': "File:Suraj Kund Masonary 032.jpg",
+  // The line is about an extinct volcano standing alone out of flat fields;
+  // the crater is the part that says "volcano", not the hilltop hall the
+  // top hit shows.
+  'Dhosi Hill Haryana': "File:A view of Dhosi Hill Crater.JPG",
+  // The line counts "nearly a thousand bridges" and describes one built in
+  // five layers of stone arches, so a bridge — the top hit was the station
+  // building at Shimla.
+  'Kalka Shimla Railway arch gallery bridge': "File:Kalka–Shimla railway bridge 2019-10-18 10.09.13.jpg",
+  'Great Himalayan National Park Kullu': "File:Great Himalayan National Park, Kullu, Himachal.jpg",
+  'Indira Gandhi Memorial Tulip Garden Srinagar': "File:Indira Gandhi Memorial Tulip Garden, Srinagar.jpg",
+  // The line is entirely about the hangul DEER ("These deer are called
+  // hangul... a stag can carry antlers with sixteen points"). Searching the
+  // park's name returned six landscapes, a poppy and a captive black bear
+  // and not one hangul; searching the animal found this. Same lesson as
+  // Konark's missing wheel — the picture has to show what the words say.
+  'hangul Kashmir stag Dachigam National Park': "File:The Last Surviving Population of Hangul.jpg",
+  // Passing candidates included one whose author field is a 700-character
+  // set of conditions on reuse; this one is a plain CC BY 2.0 credit.
+  'Mysore Palace': "File:Mysore Palace (1).jpg",
+  // The pool ranked, in order: a geograph.org.uk photograph from BRITAIN, a
+  // Hyolmo (Nepali) dancer, a Balinese dancer and a Malawian dancer. Only
+  // this one is a cham dance in Ladakh — Lamayuru is a Ladakhi monastery.
+  'Hemis masked cham dance Ladakh': "File:Masked dancers, Lamayuru Monastery.jpg",
+  // Every located candidate was Hawaii, Moorea or an albino in captivity.
+  // This one makes no false location claim and matches the line exactly:
+  // the turtle "goes down into the shallow water to eat the grass growing
+  // on the bottom".
+  'green sea turtle Lakshadweep': "File:Green Sea Turtle grazing seagrass.jpg",
+  // Top hits were the DZUKOU lily — a different species, in Nagaland.
+  'Lilium mackliniae Shirui lily': "File:Siroy Lily at Siroy National Park, Manipur.jpg",
+  // The rest of the pool was six birds photographed in the park.
+  'Phawngpui Blue Mountain Mizoram': "File:Phawngpui national park.jpg",
+  'Langar Golden Temple Amritsar': "File:Langar , participatory community kitchen , Golden Temple ,Amritsar 01.jpg",
+  // Names Sikkim, which the line does; the pool also held one explicitly
+  // captioned "Captured at the Himalayan Zoological Park, Sikkim".
+  'Red panda Sikkim forest': "File:Red panda sikkim.jpg",
+  "Krishna's Butterball Mahabalipuram": "File:Krishna's Butterball at Mahabalipuram heritage complex 03.jpg",
+  'New Pamban Bridge': "File:New Pamban Bridge Rameswaram 2024.jpg",
+  'Kuntala Waterfall Telangana': "File:Kuntala waterfall 4.jpg",
+  'Dumboor Lake Tripura': "File:In the middle of the Deep Dumboor Lake.jpg",
+  // Top hit was the Imambara inside the RESIDENCY — a different building in
+  // the same city.
+  'Bara Imambara Lucknow': "File:View of Bara Imambara, Lucknow.jpg",
+
+  // ---- Animals ----------------------------------------------------------
+  // These three replace photographs that were already fetched and were
+  // WRONG, not merely missing — see `docs/handover.md` for the full account.
+  // The automatic pick was a blackbuck photographed in Bardiya, NEPAL,
+  // waved through because its geotag falls inside `INDIA_BBOX`'s rectangle
+  // while its only Commons category said "Antilope cervicapra in Nepal".
+  // `localityVerdict` now refutes on that text; this is the photograph the
+  // fixed check prefers, from Tal Chhapar Sanctuary in Rajasthan.
+  'Blackbuck': "File:Blackbuck in Tal Chhapar Sanctuary November 2025 by Tisha Mukherjee 11.jpg",
+  // Nagaland's gayal (mithun) and Goa's gaur were given the IDENTICAL file,
+  // captioned as a gaur. They are different animals, and a state's own
+  // animal card cannot be a photograph of a different species that another
+  // state is already using.
+  'Gayal': "File:Mithun AP 1.jpg",
+  // The automatic pick was "Idu Mishmi MAN on track from Anini" — a
+  // photograph of a person, matched on the word "Mishmi".
+  'Mishmi takin': "File:Budorcas taxicolor taxicolor 354708274.jpg",
+
+  // The automatic pick was `File:CervusEldiAMNH.jpg` — a TAXIDERMIED sangai
+  // in the American Museum of Natural History — for a park. `vet()` now
+  // rejects mounted specimens outright, so this file can no longer be
+  // chosen; the override is what fills the hole that leaves. The line is
+  // about "a thick mat of rotted-down plants lying on top of the lake", and
+  // those floating phumdis are what this photograph shows. Keibul Lamjao
+  // sits on Loktak, so the lake is the park's own water, not a substitute
+  // for it — but it is a photograph of the lake, and worth the owner's eye
+  // on the contact sheet.
+  'Keibul Lamjao National Park': "File:Loktak Lake Manipur 08.jpg",
+
+  // Not a failure but a COLLISION: this tile and `lakshadweep.from-space`
+  // were handed the identical NASA MODIS satellite frame, so one place
+  // showed the same picture on two of its own shelf tiles. The satellite
+  // image genuinely belongs to "An Atoll from Space"; this tile's line is
+  // about standing at the reef and watching the waves break in a white
+  // line, which is a photograph taken from the island, not from orbit.
+  'Minicoy Island lagoon Lakshadweep': "File:Minicoy Island, Lakshadweep.jpg",
+}
+
+/**
+ * Species this project SEARCHED FOR AND COULD NOT HONESTLY ILLUSTRATE.
+ *
+ * Not the same thing as a missing override, and that is the whole reason
+ * this table exists separately: a name in `OVERRIDES` says "the automatic
+ * tiers picked wrong, here is the right file", while a name here says "every
+ * candidate Commons has is wrong, and the correct answer is NO PHOTOGRAPH."
+ * Without this, each run re-picks the least-bad wrong file and silently
+ * ships it — the sangai case below did exactly that, twice, arriving at a
+ * REPLICA on the first pass and a photograph of a FESTIVAL on the second.
+ *
+ * `PlaceScreen.tsx`'s `photo` field is explicitly allowed to be undefined
+ * and renders nothing at all in that case, deliberately, rather than a
+ * stand-in shape. So an entry here is a supported, honest end state, not a
+ * hole — and it is strictly better than the alternative, because this
+ * project's very first device-test complaint was "the images are fake".
+ *
+ * Each of these was searched repeatedly, by species name, by binomial, and
+ * by locality, via `scripts/override-candidates.mjs`. Re-check them if
+ * Commons gains new uploads; none is a permanent ruling.
+ */
+const NO_PHOTOGRAPH = {
+  // Every free candidate is a captive bird at the Sarahan Pheasantry (a
+  // breeding centre in Himachal), a 1915 book plate, an Indian postage
+  // stamp under the non-allowlisted GODL licence, or the seventeenth-century
+  // Mughal painting that this project actually shipped before the
+  // living-animal check existed.
+  'Western tragopan': 'every free candidate is captive, a book plate, a stamp, or a painting',
+  // The markhor barely survives in India at all (a small population in
+  // Jammu & Kashmir), and Commons has it only from Augsburg Zoo, Berlin
+  // Tierpark, Padmaja Naidu Zoological Park and 1904 hunting books.
+  'Markhor': 'every free candidate is a zoo animal or a 1904 hunting-book plate',
+  // The sangai lives only in Keibul Lamjao. Commons offers a replica, a
+  // Meitei illustration, a 240px thumbnail, a deer at Disney's Animal
+  // Kingdom, and photographs of the Sangai FESTIVAL — a cultural event that
+  // shares the animal's name and outranks it in every search.
+  'Sangai': 'candidates are a replica, an illustration, a zoo animal, or the Sangai Festival',
 }
 
 function landmarks() {
@@ -178,14 +326,22 @@ async function fileInfo(titles, width = 900) {
 }
 
 /**
- * ANIMAL-ONLY. Overwrites each candidate's `categories` with Commons' own
- * real ones (see `fileInfo`'s note on why en.wikipedia's copy is not
- * usable) and adds `coordinates` when Commons has a geotag for the file —
- * the two inputs `localityVerdict` (wiki.mjs) actually needs. Mutates the
- * `infos` map in place rather than returning a new one: the caller already
- * has a reference to every entry it cares about.
+ * Overwrites each candidate's `categories` with Commons' own real ones (see
+ * `fileInfo`'s note on why en.wikipedia's copy is not usable) and adds
+ * `coordinates` when Commons has a geotag. Mutates the `infos` map in place
+ * rather than returning a new one: the caller already has a reference to
+ * every entry it cares about.
+ *
+ * WAS animal-only, and is not any more. The locality verdict this feeds is
+ * still animal-only — a fort has no "wrong continent" failure — but
+ * `vet()`'s own taxidermy check reads `categories` too, and for a LANDMARK
+ * those were previously en.wikipedia's useless wrapper categories, so the
+ * check could not fire. That gap shipped a stuffed sangai from the American
+ * Museum of Natural History as Manipur's national park: the signal that
+ * would have caught it (`Category:Taxidermied Rucervus eldii`) exists only
+ * on Commons, and nothing was asking Commons for a landmark.
  */
-async function attachLocality(infos, titles) {
+async function attachCommonsMeta(infos, titles) {
   for (let i = 0; i < titles.length; i += 50) {
     const batch = titles.slice(i, i + 50)
     const j = await api(COMMONS, {
@@ -215,6 +371,14 @@ const leads = await leadImages(todo.map(l => l.query))
 const failures = []
 
 for (const lm of todo) {
+  if (NO_PHOTOGRAPH[lm.query]) {
+    // Deliberately absent, not failed — see NO_PHOTOGRAPH's own note. This
+    // is NOT pushed onto `failures`, because failures are things a human
+    // still has to resolve, and this one already was resolved: the answer
+    // is no photograph.
+    console.log(`  ${lm.id}: no photograph on purpose — ${NO_PHOTOGRAPH[lm.query]}`)
+    continue
+  }
   const isAnimal = lm.kind === 'animal'
   const candidates = []
   if (OVERRIDES[lm.query]) candidates.push({ file: OVERRIDES[lm.query], source: 'override' })
@@ -230,7 +394,8 @@ for (const lm of todo) {
   const cs = await commonsSearch(lm.query); if (cs) candidates.push(cs)
 
   const infos = await fileInfo([...new Set(candidates.map(c => c.file))])
-  if (isAnimal) await attachLocality(infos, [...new Set(candidates.map(c => c.file))])
+  // Every candidate, not only an animal's — see `attachCommonsMeta`'s note.
+  await attachCommonsMeta(infos, [...new Set(candidates.map(c => c.file))])
 
   const vetFn = isAnimal ? vetAnimal : vet
   const passing = []

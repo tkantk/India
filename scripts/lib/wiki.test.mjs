@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   licencePolicy, vet, vetAnimal, isZooPhoto, attribution, realWidth, stripQuery, UA,
-  coordsInIndia, indiaLocalityRegex, textNamesIndia, localityVerdict,
+  coordsInIndia, indiaLocalityRegex, textNamesIndia, localityVerdict, isNotLivingAnimal,
 } from './wiki.mjs'
 
 const freeFile = {
@@ -237,6 +237,18 @@ describe('isZooPhoto / vetAnimal', () => {
   // no field in Wikimedia's metadata that says "this individual animal is
   // free-ranging"; a human looking at the contact sheet is still the only
   // check that can catch this, exactly as Task 5's own brief says.
+  // DISNEY'S ANIMAL KINGDOM — a real candidate for Manipur's sangai, and a
+  // reminder that "zoo" is a word many zoos do not use. `animal park` was
+  // already here; `animal kingdom` was not, and nor were the European and
+  // breeding-centre namings a rare Himalayan species is most often
+  // photographed in.
+  it('catches captive settings that avoid the word "zoo" — Animal Kingdom, Tierpark, a breeding centre', () => {
+    expect(isZooPhoto({ fileTitle: 'File:Cervus eldii4.jpg', categories: ["Rucervus eldii in Disney's Animal Kingdom"] })).toBe(true)
+    expect(isZooPhoto({ fileTitle: 'File:Capra falconeri Tierpark Berlin.jpg', categories: [] })).toBe(true)
+    expect(isZooPhoto({ fileTitle: 'File:Tragopan at the Sarahan breeding centre.jpg', categories: [] })).toBe(true)
+    expect(isZooPhoto({ fileTitle: 'File:Bird in an aviary.jpg', categories: [] })).toBe(true)
+  })
+
   it('cannot catch a captive animal whose title and categories never say so', () => {
     const uncaught = { ...wild, fileTitle: 'File:Elephant, Kerala.jpg', categories: ['Elephas maximus', 'Elephants of Kerala'] }
     expect(isZooPhoto(uncaught)).toBe(false)
@@ -354,6 +366,132 @@ describe('India locality', () => {
       const ii = { fileTitle: 'File:House sparrow male in Prospect Park (53532).jpg', categories: ['Prospect Park in 2022'], coordinates: { lat: 40.662, lon: -73.969 } }
       expect(localityVerdict(ii, indiaRe)).toBe(false)
     })
+
+    // THE NEPAL CASE — a real file this project actually shipped, not a
+    // hypothetical. `INDIA_BBOX` is one flat rectangle (6-36N, 68-98E) and
+    // therefore swallows every land neighbour India has; only Sri Lanka was
+    // ever carved out, and that carve-out's own comment says in as many
+    // words that "Bangladesh, Nepal, Bhutan, Pakistan, Myanmar" are NOT
+    // similarly guarded. This is Nepal arriving.
+    //
+    // The blackbuck chosen for BOTH Andhra Pradesh and Punjab was
+    // `File:A male blackbuck photographed at Blackbuck Conservation Area,
+    // Bardiya, Nepal.jpg`, geotagged 28.248N 81.325E — genuinely inside the
+    // India rectangle — and its ONLY Commons category is `Category:Antilope
+    // cervicapra in Nepal`. Commons stated the country outright and the
+    // verdict threw that away, because coordinates were checked first and
+    // treated as definitive. A crude rectangle must not outrank an explicit
+    // statement.
+    it('refutes a photo whose categories name another country, even when the coordinate lands inside the India box', () => {
+      const ii = {
+        fileTitle: 'File:A male blackbuck photographed at Blackbuck Conservation Area, Bardiya, Nepal.jpg',
+        categories: ['Antilope cervicapra in Nepal'],
+        coordinates: { lat: 28.248202, lon: 81.325187 },
+      }
+      expect(coordsInIndia(ii.coordinates)).toBe(true) // the rectangle really does say yes
+      expect(localityVerdict(ii, indiaRe)).toBe(false) // and it must not be the last word
+    })
+
+    // The same rectangle covers Thailand's latitude/longitude only partly,
+    // but Phayre's langur is the species this project was warned about by
+    // name ("expect Tripura's Phayre's langur to have no usable
+    // photograph: the only Commons image is from Thailand"), so the text
+    // signal has to work with no coordinate at all.
+    it('refutes a Thailand-categorised photo with no coordinate — the Phayre\'s langur warning', () => {
+      const ii = { fileTitle: 'File:Trachypithecus phayrei.jpg', categories: ['Trachypithecus phayrei in Thailand'] }
+      expect(localityVerdict(ii, indiaRe)).toBe(false)
+    })
+
+    // Naming another country must not refute when India is named TOO — a
+    // range map category ("Mammals of India and Nepal") describes a species
+    // found in both, and says nothing about where the shutter was.
+    it('does not refute when India is named alongside the other country', () => {
+      const ii = { fileTitle: 'File:X.jpg', categories: ['Mammals of India and Nepal'], coordinates: { lat: 26.9, lon: 84.1 } }
+      expect(localityVerdict(ii, indiaRe)).toBe(true)
+    })
+
+    // Whole-word matching, or this app's own Kerala landmark breaks: the
+    // Chinese fishing nets at Fort Kochi are in India, and "Chinese" must
+    // never match a bare "China" country token.
+    it('does not mistake "Chinese fishing nets" for a photograph taken in China', () => {
+      const ii = { fileTitle: 'File:Chinese fishing nets, Kochi.jpg', categories: ['Chinese fishing nets in Kerala'] }
+      expect(localityVerdict(ii, indiaRe)).toBe(true)
+    })
+  })
+})
+
+describe('isNotLivingAnimal / vetAnimal', () => {
+  const base = {
+    imagerepository: 'shared', width: 3000, height: 2000, mime: 'image/jpeg',
+    extmetadata: { LicenseShortName: { value: 'CC BY-SA 4.0' }, License: { value: 'cc-by-sa-4.0' } },
+  }
+
+  // THE WESTERN TRAGOPAN CASE — this one actually shipped. Himachal
+  // Pradesh's animal card was given `File:A Page of Birds. St. Petersburg
+  // Muraqqa (Institute of Oriental Manuscripts of the Russian Academy of
+  // Sciences E-14 f.80r).jpg`: a seventeenth-century Mughal PAINTING. It
+  // passed every gate, because `vetAnimal` checked whether the animal was
+  // captive and never whether it was alive, or real, or a photograph.
+  // "The images are fake and not original" was this project's first
+  // device-test complaint; a painting is the most literal form of it.
+  it('rejects a painting of the animal — the Mughal muraqqa that actually shipped', () => {
+    const ii = { ...base, fileTitle: 'File:A Page of Birds. St. Petersburg Muraqqa (Institute of Oriental Manuscripts of the Russian Academy of Sciences E-14 f.80r).jpg', categories: [] }
+    expect(isNotLivingAnimal(ii)).toBe(true)
+    expect(vetAnimal(ii).ok).toBe(false)
+  })
+
+  // A stuffed bird in a glass case in London is not the bird that lives in
+  // the Himalaya, and it is a worse picture for a six-year-old than none.
+  it('rejects a taxidermied museum specimen', () => {
+    const ii = { ...base, fileTitle: 'File:Ma - Tragopan melanocephalus - 1.jpg', categories: ['Taxidermied birds in the Natural History Museum, London', 'Tragopan melanocephalus (museum specimens)'] }
+    expect(isNotLivingAnimal(ii)).toBe(true)
+    expect(vetAnimal(ii).ok).toBe(false)
+  })
+
+  // Manipur's sangai card shipped `File:Sangai Deer Replica in Manipur.jpg`
+  // — a model of the deer, photographed in Manipur, so every locality and
+  // captivity check said yes.
+  it('rejects a replica, statue or sculpture standing in for the animal', () => {
+    for (const t of ['File:Sangai Deer Replica in Manipur.jpg', 'File:Statue of a tiger.jpg', 'File:Elephant sculpture.jpg']) {
+      expect(isNotLivingAnimal({ ...base, fileTitle: t, categories: [] })).toBe(true)
+    }
+  })
+
+  it('accepts an ordinary photograph of a live animal', () => {
+    const ii = { ...base, fileTitle: 'File:Blackbuck in Tal Chhapar Sanctuary November 2025 by Tisha Mukherjee 11.jpg', categories: ['Antilope cervicapra in Rajasthan'] }
+    expect(isNotLivingAnimal(ii)).toBe(false)
+    expect(vetAnimal(ii).ok).toBe(true)
+  })
+
+  // The check is animal-only on purpose. Jharkhand's Sohrai houses ARE wall
+  // paintings — the landmark IS the painting — and `vet()` must not learn
+  // this rule, or the app loses a real landmark to a rule written for
+  // animal cards.
+  it('does not apply to landmarks: Sohrai wall paintings survive plain vet()', () => {
+    const ii = { ...base, fileTitle: 'File:A Munda tribesman sitting in front of wall decorated with Munda style Sohrai Painting at Isko Village, Hazaribagh.jpg', categories: [] }
+    expect(vet(ii).ok).toBe(true)
+  })
+
+  // A TAXIDERMIED SPECIMEN IS WRONG FOR EVERYTHING, so unlike the artwork
+  // half above this one lives in `vet()` and applies to landmarks too.
+  // Manipur's Keibul Lamjao National Park — a landmark, not an animal card,
+  // so `vetAnimal` never ran on it — was given `File:CervusEldiAMNH.jpg`,
+  // categorised `Taxidermied Rucervus eldii`: a stuffed sangai in the
+  // American Museum of Natural History, standing in for a national park.
+  it('rejects a taxidermied specimen even for a LANDMARK, via plain vet()', () => {
+    const ii = { ...base, fileTitle: 'File:CervusEldiAMNH.jpg', categories: ['Taxidermied Rucervus eldii'] }
+    expect(vet(ii).ok).toBe(false)
+  })
+
+  // ...but "fossil" must NOT be in that shared half. Puducherry's landmark
+  // "The Stone Tree" is a fossilised tree, photographed as
+  // `File:Fossil photo2.JPG`. A fossil is the correct picture there and the
+  // wrong picture on an animal card, so the word belongs in the
+  // animal-only rule and nowhere else.
+  it('keeps "fossil" out of vet(), because a fossil tree is a real landmark here', () => {
+    const ii = { ...base, fileTitle: 'File:Fossil photo2.JPG', categories: [] }
+    expect(vet(ii).ok).toBe(true)
+    expect(isNotLivingAnimal(ii)).toBe(true)
   })
 })
 
