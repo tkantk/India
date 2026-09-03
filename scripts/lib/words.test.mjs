@@ -279,6 +279,25 @@ describe('cueTimes: invite extends the final art cue past the clip', () => {
  * run `cueTimes` against `content/tour.json` and `src/data/timings.json`
  * and land on the exact numbers the brief verified by hand.
  */
+/**
+ * THESE CONSTANTS MOVE EVERY TIME THE TOUR IS RE-RENDERED, and that is the
+ * design working, not a flake. Cues are authored as WORD INDICES precisely so
+ * a re-render cannot desynchronise them — but the SECONDS those indices
+ * resolve to are a property of the recording, so a new take shifts them.
+ *
+ * Updated 2026-09-03, second re-render: the pronunciation table
+ * (content/pronounce.json) changed the spelling sent to the provider for one
+ * tour beat, and the tour is a CHAINED run, so all fourteen beats re-rendered
+ * together — see runs.mjs on why editing one beat re-renders the rest of its
+ * chain. Every number below moved by 0.1-0.4s. tour.02 is the curiosity: its
+ * encoded duration came back byte-identical (15.229388s, the same frame
+ * boundary) while its word `starts` shifted, which is why its hold moved
+ * without its length doing so.
+ *
+ * If a future re-render fails these again, recompute rather than widen the
+ * tolerance: the tolerance is what makes them able to catch a real cue
+ * regression at all.
+ */
 describe('cueTimes against the shipped tour', () => {
   const tour = JSON.parse(readFileSync('content/tour.json', 'utf8'))
   const shipped = JSON.parse(readFileSync('src/data/timings.json', 'utf8'))
@@ -301,7 +320,7 @@ describe('cueTimes against the shipped tour', () => {
   // clip's own end.
   it('tour.02: the outline holds past the end of its own audio, through the invite floor', () => {
     const [outline] = holdsFor('tour.02')
-    expect(seconds(outline.hold)).toBeCloseTo(18.64, 1)
+    expect(seconds(outline.hold)).toBeCloseTo(18.78, 1)
   })
 
   it('tour.03/04: the state and UT counters are capped at 5s though derived is far more', () => {
@@ -319,55 +338,55 @@ describe('cueTimes against the shipped tour', () => {
   // old, independently-rendered 19.043s clip the skipped numbers described.
   it('tour.05: zoomTo is art and its hold matches the Delhi ring; india-gate takes the rest', () => {
     const [zoomTo, indiaGate] = holdsFor('tour.05')
-    expect(seconds(zoomTo.hold)).toBeCloseTo(6.23, 1)
-    expect(seconds(indiaGate.hold)).toBeCloseTo(1.36, 1)
+    expect(seconds(zoomTo.hold)).toBeCloseTo(6.27, 1)
+    expect(seconds(indiaGate.hold)).toBeCloseTo(1.55, 1)
   })
 
   it('tour.06: the flag holds until the counter, which then holds to the beat end', () => {
     const [flag, counter] = holdsFor('tour.06')
-    expect(seconds(flag.hold)).toBeCloseTo(13.33, 1)
-    expect(seconds(counter.hold)).toBeCloseTo(1.68, 1)
+    expect(seconds(flag.hold)).toBeCloseTo(12.97, 1)
+    expect(seconds(counter.hold)).toBeCloseTo(1.52, 1)
   })
 
   it('tour.07: the tiger holds most of the beat', () => {
     const [tiger] = holdsFor('tour.07')
-    expect(seconds(tiger.hold)).toBeCloseTo(13.60, 1)
+    expect(seconds(tiger.hold)).toBeCloseTo(13.73, 1)
   })
 
   it('tour.08: the peacock holds to the end of its beat', () => {
     const [peacock] = holdsFor('tour.08')
-    expect(seconds(peacock.hold)).toBeCloseTo(14.01, 1)
+    expect(seconds(peacock.hold)).toBeCloseTo(13.81, 1)
   })
 
   it('tour.09: lotus, banyan and mango each hold only until the next', () => {
     const [lotus, banyan, mango] = holdsFor('tour.09').filter((c) => c.do === 'revealSymbol')
-    expect(seconds(lotus.hold)).toBeCloseTo(8.86, 1)
+    expect(seconds(lotus.hold)).toBeCloseTo(8.63, 1)
     expect(seconds(banyan.hold)).toBeCloseTo(5.68, 1)
-    expect(seconds(mango.hold)).toBeCloseTo(1.14, 1)
+    expect(seconds(mango.hold)).toBeCloseTo(1.16, 1)
   })
 
   it('tour.10: the Ganga holds to the end of its beat', () => {
     const [ganga] = holdsFor('tour.10')
-    expect(seconds(ganga.hold)).toBeCloseTo(13.00, 1)
+    expect(seconds(ganga.hold)).toBeCloseTo(12.67, 1)
   })
 
   it('tour.11: the Himalaya hold to the end of their beat', () => {
     const [himalaya] = holdsFor('tour.11')
-    expect(seconds(himalaya.hold)).toBeCloseTo(12.29, 1)
+    expect(seconds(himalaya.hold)).toBeCloseTo(12.15, 1)
   })
 
   it('tour.12: the three seas accumulate and all land together on the beat end', () => {
     const [arabian, bengal, ocean] = holdsFor('tour.12')
-    expect(seconds(arabian.hold)).toBeCloseTo(9.64, 1)
-    expect(seconds(bengal.hold)).toBeCloseTo(6.56, 1)
-    expect(seconds(ocean.hold)).toBeCloseTo(2.17, 1)
+    expect(seconds(arabian.hold)).toBeCloseTo(10.01, 1)
+    expect(seconds(bengal.hold)).toBeCloseTo(6.84, 1)
+    expect(seconds(ocean.hold)).toBeCloseTo(2.14, 1)
   })
 
   it('tour.13: the three greetings accumulate and all land together on the beat end', () => {
     const [namaste, namaskar, vanakkam] = holdsFor('tour.13')
-    expect(seconds(namaste.hold)).toBeCloseTo(6.03, 1)
-    expect(seconds(namaskar.hold)).toBeCloseTo(4.91, 1)
-    expect(seconds(vanakkam.hold)).toBeCloseTo(3.75, 1)
+    expect(seconds(namaste.hold)).toBeCloseTo(5.66, 1)
+    expect(seconds(namaskar.hold)).toBeCloseTo(4.68, 1)
+    expect(seconds(vanakkam.hold)).toBeCloseTo(3.50, 1)
   })
 })
 
