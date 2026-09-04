@@ -149,6 +149,59 @@ for (const ms of [200, 500, 1000, 2000, 4000]) {
   const s = await show(`+${ms}ms after speed(6)`)
   if (s.words > 0) { console.log('\n  >>> words appeared'); break }
 }
+// --follow: play the whole clip and report the first word that leaves the
+// lane, with the scroller's own numbers — which is what tells "the paging
+// logic decided wrong" apart from "the paging logic was never consulted".
+if (process.argv.includes('--follow')) {
+  const DIAG = `(() => {
+    const root = document.querySelector('.read-along')
+    if (!root) return { err: 'no read-along' }
+    const wordEl = root.querySelector('[data-current]')
+    if (!wordEl) return { err: 'no current word' }
+    let node = root.parentElement, scroller = null
+    while (node && node !== document.body) {
+      if (node.scrollHeight > node.clientHeight + 1) {
+        const oy = getComputedStyle(node).overflowY
+        if (oy === 'auto' || oy === 'scroll') { scroller = node; break }
+      }
+      node = node.parentElement
+    }
+    const lane = document.querySelector('.say-lane') ?? document.querySelector('.say')
+    const w = wordEl.getBoundingClientRect(), l = lane.getBoundingClientRect()
+    const spans = [...root.querySelectorAll('.word')]
+    return {
+      i: spans.indexOf(wordEl), total: spans.length, saying: wordEl.textContent,
+      inLane: w.top >= l.top - 0.5 && w.bottom <= l.bottom + 0.5,
+      wordTop: Math.round(w.top), wordBottom: Math.round(w.bottom),
+      laneTop: Math.round(l.top), laneBottom: Math.round(l.bottom),
+      scroller: scroller ? scroller.className : null,
+      scrollTop: scroller ? Math.round(scroller.scrollTop) : null,
+      clientH: scroller ? scroller.clientHeight : null,
+      scrollH: scroller ? scroller.scrollHeight : null,
+      maxScroll: scroller ? Math.round(scroller.scrollHeight - scroller.clientHeight) : null,
+    }
+  })()`
+  console.log('\nfollowing the whole clip (--follow)\n')
+  let last = -1, bad = 0
+  for (let i = 0; i < 400; i++) {
+    const d = await chrome.eval(DIAG).catch(() => null)
+    if (d && !d.err && d.i !== last) {
+      last = d.i
+      if (process.env.VERBOSE) console.log(`  word ${String(d.i).padStart(2)} "${(d.saying||'').slice(0,12)}" scrollTop=${d.scrollTop} inLane=${d.inLane}`)
+      if (!d.inLane) {
+        bad++
+        console.log(`  OUT OF LANE  word ${d.i}/${d.total} "${d.saying}"`)
+        console.log(`     word ${d.wordTop}-${d.wordBottom} vs lane ${d.laneTop}-${d.laneBottom}`)
+        console.log(`     scroller .${d.scroller} scrollTop=${d.scrollTop} client=${d.clientH} scroll=${d.scrollH} max=${d.maxScroll}`)
+        if (bad >= 3) break
+      }
+    }
+    if (d && d.i >= d.total - 1) break
+    await sleep(60)
+  }
+  if (!bad) console.log('  every word stayed inside the lane')
+}
+
 console.log('\nfinal snapshot (the exact object the gate reads):')
 console.log(' ', JSON.stringify(await chrome.eval(SNAPSHOT).catch((e) => ({ error: e.message }))))
 stop()

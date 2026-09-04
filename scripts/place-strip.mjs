@@ -691,10 +691,65 @@ async function measureReadAlong(slug) {
   // guards against is worse than no guard.
   if (!hasClip) return { visible: true, skipped: true, word: 0, total: 0 }
 
-  const snap = await until(async () => {
+  await until(async () => {
     const s = await chrome.eval(READALONG_SNAPSHOT)
     return s.total > 0 && s.word >= Math.floor(s.total * 0.7) ? s : null
   }, { every: 100, limit: 20000, what: `${slug}'s intro to reach word 70%` })
+
+  /**
+   * MEASURE AT REST, NOT MID-PAGE-TURN — and this is a real finding, not a
+   * convenience. The caption PAGES rather than crawls (`readAlongScroll.ts`),
+   * so the word that first crosses the fold is, for the length of one smooth
+   * scroll, legitimately outside the lane while the box is still moving to
+   * fetch it.
+   *
+   * The very first run of this check after it was repaired failed three rows
+   * — haryana/phone, haryana/small phone, manipur/small phone — and every one
+   * of them was that transient. Followed word by word with
+   * `scripts/probe-readalong.mjs --follow`, Haryana reads:
+   *
+   *     word 32 "and"      scrollTop=0    inLane=true
+   *     word 33 "mustard"  scrollTop=3    inLane=false   <- page turn begins
+   *     word 34 "growing"  scrollTop=136  inLane=true
+   *     word 35 "in"       scrollTop=139  inLane=true    <- settled
+   *
+   * 70% of Haryana's 46 words is word 33: the sample landed exactly on the
+   * page turn. And this gate drives the clock at READALONG_SPEED, which
+   * compresses the gap between words sixfold while a CSS smooth scroll still
+   * takes its real wall-clock time — so the transient is many times wider
+   * here, relative to a word, than it can ever be for a child.
+   *
+   * So: drop back to real speed and let the scroller stop before looking.
+   * This is the same technique `shot.mjs` already uses for art — fast-forward
+   * to the moment, then return to real speed so it settles before the
+   * shutter. It does NOT weaken the check: a word that never arrives still
+   * fails, because the scroll position stops changing while it is still out
+   * of the lane.
+   */
+  await chrome.eval(`window.__clock.speed(1)`)
+  const SCROLL_TOP = `(() => {
+    const root = document.querySelector('.read-along')
+    let node = root && root.parentElement
+    while (node && node !== document.body) {
+      if (node.scrollHeight > node.clientHeight + 1) {
+        const oy = getComputedStyle(node).overflowY
+        if (oy === 'auto' || oy === 'scroll') return node.scrollTop
+      }
+      node = node.parentElement
+    }
+    return 0
+  })()`
+  let previous = null
+  let still = 0
+  for (let i = 0; i < 40; i++) {
+    const now = await chrome.eval(SCROLL_TOP).catch(() => null)
+    still = now !== null && now === previous ? still + 1 : 0
+    previous = now
+    // Two identical readings 50ms apart: the smooth scroll has stopped.
+    if (still >= 2) break
+    await sleep(50)
+  }
+  const snap = await chrome.eval(READALONG_SNAPSHOT)
 
   /**
    * LEAVE NO TRACE. Measured directly, the hard way: an intro names its
