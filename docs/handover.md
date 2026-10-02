@@ -1367,3 +1367,134 @@ written from general knowledge of India rather than from this content.
 `npm run tts:final -- --only=<place>`. Only the places that say that word
 re-render, because of the cache key — but each of those re-renders as a whole
 batch, so a one-word fix costs that place's ten lines, not one.
+
+---
+
+# OCTOBER 2026 — the photo review, the Passport, and four wrong facts
+
+The owner asked for a review and a plan to make the app complete, then
+approved the first two steps: check every photograph against its narration,
+and build the India Passport.
+
+## 1. Every photograph checked against the words spoken over it
+
+All 210 were looked at, each beside the exact line read while it is on
+screen — the one check no metadata gate can make. **138 matched, 55 were
+weak, 17 showed something other than what the child hears.** The 17 included
+two signboards (Rumtek, the Wild Asses — the "donkeys" were painted on the
+sign), an indoor statue standing in for Thiksey's hillside, a dead flying
+fish hung in a market in front of painted phone numbers, and — worst — **a man
+holding up a clouded leopard's skinned pelt** on Meghalaya's animal card.
+
+48 were replaced, each chosen BY EYE from thumbnails rather than from a
+title, and each with a one-line note in `fetch-photos.mjs`'s `OVERRIDES` of
+how the old one failed its line, so nobody puts it back. Two of the 48 were
+picks from the PREVIOUS review that had been chosen by title and were wrong
+once looked at: Keibul Lamjao's "floating park" was open water and a solid
+hill, and Nagaland's mithun was a patched animal in a village yard when the
+line says "black, with white legs like socks". **The lesson of those two is
+the lesson of the whole review: a title is not a picture.**
+`override-candidates.mjs --thumbs <dir>` now saves each candidate's thumbnail
+so a reviewer can look before choosing.
+
+The clouded leopard joined `NO_PHOTOGRAPH`: every free candidate is a pelt, a
+stamp, an animal photographed outside India, or the Bornean species. Four
+animal cards now deliberately show no photograph (western tragopan, markhor,
+sangai, clouded leopard). The non-commercial licence decision (below) is the
+route to filling them.
+
+## 2. Four narration lines were factually wrong — found BY the photos
+
+Each time, a photo "contradicted" the line, and the photo was right:
+
+| line | said | actually |
+|---|---|---|
+| Tirathgarh Falls | falls "in one single go, without touching anything" | steps down rock ledges |
+| Diu Fort | the cannons "are made of brass" | rusted iron, some bronze |
+| Puducherry Old Lighthouse | "a white tower with a green top" | restored June 2026, copper dome |
+| Kaas Plateau | "goes purple and pink all over" | yellow, pink, purple, white |
+
+All four passed `fact:check` every time. **Their quotes were real — just
+weak.** The brass came from a photo caption carried over from a 2005 Flickr
+upload; the green dome from an unsourced infobox the restoration made out of
+date; the single drop from a database page marked "Unconfirmed". A
+`contains` check proves a page says something, not that the page is a good
+source for it. Each row now carries a `note` saying what changed and why.
+
+Kotumsar's "the fish are blind" was also made precise ("their eyes are so
+tiny they can hardly see" — the species has very reduced eyes, not none),
+free, because Chhattisgarh was being re-recorded for Tirathgarh anyway.
+
+## 3. Fifteen fact-check rows drifted in a month — none were wrong
+
+Wikipedia editors reworded the pages behind 15 rows. All 15 were
+re-verified: every claim still holds, and the quotes were updated. One is
+worth knowing about: **the Kotumsar Cave article was rolled back on
+2026-09-15 as a "presumptive removal of LLM edits"** — the caption our row
+quoted was AI-written text. Expect drift like this every month; a red
+`fact:check` row is "go and look", not "the app is wrong".
+
+`fact:check` timeouts are separate and transient — different pages each run,
+worse while a browser gate is running. Re-check a timed-out row with no time
+limit before believing it.
+
+## 4. The India Passport (design spec §7) — built
+
+A Milestone 1 item that never existed, though its three narration lines had
+been written and paid for.
+
+- `src/passport/passport.ts` — the only thing this app stores, as the spec
+  requires: one localStorage key holding slugs and times. Survives storage
+  being refused (Private Browsing) by keeping the stamps for the visit.
+- `src/passport/Stamp.tsx` — each stamp is the place's REAL outline from
+  `geo.json` in a double ring, in one of five palette inks, tilted by a few
+  degrees. Unvisited places are faint outlines in a dashed ring.
+- `src/screens/PassportScreen.tsx` (`#/passport`) — 36 fixed, alphabetical
+  slots (a sticker album, not a leaderboard: slots never move), "You have
+  explored N of 36!", and every slot is a door to that place. **It is its own
+  scroll container**: base.css pins body, and the first build showed four of
+  36 slots on a phone with no way to reach the rest.
+- The stamp is awarded at the moment the place screen already says "well
+  done" (all ten pages heard). A FIRST finish plays `ui.stamp` instead of
+  `ui.all-heard` and presses the stamp onto the page; a repeat plays the old
+  line, so a child is never told he earned a stamp he already had.
+- A sixth button, Passport, on the map screen's bar only. Verified by
+  `tour:strip` on all 12 devices: two rows of three on phones, one row on
+  every iPad, zero overflow. The only width where six would not fit (601–719
+  px, a phone on its side, ungated) gets a second row via `:has()`.
+
+## 5. A refused recording used to delete good audio — fixed
+
+The re-recording of the corrected lines was refused by ElevenLabs:
+**"Your subscription has a failed or incomplete payment. Complete the latest
+invoice to continue usage."** Nothing was billed. But the failed run deleted
+the timings of FOUR good Chhattisgarh clips (the intro and three cards), and
+the next deploy would have shipped them silent. Caught only because the clip
+count went from 393 to 389.
+
+Cause: `persist()` dropped the record of every line whose render threw, on
+the theory that a half-written .m4a might be on disk. True when the failure
+comes after the shipped file starts being overwritten; false for a request
+the provider refuses, which writes nothing — and the pool had four in flight.
+Now only lines whose shipped file was actually TOUCHED (`touched`, set just
+before `toM4a`) lose their record. `tts.test.mjs` reproduces the exact case:
+an edited line, a refused request, the previous timing and byte-identical
+audio kept, the edit still rendered on the next run. The `--force` failure
+test used to assert the deletion, and was encoding the bug.
+
+**Always count the clips after a render** (`timings.json` should hold 393).
+
+## Still open
+
+- **The ElevenLabs invoice.** Until it is paid, the five corrected lines
+  (Tirathgarh, Diu's cannons, the lighthouse, Kaas, Kotumsar's fish) keep
+  their old audio and old words — consistent with each other, just not yet
+  corrected. Once paid: `npm run tts:final` (dry, shows ~$0.85 for 40 lines
+  across 4 places), then `-- --yes`, then check the count is still 393.
+- **The non-commercial licence decision is made (allowed) but not yet used.**
+  Nothing in the current pipeline can fetch NC media — Commons does not host
+  it. It unlocks iNaturalist (located, wild animal photos: the four empty
+  animal cards) and xeno-canto (real bird calls), which is step 3 of the plan.
+- README still describes the project as four states with a draft voice.
+- Animal sounds (3 of 36), ambient beds (17 of 36), offline use, per-place
+  loading: the rest of the proposal.
