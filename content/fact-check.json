@@ -2881,7 +2881,7 @@
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Teej",
-            "contains": "Haryali Teej is one of the famous festivals of Haryana, and is celebrated as an official holiday"
+            "contains": "festivals of Haryana, and is celebrated as an official holiday"
           },
           {
             "url": "https://en.wikipedia.org/wiki/Teej",
@@ -2893,10 +2893,11 @@
           },
           {
             "url": "https://en.wikipedia.org/wiki/Teej",
-            "contains": "Boys traditionally flew kites from morning to evening"
+            "contains": "kites from morning to evening"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. Quotes deliberately short: the page was being copy-edited daily (\"famous\" became \"well-known\", \"flew\" became \"fly\")."
     },
     {
       "id": "haryana.card.hello.haryanvi",
@@ -5025,10 +5026,23 @@
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Durga_Puja",
-            "contains": "the eyes are painted of the deities on the representative clay sculpture-idols, bringing them to a lifelike appearance"
+            "contains": "Artisans traditionally perform Chakshu Daan"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/Durga_Puja",
+            "contains": "This symbolizes the awakening of the image prior to formal consecration"
+          },
+          {
+            "url": "https://www.exoticindiaart.com/article/durgapuja/",
+            "contains": "artisans leave the painting of the pratima's eyes for last"
+          },
+          {
+            "url": "https://cogindia.art/kumartuli-tradition-idol-sculpture-kolkata/",
+            "contains": "The final ritual act, chokkhudaan or eye painting"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. Wikipedia never supported \"last\"; the two added sources (weaker: a craft retailer and a gallery) do, and agree with each other."
     },
     {
       "id": "west-bengal.card.hello.bengali",
@@ -5337,15 +5351,16 @@
         "type": "fetched",
         "sources": [
           {
-            "url": "https://en.wikipedia.org/wiki/Kawal_Tiger_Reserve",
+            "url": "https://en.wikipedia.org/wiki/Kawal_Wildlife_Sanctuary",
             "contains": "Mammal species that have been sighted include tiger, leopard, gaur, cheetal, sambar, nilgai, barking deer, chowsingha, and sloth bear"
           },
           {
-            "url": "https://en.wikipedia.org/wiki/Kawal_Tiger_Reserve",
-            "contains": "The reserve is the oldest sanctuary in the northern Telangana"
+            "url": "https://en.wikipedia.org/wiki/Kawal_Wildlife_Sanctuary",
+            "contains": "Kawal Wildlife Sanctuary is a wildlife sanctuary in Jannaram mandal of Mancherial District in the Telangana state of India"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. The page was renamed; the removed \"oldest sanctuary\" sentence only ever placed the reserve in Telangana."
     },
     {
       "id": "telangana.card.animal.termites",
@@ -5373,11 +5388,16 @@
         "type": "fetched",
         "sources": [
           {
+            "url": "https://www.thenewsminute.com/article/there-s-more-just-one-type-hyderabadi-biryani-and-here-s-how-different-they-are-61085",
+            "contains": "the meat is sandwiched between layers of rice in a handi (sealed with dough)"
+          },
+          {
             "url": "https://en.wikipedia.org/wiki/Hyderabadi_biryani",
-            "contains": "The meat is sandwiched between layers of fragrant basmati rice and cooked \"in dum\" after sealing the handi (vessel) with dough"
+            "contains": "cooked \"in dum\" after sealing the handi (vessel) with dough"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. Moved to the article Wikipedia itself cites, after an unsourced 2026-09-23 edit."
     },
     {
       "id": "telangana.card.festival.bathukamma",
@@ -5396,10 +5416,19 @@
           },
           {
             "url": "https://en.wikipedia.org/wiki/Bathukamma",
-            "contains": "On this final day immersion of Bathukamma (Bathukamma Visarjan) in water bodies is celebrated"
+            "contains": "On this day, immersion of Bathukamma (Bathukamma Visarjan) in water bodies is customary"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/Bathukamma",
+            "contains": "The last day of the festival is called Saddula Bathukamma"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/Bathukamma",
+            "contains": "in seven concentric layers in the shape of a temple gopuram"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. Also now sources the \"seven layers\", which no quote covered before."
     },
     {
       "id": "telangana.card.hello.adaab",
@@ -5488,14 +5517,15 @@
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Bhongir_Fort",
-            "contains": "Bhuvangiri Fort sits on a unique egg-shaped rock hill more than 500 feet high"
+            "contains": "Bhuvangiri Fort sits on an egg-shaped rock hill which is more than 500 feet high"
           },
           {
             "url": "https://en.wikipedia.org/wiki/Bhongir_Fort",
             "contains": "built on a monolithic rock fortress"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved."
     },
     {
       "id": "telangana.bhongir-fort.steps",
@@ -6386,10 +6416,11 @@
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Pola_(festival)",
-            "contains": "Pola is a thanksgiving festival celebrated by farmers in Maharashtra and Chhattisgarh, to acknowledge the importance of bulls and oxen"
+            "contains": "is a thanksgiving festival celebrated by farmers in Maharashtra and Chhattisgarh, to acknowledge the importance of bulls and oxen"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved."
     },
     {
       "id": "chhattisgarh.card.festival.washing",
@@ -6496,16 +6527,17 @@
     {
       "id": "chhattisgarh.tirathgarh.single-drop",
       "line": "chhattisgarh.tirathgarh-falls.line",
-      "claim": "The water at Tirathgarh plunges 91 metres in a single drop",
+      "claim": "At Tirathgarh the water comes over a cliff and falls down a stepped rocky hillside",
       "verification": {
         "type": "fetched",
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Teerathgarh_Falls",
-            "contains": "The water plunges 91 metres (299 ft) in a single drop"
+            "contains": "stepped hillside"
           }
         ]
-      }
+      },
+      "note": "Corrected 2026-10-02. The line used to say the water \"falls the whole way down in one single go, without touching anything\". That rested on one Wikipedia sentence sourced only to the World Waterfall Database, a page marked \"Unconfirmed\" which itself classes the fall as a horsetail (water in contact with the rock). The same article's opening, the district's own page, and every photograph show water stepping down rock ledges."
     },
     {
       "id": "chhattisgarh.tirathgarh.block",
@@ -6529,25 +6561,35 @@
         "type": "fetched",
         "sources": [
           {
-            "url": "https://en.wikipedia.org/wiki/Kotumsar_Cave",
-            "contains": "Stalactite inside the Cave"
+            "url": "https://en.wikipedia.org/wiki/Kanger_Valley_National_Park",
+            "contains": "there is pitch-darkness inside. It features stalactite and stalagmite formations"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. THE OLD QUOTE WAS AI-WRITTEN TEXT: on 2026-09-15 the Kotumsar Cave article was rolled back to its 2024 version as a \"presumptive removal of LLM edits\", and the caption this row quoted went with it. Moved to the park article."
     },
     {
       "id": "chhattisgarh.kotumsar.blind-fish",
       "line": "chhattisgarh.kotumsar-cave.line",
-      "claim": "Blind cavefish live in the cave's pools",
+      "claim": "The cave pools hold fish whose eyes are so reduced they can hardly see",
       "verification": {
         "type": "fetched",
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Kotumsar_Cave",
-            "contains": "the blind cavefish Indoreonectes evezardi"
+            "contains": "He identified a species of blind fish that occupy this cave as Indoreonectes evezardi"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/Kotumsar_Cave",
+            "contains": "Various water pools fed by seepage throughout the year also exist in this cave"
+          },
+          {
+            "url": "https://en.wikipedia.org/wiki/Indoreonectes_evezardi",
+            "contains": "very regressed eyes"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. Line corrected the same day from \"the fish are blind\": the species has very reduced eyes, so they can hardly see rather than having none."
     },
     {
       "id": "chhattisgarh.bhoramdeo.carved",
@@ -6757,10 +6799,11 @@
           },
           {
             "url": "https://en.wikipedia.org/wiki/Meitei_script",
-            "contains": "ꯃ Mit"
+            "contains": "ꯃꯤꯠ, mit eye"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved. The page now contradicts itself on \"lai\" (table: God; text: forehead); the line follows the sourced text."
     },
     {
       "id": "manipur.loktak.size",
@@ -6865,10 +6908,11 @@
           },
           {
             "url": "https://en.wikipedia.org/wiki/Ima_Keithel",
-            "contains": "It is the largest all–women market in Asia"
+            "contains": "as the largest all-women market in Asia"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved."
     },
     {
       "id": "manipur.ima-keithel.age",
@@ -8115,10 +8159,11 @@
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Gwalior_Fort",
-            "contains": "on a solitary rocky hill called Gopachal"
+            "contains": "Gwalior Fort is built atop a long, thin, solitary ridge called Gopachal"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved."
     },
     {
       "id": "madhya-pradesh.gwalior.tiles",
@@ -8248,14 +8293,15 @@
           },
           {
             "url": "https://en.wikipedia.org/wiki/Dhokla",
-            "contains": "The batter consists of a mixture of rice with the pulse Bengal gram"
+            "contains": "The batter consists of a mixture of rice with Bengal gram"
           },
           {
             "url": "https://en.wikipedia.org/wiki/Dhokla",
             "contains": "the paste is fermented for at least four hours"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved."
     },
     {
       "id": "gujarat.card.festival.nine-nights",
@@ -8780,7 +8826,7 @@
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Thukpa",
-            "contains": "is a Tibetan and Nepalese noodle soup"
+            "contains": "noodle soup, which originated in the eastern part of Tibet"
           },
           {
             "url": "https://en.wikipedia.org/wiki/Thukpa",
@@ -8791,7 +8837,8 @@
             "contains": "Hand-pulled noodle"
           }
         ]
-      }
+      },
+      "note": "Re-verified 2026-10-02 after the source page was reworded: the claim still holds; only the quoted wording moved."
     },
     {
       "id": "ladakh.card.festival.losar",
@@ -9597,7 +9644,7 @@
     {
       "id": "maharashtra.kaas.flowers",
       "line": "maharashtra.kaas-plateau.line",
-      "claim": "Kaas is a rock plateau whose seasonal wildflowers bloom in August and September",
+      "claim": "Kaas is a rock plateau whose seasonal wildflowers, in many colours including yellow, pink, purple and white, bloom in August and September",
       "verification": {
         "type": "fetched",
         "sources": [
@@ -9612,9 +9659,14 @@
           {
             "url": "https://en.wikipedia.org/wiki/Kaas_Plateau",
             "contains": "Kas Pathar is a plateau made from volcanic rocks"
+          },
+          {
+            "url": "https://www.incredibleindia.gov.in/en/maharashtra/satara/kaas-plateau",
+            "contains": "yellow, pink, blue, purple, and white"
           }
         ]
-      }
+      },
+      "note": "Corrected 2026-10-02. The line used to say the plateau \"goes purple and pink all over\". Official sources list yellow, pink, blue, purple and white, and yellow carpets are as typical as purple ones."
     },
     {
       "id": "maharashtra.sea-link.cable-stayed",
@@ -10347,7 +10399,7 @@
     {
       "id": "puducherry.old-lighthouse.dates",
       "line": "puducherry.old-lighthouse.line",
-      "claim": "The old lighthouse first lit in 1836 and was deactivated in 1979, when the new lighthouse started; it is a white tower with a green dome",
+      "claim": "The old lighthouse first lit in 1836 and was deactivated in 1979, when the new lighthouse started; it is a white tower",
       "verification": {
         "type": "fetched",
         "sources": [
@@ -10361,10 +10413,11 @@
           },
           {
             "url": "https://en.wikipedia.org/wiki/Pondicherry_Lighthouse",
-            "contains": "Markings White (tower), green (dome)"
+            "contains": "White (tower)"
           }
         ]
-      }
+      },
+      "note": "Corrected 2026-10-02. The line used to describe \"a green top\". That came from an unsourced infobox value, and the lighthouse was restored and reopened in June 2026 with a copper-brown dome, so the colour of the top is no longer said at all — it has changed more than once."
     },
     {
       "id": "puducherry.rock-beach.seawall",
@@ -11352,16 +11405,17 @@
     {
       "id": "ddd.diu-fort.cannons",
       "line": "dadra-and-nagar-haveli-and-daman-and-diu.diu-fort.line",
-      "claim": "There are brass cannons on the fort wall",
+      "claim": "Old cannons still stand on the fort wall, pointing out to sea",
       "verification": {
         "type": "fetched",
         "sources": [
           {
             "url": "https://en.wikipedia.org/wiki/Diu_Fort",
-            "contains": "Cannons made of brass on the fort wall"
+            "contains": "several cannons"
           }
         ]
-      }
+      },
+      "note": "Corrected 2026-10-02. The line used to say the cannons \"are made of brass\". The only source was a photo caption, carried over from a 2005 Flickr upload whose cannons are plainly rusted iron. The article text says \"some of them made of bronze\"; the fort has both kinds, so the line no longer names a metal."
     },
     {
       "id": "ddd.panikotha.sea-fort",
