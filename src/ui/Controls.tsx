@@ -72,6 +72,17 @@ type Props = {
    * knows to clear that wait before the audio starts over.
    */
   onReplay?: () => void
+  /**
+   * Open the India Passport (design spec §3: the India screen carries "a
+   * passport button"). Optional, and the button only exists where a screen
+   * passes it — today the map — so no screen can render a Passport button
+   * that goes nowhere, which is this file's own rule. It lives in the bar,
+   * not floating on the map, because the bar is the one strip of screen the
+   * map already gives up: anywhere over the map it would sit on top of a
+   * state (Arunachal at top right, Kashmir and Ladakh at top left) and
+   * swallow the taps meant for it.
+   */
+  onPassport?: () => void
 }
 
 /**
@@ -92,7 +103,7 @@ type Props = {
  * engine and mean the same thing on every screen. Play and home are not, so
  * they come in as props.
  */
-export function Controls({ onPlayPause, onHome, onReplay }: Props) {
+export function Controls({ onPlayPause, onHome, onReplay, onPassport }: Props) {
   const n = getNarrator()
   const playing = useSyncExternalStore(n.subscribe, () => n.playing)
   const stuck = useSyncExternalStore(n.subscribe, () => n.stuck)
@@ -132,7 +143,7 @@ export function Controls({ onPlayPause, onHome, onReplay }: Props) {
   }
 
   return (
-    <div className="controls" role="toolbar" aria-label="Controls">
+    <div className="controls" role="toolbar" aria-label="Controls" data-count={onPassport ? 6 : 5}>
       <button
         type="button"
         className="tap control"
@@ -180,6 +191,15 @@ export function Controls({ onPlayPause, onHome, onReplay }: Props) {
           <span className="control__label">{muted ? 'Sound off' : 'Sound on'}</span>
         </span>
       </button>
+
+      {onPassport && (
+        <button type="button" className="tap control" onClick={onPassport}>
+          <span className="control__body">
+            <span className="control__icon"><Glyph name="passport" /></span>
+            <span className="control__label">Passport</span>
+          </span>
+        </button>
+      )}
 
       <button type="button" className="tap control" onClick={onHome}>
         <span className="control__body">

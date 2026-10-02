@@ -438,9 +438,12 @@ type Props = {
   /** A state was tapped. The tour has already stopped and gone there by the
    *  time this fires; Plan 3 is what makes "there" a place worth arriving at. */
   onPickState?: (slug: string) => void
+  /** Open the India Passport. Only passed by the app, so a test or probe that
+   *  mounts the tour alone gets the ordinary five-button bar. */
+  onPassport?: () => void
 }
 
-export function GrandTour({ autoStart = false, onPickState }: Props) {
+export function GrandTour({ autoStart = false, onPickState, onPassport }: Props) {
   const n = getNarrator()
   const map = useMapNodes()
   // A primitive selector against the engine's own subscription. NOT
@@ -856,7 +859,14 @@ export function GrandTour({ autoStart = false, onPickState }: Props) {
         </div>
       </TourStage>
 
-      <Controls onPlayPause={playPause} onHome={goHome} onReplay={replay} />
+      <Controls
+        onPlayPause={playPause}
+        onHome={goHome}
+        onReplay={replay}
+        // Stop first, exactly as Home does: leaving for the passport must not
+        // leave a beat still talking over a screen that is no longer the map.
+        onPassport={onPassport ? () => { n.stop(); onPassport() } : undefined}
+      />
     </>
   )
 }

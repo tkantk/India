@@ -1,0 +1,114 @@
+/* THE PASSPORT PAGE. Printed on the same paper as the rest of the book, in
+   the same ink, with the same 104px rule for anything a finger can press.
+
+   It scrolls. Thirty-six slots that each stay a real 104px target cannot fit
+   one screen on a phone (three across, twelve rows), and shrinking them to
+   fit would trade the one thing that matters to a six-year-old's finger for
+   tidiness. So the page scrolls under the fixed bar, and its foot is padded
+   by the bar's own published height (`--bar`, Controls.css) so the last row
+   can always be scrolled clear of it. */
+.passport {
+  /* ITS OWN SCROLL CONTAINER, and this is load-bearing. base.css pins body
+     with `position: fixed; overflow: hidden` (that is what stops the iPad's
+     rubber-band bounce), so the DOCUMENT never scrolls on any screen. The
+     first build of this page relied on it anyway and, measured on a 390px
+     phone, showed four of its thirty-six slots with no way to reach the
+     rest. credits.css solves the same problem the same way. */
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  /* No side gutter here: body already carries it (base.css). */
+  padding: 16px 12px calc(var(--bar) + 24px);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.passport__head {
+  max-width: 960px;
+  margin: 0 auto 16px;
+  text-align: center;
+}
+
+.passport__title {
+  margin: 4px 0 2px;
+  font-size: calc(var(--text) * 1.5);
+  line-height: 1.15;
+}
+
+.passport__count {
+  margin: 0 0 10px;
+  font-size: var(--text);
+}
+
+.passport__count b {
+  font-size: 1.5em;
+  color: var(--deep);
+}
+
+/* The spoken line, lit word by word like every other caption in the app
+   (`.read-along` and `.word[data-current]` are global, base.css).
+
+   NOT `.say`, deliberately: `:where(.say)` is absolutely positioned against
+   the map screens' caption lane, and this page has no map and no lane. The
+   look is matched by hand instead — same padding, same rounding, same ink
+   on the same pale band. And this root is not `.india` either: that class
+   pins a screen to the viewport's height, and the passport has to scroll. */
+.passport__say {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: var(--page);
+  border: 2px solid var(--ink-line);
+  text-align: left;
+}
+
+.passport__grid {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 960px;
+  display: grid;
+  /* As many columns as fit while every slot stays at least a real target. */
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--tap) + 12px), 1fr));
+  gap: 12px;
+}
+
+.passport__slot {
+  width: 100%;
+  min-width: var(--tap);
+  min-height: calc(var(--tap) + 28px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px 10px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.passport__slot[data-stamped] {
+  background: var(--page);
+  border-color: var(--ink-line);
+  box-shadow: var(--lift);
+}
+
+.passport__slot .stamp {
+  width: min(96px, 100%);
+}
+
+.passport__name {
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  font-weight: 600;
+}
+
+.passport__slot:not([data-stamped]) .passport__name {
+  opacity: 0.7;
+}

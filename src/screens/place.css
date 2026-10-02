@@ -840,3 +840,16 @@
   }
   .place-empty__row .tile { width: auto; }
 }
+
+/* THE NEW STAMP, pressed onto the page while "Well done! You have a new
+   stamp." plays. Printed on the same paper card a photograph sits on, so it
+   reads as an object being put down rather than a badge floating over the
+   map. Only ever present for the length of that one line. */
+.place-stamp {
+  width: min(48vmin, 300px);
+  padding: 18px;
+  border-radius: var(--plate-rx);
+  background: var(--paper);
+  border: var(--rule) solid var(--ink-line);
+  box-shadow: var(--lift);
+}

@@ -1,0 +1,47 @@
+/* A stamp sits in whatever box its parent gives it; the parent decides size.
+
+   The tilt is a CSS transform on the <svg> ROOT — an HTML-level box — never
+   on an SVG child. The standing rule (docs/handover.md) is that WebKit's
+   legacy SVG engine cannot give an SVG child its own compositor layer, so
+   anything that moves or turns must be the root. */
+.stamp {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.stamp--stamped {
+  transform: rotate(var(--tilt, 0deg));
+}
+
+/* THE MOMENT IT IS EARNED: the stamp comes down onto the page. Large and
+   faint, then pressed flat — the motion a child has seen a grown-up make at
+   a counter. Short, because it plays over "Well done! You have a new stamp"
+   and must have landed before that sentence ends. */
+.stamp--fresh {
+  animation: stamp-press 520ms cubic-bezier(0.2, 0.8, 0.25, 1.15) both;
+}
+
+@keyframes stamp-press {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--tilt, 0deg)) scale(1.6);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(var(--tilt, 0deg)) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(var(--tilt, 0deg)) scale(1);
+  }
+}
+
+/* Reduced motion: it simply appears. The stamp is the reward, not the
+   movement. */
+@media (prefers-reduced-motion: reduce) {
+  .stamp--fresh {
+    animation: none;
+  }
+}

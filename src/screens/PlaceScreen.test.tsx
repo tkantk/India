@@ -6,6 +6,7 @@ import geo from '../data/geo.json'
 import photoCredits from '../data/photo-credits.json'
 import rajasthan from '../../content/places/rajasthan.json'
 import { WRITTEN } from '../content/places'
+import { addStamp, hasStamp, resetPassportForTests } from '../passport/passport'
 import type { Bbox, Clip, Cue } from '../types'
 
 /**
@@ -150,6 +151,11 @@ beforeEach(() => {
   narrator.word = -1
   narrator.onEnd = null
   narrator.everUnlocked = true
+  // The passport is real (localStorage, held in a module-level copy), so
+  // every test starts with an empty one — otherwise a stamp earned in one
+  // test would turn the next test's FIRST finish into a repeat.
+  localStorage.clear()
+  resetPassportForTests()
   vi.clearAllMocks()
 })
 
@@ -491,16 +497,21 @@ describe('PlaceScreen', () => {
       expect(played).not.toContain('audio/en/ui.all-heard.m4a')
     })
 
-    it('plays once the tenth page has been heard, whichever order they were opened in', async () => {
-      const user = userEvent.setup()
-      const { container } = render(<PlaceScreen slug="rajasthan" />)
+    /** Hear all ten pages of Rajasthan, in tile order. */
+    const hearEverything = async (user: ReturnType<typeof userEvent.setup>) => {
       act(() => { narrator.finish() }) // intro
-
       const rest = ['Animal', 'Food', 'Festival', 'Hello', ...rajasthan.landmarks.map((l) => l.short)]
       for (const name of rest) {
         await user.click(screen.getByRole('button', { name }))
         act(() => { narrator.finish() })
       }
+    }
+
+    it('plays once the tenth page has been heard, whichever order they were opened in', async () => {
+      const user = userEvent.setup()
+      addStamp('rajasthan') // finished on an earlier visit: the ordinary ending
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await hearEverything(user)
       expect(played[played.length - 1]).toBe('audio/en/ui.all-heard.m4a')
       // The caption must say what is actually playing — never a stale
       // sentence left over from whichever tile was tapped last.
@@ -510,16 +521,64 @@ describe('PlaceScreen', () => {
     it('does not trap the child in the congratulation — tapping any tile moves straight on', async () => {
       const user = userEvent.setup()
       const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await hearEverything(user)
+      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('ui.stamp')
+
+      await user.click(screen.getByRole('button', { name: 'Food' }))
+      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('card.food')
+    })
+  })
+
+  describe('the passport stamp (design spec §5)', () => {
+    const hearEverything = async (user: ReturnType<typeof userEvent.setup>) => {
       act(() => { narrator.finish() })
       const rest = ['Animal', 'Food', 'Festival', 'Hello', ...rajasthan.landmarks.map((l) => l.short)]
       for (const name of rest) {
         await user.click(screen.getByRole('button', { name }))
         act(() => { narrator.finish() })
       }
-      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('ui.all-heard')
+    }
 
-      await user.click(screen.getByRole('button', { name: 'Food' }))
-      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('card.food')
+    it('stamps the place the moment its tenth page has been heard — and not before', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      act(() => { narrator.finish() })
+      for (const name of ['Animal', 'Food', 'Festival']) {
+        await user.click(screen.getByRole('button', { name }))
+        act(() => { narrator.finish() })
+      }
+      expect(hasStamp('rajasthan')).toBe(false)
+    })
+
+    it('a FIRST finish says "you have a new stamp" instead of the ordinary ending, never both', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      await hearEverything(user)
+      expect(hasStamp('rajasthan')).toBe(true)
+      expect(played[played.length - 1]).toBe('audio/en/ui.stamp.m4a')
+      // Two lines that both open with "well done", back to back, would sound
+      // like a glitch — the stamp line replaces the ordinary one.
+      expect(played).not.toContain('audio/en/ui.all-heard.m4a')
+      expect(container.querySelector('.say')?.getAttribute('data-page')).toBe('ui.stamp')
+    })
+
+    it('presses the stamp onto the page while that line plays, and lifts it when it ends', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      await hearEverything(user)
+      expect(screen.getByTestId('place-stamp')).toBeInTheDocument()
+      act(() => { narrator.finish() }) // the stamp line ends
+      expect(screen.queryByTestId('place-stamp')).toBeNull()
+    })
+
+    it('never tells a child he earned a stamp he already had', async () => {
+      const user = userEvent.setup()
+      addStamp('rajasthan')
+      render(<PlaceScreen slug="rajasthan" />)
+      await hearEverything(user)
+      expect(played).not.toContain('audio/en/ui.stamp.m4a')
+      expect(played[played.length - 1]).toBe('audio/en/ui.all-heard.m4a')
+      expect(screen.queryByTestId('place-stamp')).toBeNull()
     })
   })
 })

@@ -184,4 +184,32 @@ describe('Controls', () => {
     expect(narrator.resumeContext).toHaveBeenCalled()
     narrator.stuck = false
   })
+
+  describe('the Passport button (design spec §3)', () => {
+    it('is not there unless the screen asks for it — no button that goes nowhere', () => {
+      mount()
+      expect(screen.queryByRole('button', { name: /passport/i })).toBeNull()
+      expect(screen.getByRole('toolbar').getAttribute('data-count')).toBe('5')
+    })
+
+    it('is there, with its word, when the screen passes somewhere to go', async () => {
+      const user = userEvent.setup()
+      const onPassport = vi.fn()
+      render(<Controls onPlayPause={onPlayPause} onHome={onHome} onPassport={onPassport} />)
+      const button = screen.getByRole('button', { name: /passport/i })
+      expect(button.querySelector('.control__label')?.textContent).toBe('Passport')
+      expect(button.querySelector('.control__icon svg')).not.toBeNull()
+      // The bar tells the stylesheet it holds six, so `--bar` can grow a row
+      // on the one width band where six do not fit in one (Controls.css).
+      expect(screen.getByRole('toolbar').getAttribute('data-count')).toBe('6')
+      await user.click(button)
+      expect(onPassport).toHaveBeenCalledTimes(1)
+    })
+
+    it('sits just before Home, so the way out is still the last thing in the bar', () => {
+      render(<Controls onPlayPause={onPlayPause} onHome={onHome} onPassport={() => {}} />)
+      const labels = [...document.querySelectorAll('.control__label')].map((l) => l.textContent)
+      expect(labels.slice(-2)).toEqual(['Passport', 'Home'])
+    })
+  })
 })

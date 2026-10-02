@@ -42,11 +42,11 @@ import { GrandTour } from '../tour/GrandTour'
  * before — the tour stops, lights the state and flies to it, and nothing
  * else happens.
  */
-export function IndiaScreen({ onPickState }: { onPickState?: (slug: string) => void }) {
+export function IndiaScreen({ onPickState, onPassport }: { onPickState?: (slug: string) => void; onPassport?: () => void }) {
   return (
     <main className="india tour">
       <h1 className="visually-hidden">Namaste India</h1>
-      <GrandTour onPickState={onPickState} />
+      <GrandTour onPickState={onPickState} onPassport={onPassport} />
     </main>
   )
 }

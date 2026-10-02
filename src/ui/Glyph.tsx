@@ -38,6 +38,11 @@ export type GlyphName =
   | 'sound-on'
   | 'sound-off'
   | 'home'
+  /* A small booklet with a ring on its cover — the shape every child who has
+     seen a grown-up's passport knows. The ring is cut out of the cover
+     (evenodd), not drawn on top of it: this file paints in `currentColor`
+     only, so a mark drawn over the cover in the same colour would vanish. */
+  | 'passport'
   /* The four cards every place carries (`content/schema.ts`'s `card`, whose
      keys are fixed at exactly these four). They are LANDMARKS FOR FINDING
      THE TILE AGAIN, never its name — each tile carries the word "Animal",
@@ -152,6 +157,16 @@ const MARKS: Record<GlyphName, ReactNode> = {
     <>
       <path d="M12 2.6 L22 11.2 h-3 v9.2 h-14 V11.2 H2 Z" />
       <rect x="9.6" y="14" width="4.8" height="6.4" rx="1" fill="none" stroke="currentColor" strokeWidth="1.8" />
+    </>
+  ),
+
+  passport: (
+    <>
+      <path
+        fillRule="evenodd"
+        d="M6.5 2 h11 a2 2 0 0 1 2 2 v16 a2 2 0 0 1 -2 2 h-11 a2 2 0 0 1 -2 -2 V4 a2 2 0 0 1 2 -2 Z M12 5.6 a4.4 4.4 0 1 0 0.01 0 Z M8 16.4 h8 v1.8 H8 Z"
+      />
+      <circle cx="12" cy="10" r="2.5" />
     </>
   ),
 

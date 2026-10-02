@@ -5,6 +5,7 @@ import { StartGate } from './screens/StartGate'
 import { IndiaScreen } from './screens/IndiaScreen'
 import { PlaceScreen } from './screens/PlaceScreen'
 import { Credits } from './screens/Credits'
+import { PassportScreen } from './screens/PassportScreen'
 import { getNarrator } from './audio/Narrator'
 
 // The engine is built on first use, which is inside the tap handler: iOS only
@@ -36,7 +37,22 @@ const playTestSound = async () => {
  */
 function IndiaRoute() {
   const navigate = useNavigate()
-  return <IndiaScreen onPickState={(slug) => navigate(`/place/${slug}`)} />
+  return (
+    <IndiaScreen
+      onPickState={(slug) => navigate(`/place/${slug}`)}
+      onPassport={() => navigate('/passport')}
+    />
+  )
+}
+
+function PassportRoute() {
+  const navigate = useNavigate()
+  return (
+    <PassportScreen
+      onPick={(slug) => navigate(`/place/${slug}`)}
+      onHome={() => navigate('/')}
+    />
+  )
 }
 
 /**
@@ -91,6 +107,10 @@ function App() {
             here directly; there is simply no narration until a gesture has
             unlocked the context, which is true everywhere. */}
         <Route path="/place/:slug" element={<PlaceRoute />} />
+        {/* Not behind the gate, for the same reason `/place/:slug` is not: a
+            grown-up reloading the iPad here must land here, not back at the
+            start. The screen itself waits for a real tap before it speaks. */}
+        <Route path="/passport" element={<PassportRoute />} />
         <Route path="/credits" element={<Credits />} />
       </Routes>
     </MotionConfig>

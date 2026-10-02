@@ -194,3 +194,25 @@
 .controls .carry-on:active {
   filter: brightness(0.92);
 }
+
+/* SIX BUTTONS, where a screen adds the Passport (today: the map). Six real
+   104px targets plus gaps and the gutter need ~700px in one row. Every
+   device this app is gated on is either a phone (<=600px, already two rows
+   of three — six fits exactly) or an iPad (744px and up, one row fits). The
+   only widths that would overflow are 601-719px: a phone held sideways,
+   which this app carries rather than covers (scripts/lib/devices.mjs). Even
+   there the targets must not shrink, so the bar wraps to two rows and
+   `--bar` is told so — `:has()` lets the root learn about the bar it is
+   laying everything else out around. A browser without `:has()` (iOS older
+   than 15.4) keeps one row there, which is no worse than before this
+   button existed on the one layout nobody is gated on. */
+@media (min-width: 601px) and (max-width: 719px) {
+  :root:has(.controls[data-count='6']) {
+    --bar-rows: 2;
+    --bar-gap: 2px;
+  }
+  .controls[data-count='6'] {
+    flex-wrap: wrap;
+  }
+}
+

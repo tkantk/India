@@ -12,6 +12,8 @@ import { TourStage } from '../tour/TourStage'
 import { StateShape } from '../tour/effects/StateShape'
 import { subjectOf, subjectKeyForPlace } from '../tour/effects/subject'
 import { contentFor, WRITTEN } from '../content/places'
+import { addStamp } from '../passport/passport'
+import { Stamp } from '../passport/Stamp'
 import geo from '../data/geo.json'
 import timings from '../data/timings.json'
 import photoCredits from '../data/photo-credits.json'
@@ -168,6 +170,21 @@ const CARDS: { key: CardKey; word: string; glyph: GlyphName; symbol?: GlyphName 
  * whatever order, still ends in "well done."
  */
 const ALL_HEARD = 'ui.all-heard'
+
+/**
+ * THE PASSPORT STAMP (design spec §5: "Passport stamp. Awarded when the
+ * intro plus all five landmarks have been heard"). Awarded at the moment this
+ * screen ALREADY congratulates the child — all ten pages heard — rather than
+ * at the spec's earlier intro-plus-landmarks point, so there is one "well
+ * done" and not two a minute apart. That ending was the one thing every
+ * judge of the original design agreed on; the stamp is the reward for it.
+ *
+ * A FIRST finish plays this line instead of `ui.all-heard` — both open with
+ * "well done", and saying it twice in a row would sound like a glitch. A
+ * place finished again on a later visit keeps the old line, so a child is
+ * never told he earned a stamp he already had.
+ */
+const NEW_STAMP = 'ui.stamp'
 
 /**
  * How long the arrival flight takes.
@@ -353,6 +370,12 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    *  true, and the plate stays empty (already true: the last page's own
    *  `ended` flip is what triggers this in the first place). */
   const [celebrating, setCelebrating] = useState(false)
+  /** Which line the ending is actually playing — `ui.stamp` the first time a
+   *  place is finished, `ui.all-heard` after that. The caption reads it. */
+  const [ending, setEnding] = useState(ALL_HEARD)
+  /** Whether this visit earned a NEW stamp — the stamp is pressed onto the
+   *  page while the ending plays only then. */
+  const [freshStamp, setFreshStamp] = useState(false)
   /** Guards the congratulation to once per visit. A plain ref, not state:
    *  nothing on screen reads it directly, and `heard` never shrinks, so
    *  there is nothing for a re-render to reflect. */
@@ -385,15 +408,21 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    */
   useEffect(() => {
     if (!allHeard || celebratedRef.current) return
-    const line = CLIPS[ALL_HEARD]
-    if (!line) return
     celebratedRef.current = true
+    // The stamp is earned whether or not there is a line to say about it —
+    // a missing clip must never cost a child his stamp.
+    const isNew = addStamp(slug)
+    const id = isNew && CLIPS[NEW_STAMP] ? NEW_STAMP : ALL_HEARD
+    const line = CLIPS[id]
+    if (!line) return
+    setFreshStamp(isNew)
+    setEnding(id)
     setCelebrating(true)
     let live = true
     n.onEnd = () => { if (live) setCelebrating(false) }
     void n.play(line).catch(() => { if (live) setCelebrating(false) })
     return () => { live = false }
-  }, [allHeard, n])
+  }, [allHeard, n, slug])
 
   // ------------------------------------------------------------ arriving
 
@@ -620,6 +649,11 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
           {!ended && !page?.photo && !page?.script && page?.symbol && (
             <CardMark key={page.id} name={page.symbol} word={page.word} />
           )}
+          {celebrating && freshStamp && (
+            <div className="place-stamp" data-testid="place-stamp">
+              <Stamp slug={slug} stamped fresh />
+            </div>
+          )}
         </div>
 
         {/* The sentence being spoken, in the same strip, from the same
@@ -631,10 +665,10 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
         <div className="say-lane">
           <div
             className="say"
-            data-page={celebrating ? ALL_HEARD : (page?.id ?? '')}
-            data-quiet={(celebrating ? CLIPS[ALL_HEARD] : clip) ? undefined : 'true'}
+            data-page={celebrating ? ending : (page?.id ?? '')}
+            data-quiet={(celebrating ? CLIPS[ending] : clip) ? undefined : 'true'}
           >
-            <ReadAlong clip={celebrating ? CLIPS[ALL_HEARD] ?? null : clip} />
+            <ReadAlong clip={celebrating ? CLIPS[ending] ?? null : clip} />
           </div>
         </div>
 
