@@ -469,12 +469,44 @@ export async function synth(text, { tmpDir, id }) {
     expect(code).not.toBe(0)
 
     const after = timings3()
-    expect(Object.keys(after)).not.toContain(ORDER[2])
-    for (const id of [...ORDER.slice(0, 2), ...ORDER.slice(3)]) {
+    // The failed line KEEPS its entry: the stub throws inside synth(), before
+    // a byte of its shipped .m4a is touched, so its old timing and old audio
+    // are still a matching pair. This assertion used to say the opposite, and
+    // that behaviour is what deleted four good clips on 2026-10-02 — see
+    // persist()'s own note in tts.mjs.
+    for (const id of ORDER) {
       expect(Object.keys(after), `${id} was dropped by the failed run`).toContain(id)
       expect(after[id].duration).toBeGreaterThan(0)
     }
   }, 60_000)
+
+  // THE 2026-10-02 FAILURE, reproduced. A place renders fine; its text is
+  // edited; the re-render is refused by the provider before any audio is
+  // written (a lapsed payment, a quota, an outage). The edited line must keep
+  // its previous timing and its previous audio — the app stays playable — and
+  // must still be picked up for rendering on the next run.
+  it('a refused request keeps the line\'s previous timing and audio, and retries it next time', () => {
+    const file = join(WORK3, 'content/places', `${PLACE}.json`)
+    const original = readFileSync(file, 'utf8')
+    const edited = JSON.parse(original)
+    edited.intro.text = `${PLACE} is a place whose first line was edited.`
+    writeFileSync(file, JSON.stringify(edited))
+
+    const before = timings3()[ORDER[0]]
+    const audioBefore = readFileSync(join(AUDIO3, `${ORDER[0]}.m4a`))
+
+    const { code } = run(1) // the very first request is refused
+    expect(code).not.toBe(0)
+    const after = timings3()
+    expect(after[ORDER[0]], 'the refused line lost its timing').toEqual(before)
+    expect(readFileSync(join(AUDIO3, `${ORDER[0]}.m4a`)).equals(audioBefore), 'the refused line\'s audio changed').toBe(true)
+
+    // Not stuck on the old take: the edit still counts as unrendered.
+    const retry = run(0)
+    expect(retry.code).toBe(0)
+    expect(timings3()[ORDER[0]].words.join(' ')).toContain('edited')
+    writeFileSync(file, original)
+  }, 120_000)
 
   // The unscoped half of the same guarantee. An unscoped run starts from an
   // empty timings object on purpose — that is what prunes clips whose line no

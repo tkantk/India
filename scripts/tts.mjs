@@ -203,6 +203,9 @@ async function renderOneLine(line, key, { previousRequestIds, nextText }) {
   })
   const wav = join(tmp, `${line.id}.wav`)
   toMonoWav(audioPath, wav)
+  // From here on the clip a child actually hears is being replaced. Anything
+  // that fails before this line has changed nothing on disk.
+  touched.add(line.id)
   toM4a(wav, abs, 56000)
 
   const duration = durationOf(abs)
@@ -271,6 +274,12 @@ async function renderOneLine(line, key, { previousRequestIds, nextText }) {
 // mid-request by a fast-rejecting Promise.all.
 let failure = null
 const failed = new Set()
+/**
+ * Lines whose SHIPPED .m4a this run started to overwrite. A failure only
+ * makes a line's existing record untrustworthy if it happened after this
+ * point — see `persist()`.
+ */
+const touched = new Set()
 
 /** Renders (or reuses) every member of one run, serially — chaining a
  *  request onto the one before it requires that one to have completed, so a
@@ -309,10 +318,25 @@ function persist() {
   // completes still replaces the file wholesale, which is what drops the
   // entries of lines that no longer exist in the content.
   const out = failure ? { ...previous, ...timings } : timings
-  // A line whose render threw may have left a truncated .m4a behind, and
-  // under --force its cache key can still match. Drop both records so the
-  // next run re-renders it rather than trusting half a file.
-  for (const id of failed) { delete out[id]; delete cache[id] }
+  // A line whose render threw AFTER it began overwriting its shipped .m4a
+  // may have left a truncated file behind, and under --force its cache key
+  // can still match. Drop both records so the next run re-renders it rather
+  // than trusting half a file.
+  //
+  // ONLY THOSE LINES. This used to drop every failed line, and on 2026-10-02
+  // that deleted four good Chhattisgarh clips: ElevenLabs refused every
+  // request ("a failed or incomplete payment"), the pool had four requests in
+  // flight, and all four lines lost timings whose audio was untouched and
+  // perfectly playable. The next deploy would have shipped a silent intro. A
+  // request the provider refuses writes nothing, so the old timing and the
+  // old audio still belong together; keeping them is what makes a failed
+  // render cost nothing but the retry. The line still re-renders next time,
+  // because its cache key (edited text) still does not match.
+  for (const id of failed) {
+    if (!touched.has(id)) continue
+    delete out[id]
+    delete cache[id]
+  }
   // The sidecar only ever reflects the provider that most recently actually
   // WROTE something — a run that reused everything from cache never touches
   // it, so a `tts:draft` dry run over an all-cached tree cannot manufacture
