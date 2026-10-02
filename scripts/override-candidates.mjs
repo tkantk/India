@@ -28,10 +28,10 @@
  * rejection) and reports each candidate's `localityVerdict`, because for a
  * species the question "where was this taken" is the whole point.
  */
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  api, vet, vetAnimal, attribution, realWidth, sleep, EN, COMMONS, EM_FILTER,
+  api, vet, vetAnimal, attribution, realWidth, sleep, EN, COMMONS, EM_FILTER, UA,
   indiaLocalityRegex, localityVerdict,
 } from './lib/wiki.mjs'
 
@@ -45,7 +45,11 @@ function landmarkIndex() {
   return out
 }
 
-const args = process.argv.slice(2)
+const argv = process.argv.slice(2)
+const thumbsAt = argv.indexOf('--thumbs')
+const THUMBS = thumbsAt >= 0 ? argv[thumbsAt + 1] : null
+if (THUMBS) mkdirSync(THUMBS, { recursive: true })
+const args = thumbsAt >= 0 ? argv.filter((_, i) => i !== thumbsAt && i !== thumbsAt + 1) : argv
 const mode = args[0] === '--query' ? 'query' : args[0] === '--animal' ? 'animal' : 'landmark'
 let ids = []
 if (args[0] === '--from-log') {
@@ -154,11 +158,27 @@ for (const id of ids) {
     console.log(`  no candidate in ${titles.length} results passes vet() — this one needs a human search`)
     continue
   }
+  let n = 0
   for (const { t, ii } of passing.slice(0, 8)) {
+    n++
     const a = attribution(ii)
     const w = realWidth(ii.thumburl ?? ii.url) ?? ii.width
     const loc = mode === 'animal' ? ` · locality ${localityVerdict(ii, INDIA_RE) ?? 'not established'}` : ''
-    console.log(`  "${t}",`)
+    // --thumbs <dir>: save each passing candidate's thumbnail so a reviewer
+    // can actually LOOK at it before picking. A title is not a picture — the
+    // whole of this file's history is titles that described something other
+    // than what the photograph shows.
+    let saved = ''
+    if (THUMBS && (ii.thumburl ?? ii.url)) {
+      const slug = String(id).replace(/[^a-z0-9]+/gi, '-').slice(0, 40)
+      const out = join(THUMBS, `${slug}-${n}.jpg`)
+      try {
+        const res = await fetch(ii.thumburl ?? ii.url, { headers: { 'User-Agent': UA } })
+        if (res.ok) { writeFileSync(out, Buffer.from(await res.arrayBuffer())); saved = `  -> ${out}` }
+      } catch { /* a missing thumbnail only costs the reviewer one look */ }
+      await sleep(200)
+    }
+    console.log(`  "${t}",${saved}`)
     console.log(`      ${a.licenceShort} · ${w}px${loc} · ${String(a.artist || 'unknown author').slice(0, 60)}`)
     const desc = (ii.extmetadata?.ImageDescription?.value ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
     if (desc) console.log(`      ${desc.slice(0, 150)}`)

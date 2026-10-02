@@ -88,13 +88,16 @@ const OVERRIDES = {
   // and not one hangul; searching the animal found this. Same lesson as
   // Konark's missing wheel — the picture has to show what the words say.
   'hangul Kashmir stag Dachigam National Park': "File:The Last Surviving Population of Hangul.jpg",
-  // Passing candidates included one whose author field is a 700-character
-  // set of conditions on reuse; this one is a plain CC BY 2.0 credit.
-  'Mysore Palace': "File:Mysore Palace (1).jpg",
-  // The pool ranked, in order: a geograph.org.uk photograph from BRITAIN, a
-  // Hyolmo (Nepali) dancer, a Balinese dancer and a Malawian dancer. Only
-  // this one is a cham dance in Ladakh — Lamayuru is a Ladakhi monastery.
-  'Hemis masked cham dance Ladakh': "File:Masked dancers, Lamayuru Monastery.jpg",
+  // The line is entirely about the palace lit up at night — "a hundred
+  // thousand little bulbs... every arch, every dome". The first pick was a
+  // daylight photo with not one bulb lit: Konark's failure exactly.
+  'Mysore Palace': "File:Mysuru Palace - Night View.jpg",
+  // The first pool ranked a British, a Nepali, a Balinese and a Malawian
+  // dancer above any Ladakhi one. The Lamayuru photo picked from it was the
+  // right dance but showed the dancers small and from BEHIND — and the line
+  // is about "enormous painted masks... great staring eyes". Replaced in the
+  // 2026-10 review with a close-up of one mask, at Diskit, in Ladakh.
+  'Hemis masked cham dance Ladakh': "File:A monk during the Chaam dance at the Diskit Monastery in the Nubra Valley.jpg",
   // Every located candidate was Hawaii, Moorea or an albino in captivity.
   // This one makes no false location claim and matches the line exactly:
   // the turtle "goes down into the shallow water to eat the grass growing
@@ -109,7 +112,9 @@ const OVERRIDES = {
   // captioned "Captured at the Himalayan Zoological Park, Sikkim".
   'Red panda Sikkim forest': "File:Red panda sikkim.jpg",
   "Krishna's Butterball Mahabalipuram": "File:Krishna's Butterball at Mahabalipuram heritage complex 03.jpg",
-  'New Pamban Bridge': "File:New Pamban Bridge Rameswaram 2024.jpg",
+  // The 2024 pick had a waving man and a garland filling a third of the
+  // frame; the line is about rails running "two kilometres over open sea".
+  'New Pamban Bridge': "File:Pamban Bridge Train Passing.jpg",
   'Kuntala Waterfall Telangana': "File:Kuntala waterfall 4.jpg",
   'Dumboor Lake Tripura': "File:In the middle of the Deep Dumboor Lake.jpg",
   // Top hit was the Imambara inside the RESIDENCY — a different building in
@@ -125,25 +130,24 @@ const OVERRIDES = {
   // `localityVerdict` now refutes on that text; this is the photograph the
   // fixed check prefers, from Tal Chhapar Sanctuary in Rajasthan.
   'Blackbuck': "File:Blackbuck in Tal Chhapar Sanctuary November 2025 by Tisha Mukherjee 11.jpg",
-  // Nagaland's gayal (mithun) and Goa's gaur were given the IDENTICAL file,
-  // captioned as a gaur. They are different animals, and a state's own
-  // animal card cannot be a photograph of a different species that another
-  // state is already using.
-  'Gayal': "File:Mithun AP 1.jpg",
+  // Nagaland's gayal (mithun) and Goa's gaur were first given the IDENTICAL
+  // file, captioned as a gaur. The replacement chosen for it — by title —
+  // turned out, once looked at, to be a patched black-and-orange animal in a
+  // village yard, while the line says "a huge black cattle beast with white
+  // legs, like socks". This one is exactly that, at a forest edge, in India.
+  'Gayal': "File:Mithun, Glao Lake.jpg",
   // The automatic pick was "Idu Mishmi MAN on track from Anini" — a
   // photograph of a person, matched on the word "Mishmi".
   'Mishmi takin': "File:Budorcas taxicolor taxicolor 354708274.jpg",
 
-  // The automatic pick was `File:CervusEldiAMNH.jpg` — a TAXIDERMIED sangai
-  // in the American Museum of Natural History — for a park. `vet()` now
-  // rejects mounted specimens outright, so this file can no longer be
-  // chosen; the override is what fills the hole that leaves. The line is
-  // about "a thick mat of rotted-down plants lying on top of the lake", and
-  // those floating phumdis are what this photograph shows. Keibul Lamjao
-  // sits on Loktak, so the lake is the park's own water, not a substitute
-  // for it — but it is a photograph of the lake, and worth the owner's eye
-  // on the contact sheet.
-  'Keibul Lamjao National Park': "File:Loktak Lake Manipur 08.jpg",
+  // TWO WRONG PICTURES IN A ROW, and the second was this project's own.
+  // The automatic pick was a TAXIDERMIED sangai in a New York museum (vet()
+  // now rejects mounted specimens). The override that replaced it, a Loktak
+  // Lake photo chosen from its title, turned out — once someone actually
+  // looked at it — to show open water and a solid wooded hill: no floating
+  // mat at all, which is the whole of the line. This one is the park's own,
+  // and shows the phumdis floating on the water.
+  'Keibul Lamjao National Park': "File:THE FLOATING NATIONAL PARK- The Keibul Lamjao National Park, Manipur.jpg",
 
   // Not a failure but a COLLISION: this tile and `lakshadweep.from-space`
   // were handed the identical NASA MODIS satellite frame, so one place
@@ -152,6 +156,84 @@ const OVERRIDES = {
   // about standing at the reef and watching the waves break in a white
   // line, which is a photograph taken from the island, not from orbit.
   'Minicoy Island lagoon Lakshadweep': "File:Minicoy Island, Lakshadweep.jpg",
+
+  // ---- The second review, 2026-10-02 -------------------------------------
+  // Every one of the 210 photographs was looked at beside the exact words
+  // spoken over it — the check no metadata gate can make. 138 matched, 55
+  // were weak and 17 showed something other than what the child hears
+  // (two of them signboards, one a man holding a clouded leopard's PELT).
+  // Each replacement below was then chosen by eye from thumbnails, not
+  // from a title. The old photo's failure is recorded so nobody puts it
+  // back.
+  // arunachal-pradesh.sela-pass: was a dry road and a truck; the line is snow and a wall of mountains.
+  'Sela Pass Arunachal Pradesh': "File:The lake at Sela pass.jpg",
+  // chandigarh.rock-garden: was a stone SIGNBOARD; the line is figures made of broken bangles.
+  'Rock Garden of Chandigarh sculptures': "File:Rock Garden Chandigarh India (6).JPG",
+  // chhattisgarh.kotumsar-cave: was a concrete gate and two men; the line is stone icicles inside.
+  'Kotumsar Cave': "File:Kanger valley8.JPG",
+  // gujarat.wild-asses: was a roadside SIGNBOARD with painted donkeys on it.
+  'Indian wild ass Little Rann of Kutch': "File:Asiatic Wild Ass herd.jpg",
+  // karnataka.bandipur: was a tiger; the line is wild elephants walking across the road.
+  'Bandipur National Park': "File:Lokesh L (5 of 25).jpg",
+  // ladakh.thiksey: was an indoor statue; the line is white buildings climbing a hill.
+  'Thiksey Monastery Ladakh': "File:Beautiful Thiksey Monestry-Ladakh-DSC 0353.jpg",
+  // maharashtra.kaas-plateau: was a yellow meadow; the line (since corrected) named purple and pink.
+  'Kaas Plateau flowers': "File:Kaas world Heritage.jpg",
+  // manipur.kangla: was a garden of trees; the line is the two dragon-lion Kanglasha.
+  'Kangla Fort Imphal': "File:Kanglasha at Kangla.jpg",
+  // gujarat.modhera-temple: was the hall; the line is the stepped tank in front of it.
+  'Sun Temple Modhera': "File:Surya Kund, Modhera Sun Temple.jpg",
+  // manipur.loktak: showed a solid hill; the line is floating islands and fishing rings.
+  'Loktak Lake Manipur': "File:The Phumdis on Loktak Lake.jpg",
+  // nagaland.doyang: was ONE falcon; the line is a million of them filling the sky.
+  'Amur falcon Doyang Nagaland': "File:Amur Falcon Roost (30699712390).jpg",
+  // madhya-pradesh.marble-rocks: showed low rocks; the line is marble cliffs on both sides of a boat.
+  'Marble Rocks Bhedaghat': "File:Marble rocks alongside Narmada River.jpg",
+  // jammu-kashmir.dal-lake: was one empty boat; the line opens on houseboats tied in rows.
+  'Dal Lake houseboats Srinagar': "File:Dal Lake in the heart of Srinagar.jpg",
+  // jammu-kashmir.gulmarg-gondola: showed wires and a pylon; the line is a little cabin on a wire.
+  'Gulmarg Gondola cable car': "File:Gulmarg Gondola Kashmir 2.jpg",
+  // tripura.neermahal: was a minaret close-up; the line is a palace with water on every side.
+  'Neermahal Rudrasagar Tripura': "File:Neermahal, Tripura Agartala, India.jpg",
+  // tripura.ujjayanta: cropped the tower off; the line is three big domes.
+  'Ujjayanta Palace Agartala': "File:Ujjayanta Palace as seen from the midpoint of the avenue 02.JPG",
+  // telangana.golconda-fort: was a wall detail; the line is the fort climbing its hill.
+  'Golconda Fort Hyderabad': "File:Golconda Fort 005.jpg",
+  // andhra-pradesh.gandikota: was hazy and grey, with a burned-in date stamp; the line is red rock.
+  'Gandikota gorge Andhra Pradesh': "File:Gandikota- The Grand Canyon of India.jpg",
+  // asian-koel: was the all-black MALE, which looks like the crow the line is about.
+  'Asian koel': "File:Asian Koel Female AMSM9066AKOE.jpg",
+  // indian-roller: had its wings shut; the line builds to the blue flash of them opening.
+  'Indian roller': "File:Coracias benghalensis -India -flying-8.jpg",
+  // haryana.sultanpur-nilgai: was a brown hornless female; the line is the blue-grey male.
+  'nilgai Sultanpur National Park Haryana': "File:Blue Bull (Nilgai) (4570527773).jpg",
+  // karnataka.bird-islands: was one pelican; the line is trees loaded with nesting birds.
+  'Ranganathittu Bird Sanctuary': "File:Asian Openbill Stork Community (13517651813).jpg",
+  // west-bengal.great-banyan: was a distant canopy; the line is roots coming down like trunks.
+  'The Great Banyan Howrah': "File:India - Kolkata - 09 - Great Banyan Tree (2799531046).jpg",
+  // uttar-pradesh.chambal-gharials: showed no ghara, the pot-shaped lump the animal is named after.
+  'gharial National Chambal Sanctuary': "File:Gharial (Gavialis gangeticus) male.jpg",
+  // goa.fort-aguada: showed no lighthouse; the line ends on the fort having one of its own.
+  'Fort Aguada': "File:Fort-Aguada-Lighthouse.jpg",
+  // gujarat.white-rann: read as grey cracked mud; the line is a white salt floor.
+  'Great Rann of Kutch': "File:White salt desert at Rann of Kutch.jpg",
+  // punjab.mustard-fields: was mostly green; the line is whole fields turning bright yellow.
+  'mustard field Punjab India': "File:Golden mustard fields.jpg",
+  // meghalaya.dawki: was side-on; the line is a boat seeming to hang in the air over its stones.
+  'Umngot River Dawki': "File:The Clear water of Dawki (Unsplash).jpg",
+  // manipur.ima-keithel: was two shrine deities; the line is a market of 5,000 stalls run by women.
+  'Ima Keithel Imphal': "File:Ima Market, imphal.jpeg",
+  // sikkim.rumtek: was a SIGNBOARD reading the monastery's name.
+  'Rumtek Monastery Sikkim': "File:Rumtek Monastery 04.jpg",
+  // west-bengal.toy-train: was a diesel engine; the line opens "a steam engine still pulls".
+  'Darjeeling Himalayan Railway': "File:Toy Train Darjeeling West Bengal India.jpg",
+  // bihar.mahabodhi: was a small votive stupa; the line is the tall tower of niches.
+  'Mahabodhi Temple Bodh Gaya': "File:Mahabodhi temple complex, Bodhgaya 24.jpg",
+  // dadra-and-nagar-haveli-and-daman-and-diu.panikotha: was a mosaic kiosk on the shore; the line is a fort alone in the water.
+  'Panikotha Fortim do Mar Diu': "File:Pani Kotha.JPG",
+  // flying-fish: was a DEAD fish hung on a string in a market, in front of
+  // painted phone numbers. This one is alive, gliding, with its splash trail.
+  'Flying fish': "File:Pink-wing flying fish.jpg",
 }
 
 /**
@@ -191,6 +273,11 @@ const NO_PHOTOGRAPH = {
   // Kingdom, and photographs of the Sangai FESTIVAL — a cultural event that
   // shares the animal's name and outranks it in every search.
   'Sangai': 'candidates are a replica, an illustration, a zoo animal, or the Sangai Festival',
+  // Meghalaya's card shipped, until the 2026-10 review, a photograph of a
+  // young man holding up a clouded leopard's SKINNED PELT. Every free
+  // alternative is another pelt, a stamp, an animal photographed outside
+  // India, or the Sunda clouded leopard of Borneo — a different species.
+  'Clouded leopard': 'every free candidate is a pelt, a stamp, outside India, or the Bornean species',
 }
 
 function landmarks() {

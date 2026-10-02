@@ -273,20 +273,6 @@
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Tisha_Mukherjee\" title=\"User:Tisha Mukherjee\">Tisha Mukherjee</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:House_Sparrow_in_Saswad_August_2025_by_Tisha_Mukherjee_01.jpg\">via Wikimedia Commons</a>",
     "locality": "confirmed"
   },
-  "indian-roller": {
-    "file": "photos/indian-roller.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Indian roller (Coracias benghalensis benghalensis).jpg",
-    "artist": "Charles J. Sharp",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_roller_(Coracias_benghalensis_benghalensis).jpg",
-    "attributionHtml": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Indian_roller_(Coracias_benghalensis_benghalensis).jpg\">via Wikimedia Commons</a>",
-    "locality": "confirmed"
-  },
   "dromedary": {
     "file": "photos/dromedary.jpg",
     "width": 960,
@@ -380,19 +366,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Borra_caves_1.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Prof_Ranga_Sai\" title=\"User:Prof Ranga Sai\">Prof Ranga Sai</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Borra_caves_1.jpg\">via Wikimedia Commons</a>"
   },
-  "andhra-pradesh.gandikota": {
-    "file": "photos/andhra-pradesh.gandikota.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Sunrise at Gandikota Gorge 02.jpg",
-    "artist": "Chaduvari",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Sunrise_at_Gandikota_Gorge_02.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Chaduvari\" title=\"User:Chaduvari\">Chaduvari</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Sunrise_at_Gandikota_Gorge_02.jpg\">via Wikimedia Commons</a>"
-  },
   "andhra-pradesh.lepakshi-bull": {
     "file": "photos/andhra-pradesh.lepakshi-bull.jpg",
     "width": 960,
@@ -431,19 +404,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:TawangMonastery.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Rumelade&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Rumelade (page does not exist)\">Rumelade</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:TawangMonastery.jpg\">via Wikimedia Commons</a>"
-  },
-  "arunachal-pradesh.sela-pass": {
-    "file": "photos/arunachal-pradesh.sela-pass.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Road approaching Sela Pass in Tawang Dist Arunachal Pradesh 1.jpg",
-    "artist": "Kingshuk Mondal",
-    "licence": "cc-by-4.0",
-    "licenceShort": "CC BY 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Road_approaching_Sela_Pass_in_Tawang_Dist_Arunachal_Pradesh_1.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Herpking\" title=\"User:Herpking\">Kingshuk Mondal</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Road_approaching_Sela_Pass_in_Tawang_Dist_Arunachal_Pradesh_1.jpg\">via Wikimedia Commons</a>"
   },
   "arunachal-pradesh.nuranang": {
     "file": "photos/arunachal-pradesh.nuranang.jpg",
@@ -536,19 +496,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Western_hoolock_gibbon_-_Hollongapar_Gibbon_Sanctuary_2023-01-12_02.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:KrunalPDesai\" title=\"User:KrunalPDesai\">Krunal Desai - Wildlife Photography</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Western_hoolock_gibbon_-_Hollongapar_Gibbon_Sanctuary_2023-01-12_02.jpg\">via Wikimedia Commons</a>"
   },
-  "bihar.mahabodhi": {
-    "file": "photos/bihar.mahabodhi.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Votive Stupas - Mahabodhi Temple Complex - Bodh Gaya (13).jpg",
-    "artist": "Sumitsurai",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Votive_Stupas_-_Mahabodhi_Temple_Complex_-_Bodh_Gaya_(13).jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Sumitsurai\" title=\"User:Sumitsurai\">Sumitsurai</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Votive_Stupas_-_Mahabodhi_Temple_Complex_-_Bodh_Gaya_(13).jpg\">via Wikimedia Commons</a>"
-  },
   "bihar.golghar": {
     "file": "photos/bihar.golghar.jpg",
     "width": 960,
@@ -587,19 +534,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Ktoya,_Rajgir_Ropeway_19.jpg",
     "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://wikimapia.org/#show=/user/1081304/\">Ktoya</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Ktoya,_Rajgir_Ropeway_19.jpg\">via Wikimedia Commons</a>"
-  },
-  "chandigarh.rock-garden": {
-    "file": "photos/chandigarh.rock-garden.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Rock Garden Memory Stone, Chandigarh, India.jpg",
-    "artist": "Subhrajyoti07",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Rock_Garden_Memory_Stone,_Chandigarh,_India.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Subhrajyoti07\" title=\"User:Subhrajyoti07\">Subhrajyoti07</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Rock_Garden_Memory_Stone,_Chandigarh,_India.jpg\">via Wikimedia Commons</a>"
   },
   "chandigarh.open-hand": {
     "file": "photos/chandigarh.open-hand.jpg",
@@ -666,19 +600,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Tirathgarh_Falls,_Jagdalpur,_chattisgarh.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Mashooque14&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Mashooque14 (page does not exist)\">Mashooque14</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Tirathgarh_Falls,_Jagdalpur,_chattisgarh.jpg\">via Wikimedia Commons</a>"
   },
-  "chhattisgarh.kotumsar-cave": {
-    "file": "photos/chhattisgarh.kotumsar-cave.jpg",
-    "width": 960,
-    "source": "pageimages",
-    "fileTitle": "File:Entrance Gate of Kotumsar Cave.jpg",
-    "artist": "Biospeleologist",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Entrance_Gate_of_Kotumsar_Cave.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Biospeleologist&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Biospeleologist (page does not exist)\">Biospeleologist</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Entrance_Gate_of_Kotumsar_Cave.jpg\">via Wikimedia Commons</a>"
-  },
   "chhattisgarh.bhoramdeo": {
     "file": "photos/chhattisgarh.bhoramdeo.jpg",
     "width": 960,
@@ -704,19 +625,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Dokra_from_tribes_of_Bastar_DSCN1172_03.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Sumita_Roy_Dutta\" title=\"User:Sumita Roy Dutta\">Sumita Roy Dutta</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Dokra_from_tribes_of_Bastar_DSCN1172_03.jpg\">via Wikimedia Commons</a>"
-  },
-  "dadra-and-nagar-haveli-and-daman-and-diu.panikotha": {
-    "file": "photos/dadra-and-nagar-haveli-and-daman-and-diu.panikotha.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Diu.in Panikotha - panoramio.jpg",
-    "artist": "SINHA",
-    "licence": "cc-by-sa-3.0",
-    "licenceShort": "CC BY-SA 3.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Diu.in_Panikotha_-_panoramio.jpg",
-    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://web.archive.org/web/20161010092503/http://www.panoramio.com/user/26767?with_photo_id=8981023\">SINHA</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Diu.in_Panikotha_-_panoramio.jpg\">via Wikimedia Commons</a>"
   },
   "dadra-and-nagar-haveli-and-daman-and-diu.naida-caves": {
     "file": "photos/dadra-and-nagar-haveli-and-daman-and-diu.naida-caves.jpg",
@@ -796,19 +704,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Front_Elevation_of_Basilica_of_Bom_Jesus.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:I.Mahesh\" title=\"User:I.Mahesh\">iMahesh</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Front_Elevation_of_Basilica_of_Bom_Jesus.jpg\">via Wikimedia Commons</a>"
   },
-  "goa.fort-aguada": {
-    "file": "photos/goa.fort-aguada.jpg",
-    "width": 960,
-    "source": "pageimages",
-    "fileTitle": "File:Fort aguada.jpg",
-    "artist": "Nanasur at English Wikipedia",
-    "licence": "cc-by-sa-3.0",
-    "licenceShort": "CC BY-SA 3.0",
-    "licenceUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Fort_aguada.jpg",
-    "attributionHtml": "<a href=\"https://en.wikipedia.org/wiki/User:Nanasur\" class=\"extiw\" title=\"wikipedia:User:Nanasur\">Nanasur</a> at <a href=\"https://en.wikipedia.org/wiki/\" class=\"extiw\" title=\"wikipedia:\">English Wikipedia</a>, <a href=\"http://creativecommons.org/licenses/by-sa/3.0/\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Fort_aguada.jpg\">via Wikimedia Commons</a>"
-  },
   "goa.tambdi-surla": {
     "file": "photos/goa.tambdi-surla.jpg",
     "width": 960,
@@ -835,19 +730,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Portrait_of_an_Asiatic_lion_at_Gir_National_Park_02.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Rohit14400\" title=\"User:Rohit14400\">Rohit Sharma</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Portrait_of_an_Asiatic_lion_at_Gir_National_Park_02.jpg\">via Wikimedia Commons</a>"
   },
-  "gujarat.white-rann": {
-    "file": "photos/gujarat.white-rann.jpg",
-    "width": 960,
-    "source": "wikidata-P18",
-    "fileTitle": "File:Salt desert, Great Rann of Kutch (16494913578).jpg",
-    "artist": "Nagarjun Kandukuru from Bangalore, India",
-    "licence": "cc-by-2.0",
-    "licenceShort": "CC BY 2.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Salt_desert,_Great_Rann_of_Kutch_(16494913578).jpg",
-    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/64924693@N00\">Nagarjun Kandukuru</a> from Bangalore, India, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Salt_desert,_Great_Rann_of_Kutch_(16494913578).jpg\">via Wikimedia Commons</a>"
-  },
   "gujarat.statue-of-unity": {
     "file": "photos/gujarat.statue-of-unity.jpg",
     "width": 960,
@@ -861,32 +743,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Statue_of_Unity.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Snehrashmi\" title=\"User:Snehrashmi\">Snehrashmi</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Statue_of_Unity.jpg\">via Wikimedia Commons</a>"
   },
-  "gujarat.modhera-temple": {
-    "file": "photos/gujarat.modhera-temple.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Sun Temple, Modhera - Sabha Mandap 01.jpg",
-    "artist": "Bernard Gagnon",
-    "licence": "cc-by-sa-3.0",
-    "licenceShort": "CC BY-SA 3.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Sun_Temple,_Modhera_-_Sabha_Mandap_01.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Bgag\" title=\"User:Bgag\">Bernard Gagnon</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Sun_Temple,_Modhera_-_Sabha_Mandap_01.jpg\">via Wikimedia Commons</a>"
-  },
-  "gujarat.wild-asses": {
-    "file": "photos/gujarat.wild-asses.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Indian Wild Ass Sanctuary (Little Rann of Kutch) 01.jpg",
-    "artist": "Gannu03",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_Wild_Ass_Sanctuary_(Little_Rann_of_Kutch)_01.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Gannu03\" title=\"User:Gannu03\">Gannu03</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Indian_Wild_Ass_Sanctuary_(Little_Rann_of_Kutch)_01.jpg\">via Wikimedia Commons</a>"
-  },
   "haryana.sultanpur-storks": {
     "file": "photos/haryana.sultanpur-storks.jpg",
     "width": 960,
@@ -899,19 +755,6 @@
     "attributionRequired": false,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Painted_storks_with_babies.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Veganbhumika&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Veganbhumika (page does not exist)\">Veganbhumika</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Painted_storks_with_babies.jpg\">via Wikimedia Commons</a> (<a href=\"http://creativecommons.org/publicdomain/zero/1.0/deed.en\" rel=\"license noopener\">CC0</a>)"
-  },
-  "haryana.sultanpur-nilgai": {
-    "file": "photos/haryana.sultanpur-nilgai.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Nilgai, Sultanpur National Park.jpg",
-    "artist": "Slyronit",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Nilgai,_Sultanpur_National_Park.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Slyronit\" title=\"User:Slyronit\">Slyronit</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Nilgai,_Sultanpur_National_Park.jpg\">via Wikimedia Commons</a>"
   },
   "haryana.pinjore-gardens": {
     "file": "photos/haryana.pinjore-gardens.jpg",
@@ -964,32 +807,6 @@
     "attributionRequired": false,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Bhakra_Dam_Aug_15_2008.JPG",
     "attributionHtml": "Original uploader was <a href=\"https://en.wikipedia.org/wiki/User:KawalSingh\" class=\"extiw\" title=\"en:User:KawalSingh\">KawalSingh</a> at <a class=\"external text\" data-mw-original-href=\"http://en.wikipedia.org\" href=\"https://en.wikipedia.org\">en.wikipedia</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Bhakra_Dam_Aug_15_2008.JPG\">via Wikimedia Commons</a> (Public domain)"
-  },
-  "jammu-kashmir.dal-lake": {
-    "file": "photos/jammu-kashmir.dal-lake.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Empty shikara on Dal Lake, Srinagar, India 2013-08-23 (flickr 9967093983).jpg",
-    "artist": "Fulvio Spada from Torino, Italy",
-    "licence": "cc-by-sa-2.0",
-    "licenceShort": "CC BY-SA 2.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Empty_shikara_on_Dal_Lake,_Srinagar,_India_2013-08-23_(flickr_9967093983).jpg",
-    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/78722206@N00\">Fulvio Spada</a> from Torino, Italy, <a href=\"https://creativecommons.org/licenses/by-sa/2.0\" rel=\"license noopener\">CC BY-SA 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Empty_shikara_on_Dal_Lake,_Srinagar,_India_2013-08-23_(flickr_9967093983).jpg\">via Wikimedia Commons</a>"
-  },
-  "jammu-kashmir.gulmarg-gondola": {
-    "file": "photos/jammu-kashmir.gulmarg-gondola.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Gulmarg Gondola, Cable Car.JPG",
-    "artist": "Skywayman9",
-    "licence": "cc-by-sa-3.0",
-    "licenceShort": "CC BY-SA 3.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Gulmarg_Gondola,_Cable_Car.JPG",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Skywayman9\" title=\"User:Skywayman9\">Skywayman9</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Gulmarg_Gondola,_Cable_Car.JPG\">via Wikimedia Commons</a>"
   },
   "jammu-kashmir.bahu-fort": {
     "file": "photos/jammu-kashmir.bahu-fort.jpg",
@@ -1095,32 +912,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Jog_Falls_05092016.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Nikhilb239\" class=\"mw-redirect\" title=\"User:Nikhilb239\">Nikhilb239</a>, <a href=\"https://creativecommons.org/licenses/by/3.0\" rel=\"license noopener\">CC BY 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Jog_Falls_05092016.jpg\">via Wikimedia Commons</a>"
   },
-  "karnataka.bandipur": {
-    "file": "photos/karnataka.bandipur.jpg",
-    "width": 960,
-    "source": "pageimages",
-    "fileTitle": "File:Prince in the Jungle crop.jpg",
-    "artist": "User:Prasadchangarath",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Prince_in_the_Jungle_crop.jpg",
-    "attributionHtml": "User:Prasadchangarath, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Prince_in_the_Jungle_crop.jpg\">via Wikimedia Commons</a>"
-  },
-  "karnataka.bird-islands": {
-    "file": "photos/karnataka.bird-islands.jpg",
-    "width": 960,
-    "source": "pageimages",
-    "fileTitle": "File:Spot-billed Pelican Rising Flight Ranganathittu Feb24 D72 26266.jpg",
-    "artist": "This Photo was taken by Timothy A. Gonsalves. Feel free to use my photos, but please mention me as the author. I would much appreciate if you send me an email tagooty@yahoo.com or write on my talk page, for my information. Please contact me before commercial use. Please do not upload an edited image here without consulting me. I would like to make corrections only at my own source to ensure that the changes improve the image and are preserved.Otherwise you may upload an edited image with a new name. Please use one of the templates derivative or extract.",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Spot-billed_Pelican_Rising_Flight_Ranganathittu_Feb24_D72_26266.jpg",
-    "attributionHtml": "<table class=\"toccolours\" style=\"width:100%; margin-top:10px;\" cellpadding=\"2\">\n\n<tbody><tr class=\"plainlinks\">\n<td><a href=\"https://upload.wikimedia.org/wikipedia/commons/7/75/Spot-billed_Pelican_Rising_Flight_Ranganathittu_Feb24_D72_26266.jpg?utm_source=commons.wikimedia.org&amp;utm_campaign=api&amp;utm_content=original\" class=\"internal\" title=\"Spot-billed Pelican Rising Flight Ranganathittu Feb24 D72 26266.jpg\">This Photo</a> was taken by <i><b><a href=\"https://commons.wikimedia.org/wiki/User:Tagooty\" title=\"User:Tagooty\">Timothy A. Gonsalves</a></b></i>.  Feel free to use my photos, but please mention me as the author.  I would much appreciate if you send me an email <a rel=\"nofollow\" class=\"external text\" href=\"mailto:tagooty@yahoo.com\">tagooty@yahoo.com</a> or write on <a class=\"external text\" href=\"https://commons.wikimedia.org/w/index.php?title=User_talk:Tagooty&amp;action=edit&amp;section=new\">my talk page</a>, for my information.  Please contact me before commercial use.\n</td></tr></tbody></table>\n<div style=\"clear:both; border:2px solid #00cc00; background-color:#f7f7f7; margin-top:6px;\">\n<table><tbody><tr><td style=\"padding:4px;\"><span typeof=\"mw:File\"><a href=\"https://commons.wikimedia.org/wiki/File:Upload-problem2.svg\" class=\"mw-file-description\"><img src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Upload-problem2.svg/120px-Upload-problem2.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"64\" height=\"57\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Upload-problem2.svg/250px-Upload-problem2.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail 2x\" data-file-width=\"159\" data-file-height=\"142\"></a></span>\n</td><td style=\"padding:4px;\"><div style=\"margin-top:0.5em;\">Please do not upload an edited image here without consulting me.  I would like to make corrections only at my own source to ensure that the changes improve the image and are preserved.<br>Otherwise you may upload an edited image with a new name. Please use one of the templates <a href=\"https://commons.wikimedia.org/wiki/Template:Derived_from\" title=\"Template:Derived from\">derivative</a> or <a href=\"https://commons.wikimedia.org/wiki/Template:Extracted_from\" title=\"Template:Extracted from\">extract</a>.</div>\n</td></tr></tbody></table></div>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Spot-billed_Pelican_Rising_Flight_Ranganathittu_Feb24_D72_26266.jpg\">via Wikimedia Commons</a>"
-  },
   "ladakh.pangong-tso": {
     "file": "photos/ladakh.pangong-tso.jpg",
     "width": 960,
@@ -1133,19 +924,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Pangong_Tso_2.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:KennyOMG\" class=\"mw-redirect\" title=\"User:KennyOMG\">KennyOMG</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Pangong_Tso_2.jpg\">via Wikimedia Commons</a>"
-  },
-  "ladakh.thiksey": {
-    "file": "photos/ladakh.thiksey.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Thiksey Monastery, Ladakh 15.jpg",
-    "artist": "Bernard Gagnon Canon EOS REBEL T4i",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Thiksey_Monastery,_Ladakh_15.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Bgag\" title=\"User:Bgag\">Bernard Gagnon</a> Canon EOS REBEL T4i, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Thiksey_Monastery,_Ladakh_15.jpg\">via Wikimedia Commons</a>"
   },
   "ladakh.nubra-camels": {
     "file": "photos/ladakh.nubra-camels.jpg",
@@ -1238,19 +1016,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:East_Gateway_-_Stupa_1_-_Sanchi_Hill_2013-02-21_4398.JPG",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Gangulybiswarup\" title=\"User:Gangulybiswarup\">Biswarup Ganguly</a>, <a href=\"https://creativecommons.org/licenses/by/3.0\" rel=\"license noopener\">CC BY 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:East_Gateway_-_Stupa_1_-_Sanchi_Hill_2013-02-21_4398.JPG\">via Wikimedia Commons</a>"
   },
-  "madhya-pradesh.marble-rocks": {
-    "file": "photos/madhya-pradesh.marble-rocks.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Marble Rocks Bhedaghat , Jabalpur.jpg",
-    "artist": "Archies2804",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Marble_Rocks_Bhedaghat_,_Jabalpur.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Archies2804\" title=\"User:Archies2804\">Archies2804</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Marble_Rocks_Bhedaghat_,_Jabalpur.jpg\">via Wikimedia Commons</a>"
-  },
   "madhya-pradesh.kanha": {
     "file": "photos/madhya-pradesh.kanha.jpg",
     "width": 960,
@@ -1316,19 +1081,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Lonar_Crater,_Panorama.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Thinrhino&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Thinrhino (page does not exist)\">Aditya Laghate</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Lonar_Crater,_Panorama.jpg\">via Wikimedia Commons</a>"
   },
-  "maharashtra.kaas-plateau": {
-    "file": "photos/maharashtra.kaas-plateau.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Yellow Donald Duck flowers at Kaas Plateau.jpg",
-    "artist": "Phadke09",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Yellow_Donald_Duck_flowers_at_Kaas_Plateau.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Phadke09\" title=\"User:Phadke09\">Phadke09</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Yellow_Donald_Duck_flowers_at_Kaas_Plateau.jpg\">via Wikimedia Commons</a>"
-  },
   "maharashtra.sea-link": {
     "file": "photos/maharashtra.sea-link.jpg",
     "width": 960,
@@ -1341,45 +1093,6 @@
     "attributionRequired": false,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Bandra%E2%80%93Worli_Sea_Link.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Streetsoda\" title=\"User:Streetsoda\">Streetsoda</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Bandra%E2%80%93Worli_Sea_Link.jpg\">via Wikimedia Commons</a> (<a href=\"http://creativecommons.org/publicdomain/zero/1.0/deed.en\" rel=\"license noopener\">CC0</a>)"
-  },
-  "manipur.loktak": {
-    "file": "photos/manipur.loktak.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Loktak Lake Manipur 10.jpg",
-    "artist": "ch_15march",
-    "licence": "cc-by-2.0",
-    "licenceShort": "CC BY 2.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Loktak_Lake_Manipur_10.jpg",
-    "attributionHtml": "ch_15march, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Loktak_Lake_Manipur_10.jpg\">via Wikimedia Commons</a>"
-  },
-  "manipur.kangla": {
-    "file": "photos/manipur.kangla.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:A traditional Meitei garden (\"Heikol Leikol\" or \"Heikon Leikon\" in Classical Meitei language) inside the Kangla Palace (Kangla Fort), Imphal, Kangleipak.jpg",
-    "artist": "Haoreima",
-    "licence": "cc-by-4.0",
-    "licenceShort": "CC BY 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:A_traditional_Meitei_garden_(%22Heikol_Leikol%22_or_%22Heikon_Leikon%22_in_Classical_Meitei_language)_inside_the_Kangla_Palace_(Kangla_Fort),_Imphal,_Kangleipak.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Haoreima\" title=\"User:Haoreima\">Haoreima</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:A_traditional_Meitei_garden_(%22Heikol_Leikol%22_or_%22Heikon_Leikon%22_in_Classical_Meitei_language)_inside_the_Kangla_Palace_(Kangla_Fort),_Imphal,_Kangleipak.jpg\">via Wikimedia Commons</a>"
-  },
-  "manipur.ima-keithel": {
-    "file": "photos/manipur.ima-keithel.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Keithel Lairemba (Market God) & Keithel Lairembi (Market Goddess), the traditional Meitei deities of the Leimarel Sidabi Ima Keithel (AKA Nupi Keithel Complex 1) in Imphal, Kangleipak (Manipur) (cropped).jpg",
-    "artist": "Haoreima",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Keithel_Lairemba_(Market_God)_%26_Keithel_Lairembi_(Market_Goddess),_the_traditional_Meitei_deities_of_the_Leimarel_Sidabi_Ima_Keithel_(AKA_Nupi_Keithel_Complex_1)_in_Imphal,_Kangleipak_(Manipur)_(cropped).jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Haoreima\" title=\"User:Haoreima\">Haoreima</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Keithel_Lairemba_(Market_God)_%26_Keithel_Lairembi_(Market_Goddess),_the_traditional_Meitei_deities_of_the_Leimarel_Sidabi_Ima_Keithel_(AKA_Nupi_Keithel_Complex_1)_in_Imphal,_Kangleipak_(Manipur)_(cropped).jpg\">via Wikimedia Commons</a>"
   },
   "meghalaya.root-bridges": {
     "file": "photos/meghalaya.root-bridges.jpg",
@@ -1406,19 +1119,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:NohKaLikai_Falls_V2_Wiki.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Donvikro\" title=\"User:Donvikro\">Vikramjit Kakati</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:NohKaLikai_Falls_V2_Wiki.jpg\">via Wikimedia Commons</a>"
-  },
-  "meghalaya.dawki": {
-    "file": "photos/meghalaya.dawki.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Dawki Bridge and Umngot River.jpg",
-    "artist": "ANKAN",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Dawki_Bridge_and_Umngot_River.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:ANKAN\" title=\"User:ANKAN\">ANKAN</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Dawki_Bridge_and_Umngot_River.jpg\">via Wikimedia Commons</a>"
   },
   "meghalaya.mawsmai": {
     "file": "photos/meghalaya.mawsmai.jpg",
@@ -1537,19 +1237,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Khonoma_15.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Pkgmohan\" title=\"User:Pkgmohan\">Girish Mohan P K</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Khonoma_15.jpg\">via Wikimedia Commons</a>"
   },
-  "nagaland.doyang": {
-    "file": "photos/nagaland.doyang.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Amur Falcon in flight from Doyang reservoir region in Nagaland Cropped JEG5347 .jpg",
-    "artist": "P Jeganathan",
-    "licence": "cc-by-sa-3.0",
-    "licenceShort": "CC BY-SA 3.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Amur_Falcon_in_flight_from_Doyang_reservoir_region_in_Nagaland_Cropped_JEG5347_.jpg",
-    "attributionHtml": "P Jeganathan, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Amur_Falcon_in_flight_from_Doyang_reservoir_region_in_Nagaland_Cropped_JEG5347_.jpg\">via Wikimedia Commons</a>"
-  },
   "nagaland.shilloi": {
     "file": "photos/nagaland.shilloi.jpg",
     "width": 960,
@@ -1654,19 +1341,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Qila_Mubarak_in_Bathinda.jpg",
     "attributionHtml": "<a href=\"https://en.wikipedia.org/wiki/User:Guneeta\" class=\"extiw\" title=\"en:User:Guneeta\">en:User:Guneeta</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Qila_Mubarak_in_Bathinda.jpg\">via Wikimedia Commons</a> (Public domain)"
   },
-  "punjab.mustard-fields": {
-    "file": "photos/punjab.mustard-fields.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Mustard field near Chandigarh.jpg",
-    "artist": "UnpetitproleX",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mustard_field_near_Chandigarh.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:UnpetitproleX\" title=\"User:UnpetitproleX\">UnpetitproleX</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mustard_field_near_Chandigarh.jpg\">via Wikimedia Commons</a>"
-  },
   "punjab.virasat-e-khalsa": {
     "file": "photos/punjab.virasat-e-khalsa.jpg",
     "width": 960,
@@ -1705,19 +1379,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Gurudongmar_Lake_Sikkim,_India_(edit).jpg",
     "attributionHtml": "<p><b>Original: </b> <a href=\"https://commons.wikimedia.org/w/index.php?title=User:Yoghya&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Yoghya (page does not exist)\">Yoghya</a>\n</p>\n<small style=\"font-size:85%;\"><b>Derivative work: </b> <a href=\"https://commons.wikimedia.org/wiki/User:UnpetitproleX\" title=\"User:UnpetitproleX\">UnpetitproleX</a></small>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Gurudongmar_Lake_Sikkim,_India_(edit).jpg\">via Wikimedia Commons</a>"
-  },
-  "sikkim.rumtek": {
-    "file": "photos/sikkim.rumtek.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Rumtek Monastery 01.jpg",
-    "artist": "Bernard Gagnon",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Rumtek_Monastery_01.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Bgag\" title=\"User:Bgag\">Bernard Gagnon</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Rumtek_Monastery_01.jpg\">via Wikimedia Commons</a>"
   },
   "sikkim.singshore": {
     "file": "photos/sikkim.singshore.jpg",
@@ -1784,19 +1445,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Charminar_Hyderabad_1.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Didier_Tais&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Didier Tais (page does not exist)\">DidierTais</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Charminar_Hyderabad_1.jpg\">via Wikimedia Commons</a>"
   },
-  "telangana.golconda-fort": {
-    "file": "photos/telangana.golconda-fort.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Golconda Fort, Hyderabad (Oct 2025) - 3.jpg",
-    "artist": "Kuldeepburjbhalaike",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Golconda_Fort,_Hyderabad_(Oct_2025)_-_3.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Kuldeepburjbhalaike\" title=\"User:Kuldeepburjbhalaike\">Kuldeepburjbhalaike</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Golconda_Fort,_Hyderabad_(Oct_2025)_-_3.jpg\">via Wikimedia Commons</a>"
-  },
   "telangana.bhongir-fort": {
     "file": "photos/telangana.bhongir-fort.jpg",
     "width": 960,
@@ -1836,19 +1484,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Unakoti.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Vulpes-bengalensis\" title=\"User:Vulpes-bengalensis\">Vulpes-bengalensis</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Unakoti.jpg\">via Wikimedia Commons</a>"
   },
-  "tripura.neermahal": {
-    "file": "photos/tripura.neermahal.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:A minar inside Neermahal, Tripura, India.jpg",
-    "artist": "Kingshuk Mondal",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:A_minar_inside_Neermahal,_Tripura,_India.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Herpking\" title=\"User:Herpking\">Kingshuk Mondal</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:A_minar_inside_Neermahal,_Tripura,_India.jpg\">via Wikimedia Commons</a>"
-  },
   "tripura.trishna": {
     "file": "photos/tripura.trishna.jpg",
     "width": 960,
@@ -1861,19 +1496,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_Bison_Gobo.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Seearka&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Seearka (page does not exist)\">Seearka</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Indian_Bison_Gobo.jpg\">via Wikimedia Commons</a>"
-  },
-  "tripura.ujjayanta": {
-    "file": "photos/tripura.ujjayanta.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Right Facade of Ujjayanta Palace, Agartala, Tripura 03.JPG",
-    "artist": "Kingshuk Mondal",
-    "licence": "cc-by-4.0",
-    "licenceShort": "CC BY 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Right_Facade_of_Ujjayanta_Palace,_Agartala,_Tripura_03.JPG",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Herpking\" title=\"User:Herpking\">Kingshuk Mondal</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Right_Facade_of_Ujjayanta_Palace,_Agartala,_Tripura_03.JPG\">via Wikimedia Commons</a>"
   },
   "uttar-pradesh.taj-mahal": {
     "file": "photos/uttar-pradesh.taj-mahal.jpg",
@@ -1900,19 +1522,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Varanasi,_India,_Boats_and_river_Ganges_under_the_sun.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\">Vyacheslav Argenberg</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Varanasi,_India,_Boats_and_river_Ganges_under_the_sun.jpg\">via Wikimedia Commons</a>"
-  },
-  "uttar-pradesh.chambal-gharials": {
-    "file": "photos/uttar-pradesh.chambal-gharials.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Indian Gharial (National Chambal Sanctuary).jpg",
-    "artist": "Arjun Bharioke",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Indian_Gharial_(National_Chambal_Sanctuary).jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Bharioke&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Bharioke (page does not exist)\">Arjun Bharioke</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Indian_Gharial_(National_Chambal_Sanctuary).jpg\">via Wikimedia Commons</a>"
   },
   "uttar-pradesh.buland-darwaza": {
     "file": "photos/uttar-pradesh.buland-darwaza.jpg",
@@ -2017,32 +1626,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Howrah_bridge_at_night.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Apoo8338&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Apoo8338 (page does not exist)\">Apoorva Karlekar</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Howrah_bridge_at_night.jpg\">via Wikimedia Commons</a>"
-  },
-  "west-bengal.toy-train": {
-    "file": "photos/west-bengal.toy-train.jpg",
-    "width": 960,
-    "source": "wikidata-P18",
-    "fileTitle": "File:Darjeeling Himalayan Railway Diesel Locomotive.jpg",
-    "artist": "Subhrajyoti07",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Darjeeling_Himalayan_Railway_Diesel_Locomotive.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Subhrajyoti07\" title=\"User:Subhrajyoti07\">Subhrajyoti07</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Darjeeling_Himalayan_Railway_Diesel_Locomotive.jpg\">via Wikimedia Commons</a>"
-  },
-  "west-bengal.great-banyan": {
-    "file": "photos/west-bengal.great-banyan.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Acharya Jagadish Chandra Bose Indian Botanic Garden - Howrah 2011-01-08 9728.JPG",
-    "artist": "Biswarup Ganguly",
-    "licence": "cc-by-3.0",
-    "licenceShort": "CC BY 3.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Acharya_Jagadish_Chandra_Bose_Indian_Botanic_Garden_-_Howrah_2011-01-08_9728.JPG",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Gangulybiswarup\" title=\"User:Gangulybiswarup\">Biswarup Ganguly</a>, <a href=\"https://creativecommons.org/licenses/by/3.0\" rel=\"license noopener\">CC BY 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Acharya_Jagadish_Chandra_Bose_Indian_Botanic_Garden_-_Howrah_2011-01-08_9728.JPG\">via Wikimedia Commons</a>"
   },
   "west-bengal.hazarduari": {
     "file": "photos/west-bengal.hazarduari.jpg",
@@ -2169,20 +1752,6 @@
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Tisha_Mukherjee\" title=\"User:Tisha Mukherjee\">Tisha Mukherjee</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Black_Francolin_in_Tal_Chhapar_Sanctuary_November_2025_by_Tisha_Mukherjee_07.jpg\">via Wikimedia Commons</a>",
     "locality": "confirmed"
   },
-  "asian-koel": {
-    "file": "photos/asian-koel.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Asian Koel in Rabindra Sarobar January 2024 by Tisha Mukherjee 01.jpg",
-    "artist": "Tisha Mukherjee",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Asian_Koel_in_Rabindra_Sarobar_January_2024_by_Tisha_Mukherjee_01.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Tisha_Mukherjee\" title=\"User:Tisha Mukherjee\">Tisha Mukherjee</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Asian_Koel_in_Rabindra_Sarobar_January_2024_by_Tisha_Mukherjee_01.jpg\">via Wikimedia Commons</a>",
-    "locality": "confirmed"
-  },
   "indian-giant-squirrel": {
     "file": "photos/indian-giant-squirrel.jpg",
     "width": 960,
@@ -2211,20 +1780,6 @@
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Khanasif36&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Khanasif36 (page does not exist)\">Asif N Khan</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Kiang_-_Ladakh_2022-08-25.jpg\">via Wikimedia Commons</a>",
     "locality": "confirmed"
   },
-  "flying-fish": {
-    "file": "photos/flying-fish.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Flying Fish-4-yercaud-salem-India.jpg",
-    "artist": "Yercaud-elango",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Flying_Fish-4-yercaud-salem-India.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Yercaud-elango\" title=\"User:Yercaud-elango\">Yercaud-elango</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Flying_Fish-4-yercaud-salem-India.jpg\">via Wikimedia Commons</a>",
-    "locality": "confirmed"
-  },
   "indian-paradise-flycatcher": {
     "file": "photos/indian-paradise-flycatcher.jpg",
     "width": 960,
@@ -2237,20 +1792,6 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:The_Asian_Paradise_Flycatcher.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Prasan_Shrestha\" title=\"User:Prasan Shrestha\">Prasan Shrestha</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:The_Asian_Paradise_Flycatcher.jpg\">via Wikimedia Commons</a>",
-    "locality": "confirmed"
-  },
-  "clouded-leopard": {
-    "file": "photos/clouded-leopard.jpg",
-    "width": 960,
-    "source": "commons-search",
-    "fileTitle": "File:Hunting Clouded Leopard Neofelis nebulosa.jpg",
-    "artist": "Rohit Naniwadekar",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Hunting_Clouded_Leopard_Neofelis_nebulosa.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Rohitjahnavi\" title=\"User:Rohitjahnavi\">Rohit Naniwadekar</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Hunting_Clouded_Leopard_Neofelis_nebulosa.jpg\">via Wikimedia Commons</a>",
     "locality": "confirmed"
   },
   "himalayan-serow": {
@@ -2535,32 +2076,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:The_Last_Surviving_Population_of_Hangul.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Tahirshawl&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Tahirshawl (page does not exist)\">Tahirshawl</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:The_Last_Surviving_Population_of_Hangul.jpg\">via Wikimedia Commons</a>"
   },
-  "karnataka.mysore-palace": {
-    "file": "photos/karnataka.mysore-palace.jpg",
-    "width": 960,
-    "source": "override",
-    "fileTitle": "File:Mysore Palace (1).jpg",
-    "artist": "Hari R",
-    "licence": "cc-by-2.0",
-    "licenceShort": "CC BY 2.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mysore_Palace_(1).jpg",
-    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/13621363@N04\">Hari R</a>, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mysore_Palace_(1).jpg\">via Wikimedia Commons</a>"
-  },
-  "ladakh.masked-dances": {
-    "file": "photos/ladakh.masked-dances.jpg",
-    "width": 960,
-    "source": "override",
-    "fileTitle": "File:Masked dancers, Lamayuru Monastery.jpg",
-    "artist": "Steve Hicks",
-    "licence": "cc-by-2.0",
-    "licenceShort": "CC BY 2.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Masked_dancers,_Lamayuru_Monastery.jpg",
-    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/46052482@N00\">Steve Hicks</a>, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Masked_dancers,_Lamayuru_Monastery.jpg\">via Wikimedia Commons</a>"
-  },
   "lakshadweep.sea-turtles": {
     "file": "photos/lakshadweep.sea-turtles.jpg",
     "width": 960,
@@ -2639,19 +2154,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Krishna%27s_Butterball_at_Mahabalipuram_heritage_complex_03.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Pinakpani\" title=\"User:Pinakpani\">Pinakpani</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Krishna%27s_Butterball_at_Mahabalipuram_heritage_complex_03.jpg\">via Wikimedia Commons</a>"
   },
-  "tamil-nadu.pamban-bridge": {
-    "file": "photos/tamil-nadu.pamban-bridge.jpg",
-    "width": 960,
-    "source": "override",
-    "fileTitle": "File:New Pamban Bridge Rameswaram 2024.jpg",
-    "artist": "Vijaya nanthini",
-    "licence": "cc0",
-    "licenceShort": "CC0",
-    "licenceUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-    "attributionRequired": false,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:New_Pamban_Bridge_Rameswaram_2024.jpg",
-    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Vijaya_nanthini&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Vijaya nanthini (page does not exist)\">Vijaya nanthini</a>, <a href=\"https://commons.wikimedia.org/wiki/File:New_Pamban_Bridge_Rameswaram_2024.jpg\">via Wikimedia Commons</a> (<a href=\"http://creativecommons.org/publicdomain/zero/1.0/deed.en\" rel=\"license noopener\">CC0</a>)"
-  },
   "telangana.kuntala-falls": {
     "file": "photos/telangana.kuntala-falls.jpg",
     "width": 960,
@@ -2717,19 +2219,6 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Budorcas_taxicolor_taxicolor_354708274.jpg",
     "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.inaturalist.org/users/2087924\">T R Shankar Raman</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Budorcas_taxicolor_taxicolor_354708274.jpg\">via Wikimedia Commons</a>"
   },
-  "gayal": {
-    "file": "photos/gayal.jpg",
-    "width": 960,
-    "source": "override",
-    "fileTitle": "File:Mithun AP 1.jpg",
-    "artist": "Shyamal L.",
-    "licence": "cc-by-sa-4.0",
-    "licenceShort": "CC BY-SA 4.0",
-    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mithun_AP_1.jpg",
-    "attributionHtml": "Shyamal L., <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mithun_AP_1.jpg\">via Wikimedia Commons</a>"
-  },
   "lakshadweep.minicoy": {
     "file": "photos/lakshadweep.minicoy.jpg",
     "width": 960,
@@ -2743,17 +2232,511 @@
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Minicoy_Island,_Lakshadweep.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Anand.himani18&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Anand.himani18 (page does not exist)\">Anand.himani18</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Minicoy_Island,_Lakshadweep.jpg\">via Wikimedia Commons</a>"
   },
-  "manipur.keibul-lamjao": {
-    "file": "photos/manipur.keibul-lamjao.jpg",
+  "andhra-pradesh.gandikota": {
+    "file": "photos/andhra-pradesh.gandikota.jpg",
     "width": 960,
     "source": "override",
-    "fileTitle": "File:Loktak Lake Manipur 08.jpg",
-    "artist": "ch_15march",
+    "fileTitle": "File:Gandikota- The Grand Canyon of India.jpg",
+    "artist": "MeherMukteswar",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Gandikota-_The_Grand_Canyon_of_India.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:MeherMukteswar&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:MeherMukteswar (page does not exist)\">MeherMukteswar</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Gandikota-_The_Grand_Canyon_of_India.jpg\">via Wikimedia Commons</a>"
+  },
+  "arunachal-pradesh.sela-pass": {
+    "file": "photos/arunachal-pradesh.sela-pass.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:The lake at Sela pass.jpg",
+    "artist": "Navya6238",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:The_lake_at_Sela_pass.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Navya6238&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Navya6238 (page does not exist)\">Navya6238</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:The_lake_at_Sela_pass.jpg\">via Wikimedia Commons</a>"
+  },
+  "chandigarh.rock-garden": {
+    "file": "photos/chandigarh.rock-garden.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Rock Garden Chandigarh India (6).JPG",
+    "artist": "Shahnoor Habib Munmun",
+    "licence": "cc-by-3.0",
+    "licenceShort": "CC BY 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Rock_Garden_Chandigarh_India_(6).JPG",
+    "attributionHtml": "Shahnoor Habib Munmun, <a href=\"https://creativecommons.org/licenses/by/3.0\" rel=\"license noopener\">CC BY 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Rock_Garden_Chandigarh_India_(6).JPG\">via Wikimedia Commons</a>"
+  },
+  "chhattisgarh.kotumsar-cave": {
+    "file": "photos/chhattisgarh.kotumsar-cave.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Kanger valley8.JPG",
+    "artist": "Theasg sap",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Kanger_valley8.JPG",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Theasg_sap&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Theasg sap (page does not exist)\">Theasg sap</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Kanger_valley8.JPG\">via Wikimedia Commons</a>"
+  },
+  "goa.fort-aguada": {
+    "file": "photos/goa.fort-aguada.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Fort-Aguada-Lighthouse.jpg",
+    "artist": "Uspn",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Fort-Aguada-Lighthouse.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Uspn\" title=\"User:Uspn\">Uspn</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Fort-Aguada-Lighthouse.jpg\">via Wikimedia Commons</a>"
+  },
+  "gujarat.white-rann": {
+    "file": "photos/gujarat.white-rann.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:White salt desert at Rann of Kutch.jpg",
+    "artist": "Prof Ranga Sai",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:White_salt_desert_at_Rann_of_Kutch.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Prof_Ranga_Sai\" title=\"User:Prof Ranga Sai\">Prof Ranga Sai</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:White_salt_desert_at_Rann_of_Kutch.jpg\">via Wikimedia Commons</a>"
+  },
+  "gujarat.modhera-temple": {
+    "file": "photos/gujarat.modhera-temple.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Surya Kund, Modhera Sun Temple.jpg",
+    "artist": "Bernard Gagnon",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Surya_Kund,_Modhera_Sun_Temple.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Bgag\" title=\"User:Bgag\">Bernard Gagnon</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Surya_Kund,_Modhera_Sun_Temple.jpg\">via Wikimedia Commons</a>"
+  },
+  "gujarat.wild-asses": {
+    "file": "photos/gujarat.wild-asses.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Asiatic Wild Ass herd.jpg",
+    "artist": "Sumeet Moghe",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Asiatic_Wild_Ass_herd.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Sumeetmoghe&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Sumeetmoghe (page does not exist)\">Sumeet Moghe</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Asiatic_Wild_Ass_herd.jpg\">via Wikimedia Commons</a>"
+  },
+  "haryana.sultanpur-nilgai": {
+    "file": "photos/haryana.sultanpur-nilgai.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Blue Bull (Nilgai) (4570527773).jpg",
+    "artist": "Jon Connell from Cambridge, UK",
     "licence": "cc-by-2.0",
     "licenceShort": "CC BY 2.0",
     "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
     "attributionRequired": true,
-    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Loktak_Lake_Manipur_08.jpg",
-    "attributionHtml": "ch_15march, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Loktak_Lake_Manipur_08.jpg\">via Wikimedia Commons</a>"
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Blue_Bull_(Nilgai)_(4570527773).jpg",
+    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/25588248@N00\">Jon Connell</a> from Cambridge, UK, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Blue_Bull_(Nilgai)_(4570527773).jpg\">via Wikimedia Commons</a>"
+  },
+  "jammu-kashmir.dal-lake": {
+    "file": "photos/jammu-kashmir.dal-lake.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Dal Lake in the heart of Srinagar.jpg",
+    "artist": "Debashritaiitmandi",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Dal_Lake_in_the_heart_of_Srinagar.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Debashritaiitmandi\" title=\"User:Debashritaiitmandi\">Debashritaiitmandi</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Dal_Lake_in_the_heart_of_Srinagar.jpg\">via Wikimedia Commons</a>"
+  },
+  "jammu-kashmir.gulmarg-gondola": {
+    "file": "photos/jammu-kashmir.gulmarg-gondola.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Gulmarg Gondola Kashmir 2.jpg",
+    "artist": "Dr.himshree",
+    "licence": "cc-by-4.0",
+    "licenceShort": "CC BY 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Gulmarg_Gondola_Kashmir_2.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Dr.himshree&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Dr.himshree (page does not exist)\">Dr.himshree</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Gulmarg_Gondola_Kashmir_2.jpg\">via Wikimedia Commons</a>"
+  },
+  "karnataka.bandipur": {
+    "file": "photos/karnataka.bandipur.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Lokesh L (5 of 25).jpg",
+    "artist": "Lokeshlakshmipathy",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Lokesh_L_(5_of_25).jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Lokeshlakshmipathy&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Lokeshlakshmipathy (page does not exist)\">Lokeshlakshmipathy</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Lokesh_L_(5_of_25).jpg\">via Wikimedia Commons</a>"
+  },
+  "karnataka.bird-islands": {
+    "file": "photos/karnataka.bird-islands.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Asian Openbill Stork Community (13517651813).jpg",
+    "artist": "David Brossard",
+    "licence": "cc-by-sa-2.0",
+    "licenceShort": "CC BY-SA 2.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Asian_Openbill_Stork_Community_(13517651813).jpg",
+    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/16069488@N00\">David Brossard</a>, <a href=\"https://creativecommons.org/licenses/by-sa/2.0\" rel=\"license noopener\">CC BY-SA 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Asian_Openbill_Stork_Community_(13517651813).jpg\">via Wikimedia Commons</a>"
+  },
+  "ladakh.thiksey": {
+    "file": "photos/ladakh.thiksey.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Beautiful Thiksey Monestry-Ladakh-DSC 0353.jpg",
+    "artist": "Shashank Mehendale",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Beautiful_Thiksey_Monestry-Ladakh-DSC_0353.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Shashank_Mehendale&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Shashank Mehendale (page does not exist)\">Shashank Mehendale</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Beautiful_Thiksey_Monestry-Ladakh-DSC_0353.jpg\">via Wikimedia Commons</a>"
+  },
+  "ladakh.masked-dances": {
+    "file": "photos/ladakh.masked-dances.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:A monk during the Chaam dance at the Diskit Monastery in the Nubra Valley.jpg",
+    "artist": "WikClick",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:A_monk_during_the_Chaam_dance_at_the_Diskit_Monastery_in_the_Nubra_Valley.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:WikClick&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:WikClick (page does not exist)\">WikClick</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:A_monk_during_the_Chaam_dance_at_the_Diskit_Monastery_in_the_Nubra_Valley.jpg\">via Wikimedia Commons</a>"
+  },
+  "madhya-pradesh.marble-rocks": {
+    "file": "photos/madhya-pradesh.marble-rocks.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Marble rocks alongside Narmada River.jpg",
+    "artist": "Karan Dhawan India",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Marble_rocks_alongside_Narmada_River.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Karan_Dhawan_India&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Karan Dhawan India (page does not exist)\">Karan Dhawan India</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Marble_rocks_alongside_Narmada_River.jpg\">via Wikimedia Commons</a>"
+  },
+  "maharashtra.kaas-plateau": {
+    "file": "photos/maharashtra.kaas-plateau.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Kaas world Heritage.jpg",
+    "artist": "Tanmay Haldar",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Kaas_world_Heritage.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:TanmayHaldar&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:TanmayHaldar (page does not exist)\">Tanmay Haldar</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Kaas_world_Heritage.jpg\">via Wikimedia Commons</a>"
+  },
+  "manipur.loktak": {
+    "file": "photos/manipur.loktak.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:The Phumdis on Loktak Lake.jpg",
+    "artist": "Ishani Nath",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:The_Phumdis_on_Loktak_Lake.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Ishani_Nath&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Ishani Nath (page does not exist)\">Ishani Nath</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:The_Phumdis_on_Loktak_Lake.jpg\">via Wikimedia Commons</a>"
+  },
+  "manipur.keibul-lamjao": {
+    "file": "photos/manipur.keibul-lamjao.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:THE FLOATING NATIONAL PARK- The Keibul Lamjao National Park, Manipur.jpg",
+    "artist": "Ranjan Jyoti Dutta",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:THE_FLOATING_NATIONAL_PARK-_The_Keibul_Lamjao_National_Park,_Manipur.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Rjdutta007&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Rjdutta007 (page does not exist)\">Ranjan Jyoti Dutta</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:THE_FLOATING_NATIONAL_PARK-_The_Keibul_Lamjao_National_Park,_Manipur.jpg\">via Wikimedia Commons</a>"
+  },
+  "manipur.kangla": {
+    "file": "photos/manipur.kangla.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Kanglasha at Kangla.jpg",
+    "artist": "Crazyscientistmeitei",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Kanglasha_at_Kangla.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Crazyscientistmeitei&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Crazyscientistmeitei (page does not exist)\">Crazyscientistmeitei</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Kanglasha_at_Kangla.jpg\">via Wikimedia Commons</a>"
+  },
+  "meghalaya.dawki": {
+    "file": "photos/meghalaya.dawki.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:The Clear water of Dawki (Unsplash).jpg",
+    "artist": "Sayan Nath sayannath",
+    "licence": "cc0",
+    "licenceShort": "CC0",
+    "licenceUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "attributionRequired": false,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:The_Clear_water_of_Dawki_(Unsplash).jpg",
+    "attributionHtml": "Sayan Nath <a rel=\"nofollow\" class=\"external text\" href=\"https://unsplash.com/@sayannath\">sayannath</a>, <a href=\"https://commons.wikimedia.org/wiki/File:The_Clear_water_of_Dawki_(Unsplash).jpg\">via Wikimedia Commons</a> (<a href=\"http://creativecommons.org/publicdomain/zero/1.0/deed.en\" rel=\"license noopener\">CC0</a>)"
+  },
+  "nagaland.doyang": {
+    "file": "photos/nagaland.doyang.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Amur Falcon Roost (30699712390).jpg",
+    "artist": "Mike Prince from Bangalore, India",
+    "licence": "cc-by-2.0",
+    "licenceShort": "CC BY 2.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Amur_Falcon_Roost_(30699712390).jpg",
+    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/70804987@N00\">Mike Prince</a> from Bangalore, India, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Amur_Falcon_Roost_(30699712390).jpg\">via Wikimedia Commons</a>"
+  },
+  "punjab.mustard-fields": {
+    "file": "photos/punjab.mustard-fields.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Golden mustard fields.jpg",
+    "artist": "Tjasbee",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Golden_mustard_fields.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Tjasbee&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Tjasbee (page does not exist)\">Tjasbee</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Golden_mustard_fields.jpg\">via Wikimedia Commons</a>"
+  },
+  "tamil-nadu.pamban-bridge": {
+    "file": "photos/tamil-nadu.pamban-bridge.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Pamban Bridge Train Passing.jpg",
+    "artist": "Shaswat Nimesh",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Pamban_Bridge_Train_Passing.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Writingwithlight\" title=\"User:Writingwithlight\">Shaswat Nimesh</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Pamban_Bridge_Train_Passing.jpg\">via Wikimedia Commons</a>"
+  },
+  "telangana.golconda-fort": {
+    "file": "photos/telangana.golconda-fort.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Golconda Fort 005.jpg",
+    "artist": "Bernard Gagnon",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Golconda_Fort_005.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Bgag\" title=\"User:Bgag\">Bernard Gagnon</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Golconda_Fort_005.jpg\">via Wikimedia Commons</a>"
+  },
+  "tripura.neermahal": {
+    "file": "photos/tripura.neermahal.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Neermahal, Tripura Agartala, India.jpg",
+    "artist": "Mr Nimai Debbarma",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Neermahal,_Tripura_Agartala,_India.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Mr_Nimai_Debbarma&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Mr Nimai Debbarma (page does not exist)\">Mr Nimai Debbarma</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Neermahal,_Tripura_Agartala,_India.jpg\">via Wikimedia Commons</a>"
+  },
+  "tripura.ujjayanta": {
+    "file": "photos/tripura.ujjayanta.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Ujjayanta Palace as seen from the midpoint of the avenue 02.JPG",
+    "artist": "Kingshuk Mondal",
+    "licence": "cc-by-4.0",
+    "licenceShort": "CC BY 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Ujjayanta_Palace_as_seen_from_the_midpoint_of_the_avenue_02.JPG",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Herpking\" title=\"User:Herpking\">Kingshuk Mondal</a>, <a href=\"https://creativecommons.org/licenses/by/4.0\" rel=\"license noopener\">CC BY 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Ujjayanta_Palace_as_seen_from_the_midpoint_of_the_avenue_02.JPG\">via Wikimedia Commons</a>"
+  },
+  "uttar-pradesh.chambal-gharials": {
+    "file": "photos/uttar-pradesh.chambal-gharials.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Gharial (Gavialis gangeticus) male.jpg",
+    "artist": "Charles J. Sharp",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Gharial_(Gavialis_gangeticus)_male.jpg",
+    "attributionHtml": "<bdi><a href=\"https://www.wikidata.org/wiki/Q54800218\" class=\"extiw\" title=\"d:Q54800218\"><span title=\"Scottish wildlife photographer\">Charles J. Sharp</span></a></bdi>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Gharial_(Gavialis_gangeticus)_male.jpg\">via Wikimedia Commons</a>"
+  },
+  "west-bengal.great-banyan": {
+    "file": "photos/west-bengal.great-banyan.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:India - Kolkata - 09 - Great Banyan Tree (2799531046).jpg",
+    "artist": "McKay Savage from London, UK",
+    "licence": "cc-by-2.0",
+    "licenceShort": "CC BY 2.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/2.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:India_-_Kolkata_-_09_-_Great_Banyan_Tree_(2799531046).jpg",
+    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/56796376@N00\">McKay Savage</a> from London, UK, <a href=\"https://creativecommons.org/licenses/by/2.0\" rel=\"license noopener\">CC BY 2.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:India_-_Kolkata_-_09_-_Great_Banyan_Tree_(2799531046).jpg\">via Wikimedia Commons</a>"
+  },
+  "asian-koel": {
+    "file": "photos/asian-koel.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Asian Koel Female AMSM9066AKOE.jpg",
+    "artist": "Savithri Singh",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Asian_Koel_Female_AMSM9066AKOE.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Savi.odl\" title=\"User:Savi.odl\">Savithri Singh</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Asian_Koel_Female_AMSM9066AKOE.jpg\">via Wikimedia Commons</a>"
+  },
+  "indian-roller": {
+    "file": "photos/indian-roller.jpg",
+    "width": 952,
+    "source": "override",
+    "fileTitle": "File:Coracias benghalensis -India -flying-8.jpg",
+    "artist": "Sammy Sam",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Coracias_benghalensis_-India_-flying-8.jpg",
+    "attributionHtml": "<a rel=\"nofollow\" class=\"external text\" href=\"http://picasaweb.google.com/sammysam.com\">Sammy Sam</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Coracias_benghalensis_-India_-flying-8.jpg\">via Wikimedia Commons</a>"
+  },
+  "bihar.mahabodhi": {
+    "file": "photos/bihar.mahabodhi.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Mahabodhi temple complex, Bodhgaya 24.jpg",
+    "artist": "Rohit Sharma",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mahabodhi_temple_complex,_Bodhgaya_24.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Rohit14400\" title=\"User:Rohit14400\">Rohit Sharma</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mahabodhi_temple_complex,_Bodhgaya_24.jpg\">via Wikimedia Commons</a>"
+  },
+  "dadra-and-nagar-haveli-and-daman-and-diu.panikotha": {
+    "file": "photos/dadra-and-nagar-haveli-and-daman-and-diu.panikotha.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Pani Kotha.JPG",
+    "artist": "Vijay Bhadani",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Pani_Kotha.JPG",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Vijay_Bhadani&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Vijay Bhadani (page does not exist)\">Vijay Bhadani</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Pani_Kotha.JPG\">via Wikimedia Commons</a>"
+  },
+  "karnataka.mysore-palace": {
+    "file": "photos/karnataka.mysore-palace.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Mysuru Palace - Night View.jpg",
+    "artist": "Ingo Mehling",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mysuru_Palace_-_Night_View.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Imehling\" title=\"User:Imehling\">Ingo Mehling</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mysuru_Palace_-_Night_View.jpg\">via Wikimedia Commons</a>"
+  },
+  "manipur.ima-keithel": {
+    "file": "photos/manipur.ima-keithel.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Ima Market, imphal.jpeg",
+    "artist": "PP Yoonus",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Ima_Market,_imphal.jpeg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/w/index.php?title=User:Ppyoonus&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Ppyoonus (page does not exist)\">PP Yoonus</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Ima_Market,_imphal.jpeg\">via Wikimedia Commons</a>"
+  },
+  "sikkim.rumtek": {
+    "file": "photos/sikkim.rumtek.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Rumtek Monastery 04.jpg",
+    "artist": "Bernard Gagnon",
+    "licence": "cc-by-sa-4.0",
+    "licenceShort": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Rumtek_Monastery_04.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Bgag\" title=\"User:Bgag\">Bernard Gagnon</a>, <a href=\"https://creativecommons.org/licenses/by-sa/4.0\" rel=\"license noopener\">CC BY-SA 4.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Rumtek_Monastery_04.jpg\">via Wikimedia Commons</a>"
+  },
+  "west-bengal.toy-train": {
+    "file": "photos/west-bengal.toy-train.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Toy Train Darjeeling West Bengal India.jpg",
+    "artist": "Unknown author",
+    "licence": "pd",
+    "licenceShort": "Public domain",
+    "licenceUrl": null,
+    "attributionRequired": false,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Toy_Train_Darjeeling_West_Bengal_India.jpg",
+    "attributionHtml": "Unknown author, <a href=\"https://commons.wikimedia.org/wiki/File:Toy_Train_Darjeeling_West_Bengal_India.jpg\">via Wikimedia Commons</a> (Public domain)"
+  },
+  "flying-fish": {
+    "file": "photos/flying-fish.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Pink-wing flying fish.jpg",
+    "artist": "Unknown author",
+    "licence": "pd",
+    "licenceShort": "Public domain",
+    "licenceUrl": null,
+    "attributionRequired": false,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Pink-wing_flying_fish.jpg",
+    "attributionHtml": "Unknown author, <a href=\"https://commons.wikimedia.org/wiki/File:Pink-wing_flying_fish.jpg\">via Wikimedia Commons</a> (Public domain)"
+  },
+  "gayal": {
+    "file": "photos/gayal.jpg",
+    "width": 960,
+    "source": "override",
+    "fileTitle": "File:Mithun, Glao Lake.jpg",
+    "artist": "Rohit Naniwadekar",
+    "licence": "cc-by-sa-3.0",
+    "licenceShort": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "attributionRequired": true,
+    "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mithun,_Glao_Lake.jpg",
+    "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Rohitjahnavi\" title=\"User:Rohitjahnavi\">Rohit Naniwadekar</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mithun,_Glao_Lake.jpg\">via Wikimedia Commons</a>"
   }
 }
