@@ -103,8 +103,12 @@ describe('the credits page', () => {
 
   it('offers every modified share-alike sound under the same licence as its source', () => {
     render(<Credits />)
-    const shareAlike = Object.entries(SOUNDS).filter(([, c]) => /^cc-by-sa/i.test(c.licence))
-    expect(shareAlike.length).toBe(7)
+    // Judged off the human-readable short name ("CC BY-NC-SA 4.0"), not the
+    // machine code the page itself keys on — so a page that only recognised
+    // CC BY-SA (as it once did, missing every NC-SA field recording) fails
+    // here instead of quietly dropping their share-alike notice.
+    const shareAlike = Object.entries(SOUNDS).filter(([, c]) => /\bSA\b/.test(c.licenceShort))
+    expect(shareAlike.length).toBeGreaterThan(0)
     for (const [id, credit] of shareAlike) {
       const item = screen.getByTestId(`credit-sound-${id}`)
       // Not merely "we changed it": the adapted file must itself be offered
@@ -112,6 +116,33 @@ describe('the credits page', () => {
       expect(item.textContent, `${id} does not offer the adaptation under ${credit.licenceShort}`)
         .toMatch(new RegExp(`offered under ${credit.licenceShort.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
     }
+  })
+
+  // The owner allowed non-commercial licences for this free, ad-free site,
+  // on condition that every one is marked — so that the day anything about
+  // the site changes, each can be found and replaced.
+  it('marks every non-commercial file as non-commercial', () => {
+    render(<Credits />)
+    const nc = Object.entries(SOUNDS).filter(([, c]) => /\bNC\b/.test(c.licenceShort))
+    expect(nc.length).toBeGreaterThan(0)
+    for (const [id] of nc) {
+      expect(screen.getByTestId(`credit-sound-${id}`).textContent, `${id} is not marked non-commercial`)
+        .toMatch(/non-commercial/i)
+    }
+    for (const [id, c] of Object.entries(SOUNDS)) {
+      if (/\bNC\b/.test(c.licenceShort)) continue
+      expect(screen.getByTestId(`credit-sound-${id}`).textContent, `${id} is wrongly marked non-commercial`)
+        .not.toMatch(/non-commercial/i)
+    }
+  })
+
+  it('names where the sounds really came from, not just Wikimedia Commons', () => {
+    render(<Credits />)
+    const section = screen.getByRole('region', { name: /sounds/i })
+    const note = section.querySelector('.credits__note')?.textContent ?? ''
+    const sources = new Set(Object.values(SOUNDS).map((c) => (c as { source?: string }).source ?? 'commons'))
+    const NAMES: Record<string, string> = { commons: 'Wikimedia Commons', xc: 'xeno-canto', inat: 'iNaturalist', freesound: 'Freesound' }
+    for (const s of sources) expect(note, `the sounds note does not mention ${NAMES[s]}`).toContain(NAMES[s])
   })
 
   it('does not claim the photographs were adapted, because they were not', () => {

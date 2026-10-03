@@ -8,9 +8,9 @@ import './credits.css'
  * THE CREDITS PAGE, AND WHY IT IS NOT OPTIONAL.
  *
  * The app bundles a growing set of photographs (landmarks and, since Task
- * 5a, animals — see `PHOTOS`' own note below), 11 sounds and one set of
- * state boundaries that other people made. Most of the photographs and 7 of
- * the sounds carry `attributionRequired: true`. CC BY 4.0 s3(a) and CC
+ * 5a, animals — see `PHOTOS`' own note below), a few dozen sounds and one
+ * set of state boundaries that other people made. Most of the photographs
+ * and most of the sounds carry `attributionRequired: true`. CC BY 4.0 s3(a) and CC
  * BY-SA 4.0 s3(a) attach that duty to SHARING the material — making it
  * available — not to putting it on a screen. The repository shares every
  * one of these files and so does the deployed site, so the credit was
@@ -50,8 +50,24 @@ type Credit = {
   attributionHtml: string
 }
 
-/** A sound carries one field a photograph does not: what we did to it. */
-type SoundCredit = Credit & { kind: string; seconds: number; modifications: string }
+/** A sound carries one field a photograph does not: what we did to it.
+ *  `source` is absent on the older Commons credits, which predate it. */
+type SoundCredit = Credit & { kind: string; seconds: number; modifications: string; source?: string }
+
+/** Where a sound came from, in the words the sources use for themselves. */
+const SOURCE_NAMES: Record<string, string> = {
+  commons: 'Wikimedia Commons',
+  xc: 'xeno-canto',
+  inat: 'iNaturalist',
+  freesound: 'Freesound',
+}
+
+const soundSources = (sounds: Record<string, SoundCredit>) => {
+  const names = Object.keys(SOURCE_NAMES)
+    .filter((k) => Object.values(sounds).some((c) => (c.source ?? 'commons') === k))
+    .map((k) => SOURCE_NAMES[k])
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0]
+}
 
 const PHOTOS: Record<string, Credit> = photoCredits
 const SOUNDS: Record<string, SoundCredit> = soundCredits
@@ -61,11 +77,21 @@ const nameOf = (fileTitle: string) => fileTitle.replace(/^File:/, '')
 
 /**
  * Share-alike is the only licence family that makes our editing anybody
- * else's business: a CC BY-SA adaptation must itself be offered under the
- * same licence. Keyed off the machine-readable code, which is what
- * `licencePolicy` allowlisted in the first place.
+ * else's business: a CC BY-SA or CC BY-NC-SA adaptation must itself be
+ * offered under the same licence. Keyed off the machine-readable code, which
+ * is what `licencePolicy` allowlisted in the first place. (This once matched
+ * `cc-by-sa` only, and would have dropped the notice from every NC-SA field
+ * recording.)
  */
-const isShareAlike = (licence: string) => /^cc-by-sa/i.test(licence)
+const isShareAlike = (licence: string) => /^cc-by(-nc)?-sa/i.test(licence)
+
+/**
+ * Non-commercial files are allowed only because this site is free and
+ * carries no advertising. Each one says so, so that if that ever changes
+ * every one of them can be found and replaced. Mirrors `isNonCommercial`
+ * in scripts/lib/wiki.mjs.
+ */
+const isNonCommercial = (licence: string) => /^cc-by-nc/i.test(licence)
 
 function Attribution({ html }: { html: string }) {
   return <p className="credit-item__by" dangerouslySetInnerHTML={{ __html: html }} />
@@ -94,6 +120,12 @@ function SoundItem({ id, credit }: { id: string; credit: SoundCredit }) {
           same licence as the source.</>
         )}
       </p>
+      {isNonCommercial(credit.licence) && (
+        <p className="credit-item__edit">
+          Non-commercial licence: used here because Namaste India is free and carries no
+          advertising. It may not be reused for commercial purposes.
+        </p>
+      )}
     </li>
   )
 }
@@ -185,8 +217,9 @@ export function Credits() {
         <section className="credits__section" aria-labelledby="credits-sounds">
           <h2 id="credits-sounds">Sounds</h2>
           <p className="credits__note">
-            {Object.keys(SOUNDS).length} sound effects and ambient beds from
-            Wikimedia Commons. Unlike the photographs, every one of these was
+            {Object.keys(SOUNDS).length} sound effects, animal calls and ambient
+            beds from {soundSources(SOUNDS)}. The animal calls are field
+            recordings of wild animals, most of them made in India. Unlike the photographs, every one of these was
             edited to fit the app — cut short, levelled, and in the case of an
             ambient bed welded into a seamless loop — and then decoded to mono
             and re-encoded as AAC. Cutting and levelling change the content, so

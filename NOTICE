@@ -65,12 +65,12 @@ simplified to SVG path data. See scripts/build-world.mjs.
 4. PHOTOGRAPHS — individual licences, see src/data/photo-credits.json
 --------------------------------------------------------------------------
 
-The 24 photographs in public/photos/ come from Wikimedia Commons and remain
-under their own individual licences: CC0, public domain, CC BY 2.0, CC BY 4.0,
-CC BY-SA 3.0 and CC BY-SA 4.0. 22 of the 24 require attribution. Twenty are
-landmarks; four (Task 5a) are each state's own animal, one photograph per
-distinct species so two places naming the same species share it rather than
-each fetching their own.
+The 209 photographs in public/photos/ come from Wikimedia Commons and remain
+under their own individual licences: CC0, Public domain, CC BY 2.0, CC BY 2.5,
+CC BY 3.0, CC BY 4.0, CC BY-SA 2.0, CC BY-SA 3.0 and CC BY-SA 4.0. 194 of the
+209 require attribution. Most are landmarks; the rest are each state's own
+animal, one photograph per distinct species so two places naming the same
+species share it rather than each fetching their own.
 
 Per-file artist, licence, licence URL, source page and ready-to-render
 attribution are in src/data/photo-credits.json, and are displayed in the app
@@ -84,9 +84,19 @@ not of content, so none of these is an adaptation.
 5. SOUNDS — individual licences, see src/data/sound-credits.json
 --------------------------------------------------------------------------
 
-The 11 sounds in public/audio/ come from Wikimedia Commons and remain under
-their own individual licences: CC0, public domain, CC BY-SA 3.0 and
-CC BY-SA 4.0. 7 of the 11 require attribution.
+The 32 sounds in public/audio/sfx/ and public/audio/ambience/ come from
+Wikimedia Commons, iNaturalist, xeno-canto and Freesound, and remain under
+their own individual licences: CC0, Public domain, CC BY 4.0, CC BY-SA 3.0, CC
+BY-SA 4.0, CC BY-NC 3.0, CC BY-NC 4.0, CC BY-NC-SA 3.0 and CC BY-NC-SA 4.0. 24
+of the 32 require attribution.
+
+NON-COMMERCIAL: 11 of them are licensed for non-commercial use only (CC BY-NC
+or CC BY-NC-SA). They are used because Namaste India is free and carries no
+advertising, and they may not be reused commercially. Each is marked as such
+at #/credits, and its credit carries nonCommercial: true in
+src/data/sound-credits.json, so all of them can be found and replaced
+together. Nothing under a no-derivatives licence is used, because every sound
+is edited.
 
 Per-file artist, licence, licence URL, source page, ready-to-render
 attribution and a description of what was changed are in
@@ -94,21 +104,32 @@ src/data/sound-credits.json, and are displayed in the app at #/credits.
 
 MODIFIED: every one of them. One-shots are truncated to a cap, peak-normalised
 to -1 dBFS and given a 150 ms fade-out (scripts/lib/trim.py); ambient beds are
-truncated to 20 s, loudness-normalised to -26 dBFS RMS under a -3 dBFS peak
-ceiling, and welded into a seamless loop with a 3 s equal-power crossfade
-(scripts/lib/loop.py). All are then decoded to mono and re-encoded as AAC.
+truncated to 20 s (19.8 s for the temple bed, so that its beat lines up across
+the loop), loudness-normalised to -26 dBFS RMS under a -3 dBFS peak ceiling,
+and welded into a seamless loop with a 3 s equal-power crossfade
+(scripts/lib/loop.py). An excerpt cut from partway into a longer field
+recording starts at a stated point, and a one-shot cut that way also gets a 30
+ms fade-in; each credit's modifications field says exactly where. All are then
+decoded to mono and re-encoded as AAC.
 
 Cutting and levelling change the content, so these are Adapted Material.
-Accordingly, the seven files below — the modified versions, not the originals
-— are offered under the same licence as their sources:
+Accordingly, the 14 share-alike files below (the modified versions, not the
+originals) are offered under the same licence as their sources:
 
-    public/audio/ambience/ocean.m4a          CC BY-SA 4.0
-    public/audio/ambience/forest.m4a         CC BY-SA 4.0
-    public/audio/sfx/peacock-call.m4a        CC BY-SA 4.0
-    public/audio/sfx/hornbill.m4a            CC BY-SA 4.0
-    public/audio/sfx/indian-roller.m4a       CC BY-SA 4.0
-    public/audio/sfx/gibbon.m4a              CC BY-SA 4.0
-    public/audio/sfx/sparrow.m4a             CC BY-SA 3.0
+    public/audio/ambience/ocean.m4a                  CC BY-SA 4.0
+    public/audio/sfx/asian-koel.m4a                  CC BY-NC-SA 4.0
+    public/audio/sfx/black-francolin.m4a             CC BY-NC-SA 4.0
+    public/audio/sfx/gibbon.m4a                      CC BY-SA 4.0
+    public/audio/sfx/great-egret.m4a                 CC BY-NC-SA 3.0
+    public/audio/sfx/greater-flamingo.m4a            CC BY-NC-SA 3.0
+    public/audio/sfx/himalayan-monal.m4a             CC BY-NC-SA 4.0
+    public/audio/sfx/hornbill.m4a                    CC BY-SA 4.0
+    public/audio/sfx/indian-paradise-flycatcher.m4a  CC BY-NC-SA 3.0
+    public/audio/sfx/indian-roller.m4a               CC BY-SA 4.0
+    public/audio/sfx/peacock-call.m4a                CC BY-SA 4.0
+    public/audio/sfx/sarus-crane.m4a                 CC BY-NC-SA 4.0
+    public/audio/sfx/sparrow.m4a                     CC BY-SA 3.0
+    public/audio/sfx/western-tragopan.m4a            CC BY-NC-SA 4.0
 
 --------------------------------------------------------------------------
 6. NARRATION AUDIO
