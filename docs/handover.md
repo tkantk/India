@@ -1486,15 +1486,131 @@ test used to assert the deletion, and was encoding the bug.
 
 ## Still open
 
-- **The ElevenLabs invoice.** Until it is paid, the five corrected lines
-  (Tirathgarh, Diu's cannons, the lighthouse, Kaas, Kotumsar's fish) keep
-  their old audio and old words — consistent with each other, just not yet
-  corrected. Once paid: `npm run tts:final` (dry, shows ~$0.85 for 40 lines
-  across 4 places), then `-- --yes`, then check the count is still 393.
-- **The non-commercial licence decision is made (allowed) but not yet used.**
-  Nothing in the current pipeline can fetch NC media — Commons does not host
-  it. It unlocks iNaturalist (located, wild animal photos: the four empty
-  animal cards) and xeno-canto (real bird calls), which is step 3 of the plan.
 - README still describes the project as four states with a draft voice.
-- Animal sounds (3 of 36), ambient beds (17 of 36), offline use, per-place
-  loading: the rest of the proposal.
+- Offline use and per-place loading: the rest of the proposal (Phase B).
+
+# OCTOBER 2026, CONTINUED — real sounds (step 3)
+
+The invoice was paid and the five corrected lines re-recorded and deployed
+($0.37). Then the sounds. Every one was heard by the owner before it shipped,
+on two private listening pages whose answers are stored in the pages
+themselves and were read back with the Artifact tool:
+
+- Round one (https://claude.ai/artifact/8StcgxUCXdESbFGCi7U2uP, `verdicts`):
+  22 sounds, 19 kept. Turned down: the tiger (a faint low call), the stamp
+  chime (a jangle of small bells), the soft whoosh (a swung tea strainer).
+- Round two (https://claude.ai/artifact/RJDoJJ2fasQ1dMM4pTMyie, `round2`):
+  alternatives, each cut exactly as it would ship. Chosen: a **captive tiger,
+  Columbus Zoo, Ohio** (two full roars; no wild Indian recording was usable,
+  and he chose it over silence: the one exception to the wild rule, his), a
+  Tibetan bell bought in India for the chime, and the REAL sound for each of
+  the three moments the whoosh had stood in for: the Darjeeling toy train's
+  steam engine (recorded in Darjeeling), a pass-by on the Mumbai–Pune highway
+  for the Sea Link, a ski chairlift for the Rajgir ropeway (not India,
+  flagged). The whoosh now plays nowhere, so it is not shipped; his preferred
+  whoosh (a gust of wind) is parked under `spare` in `sound-picks.json`.
+
+32 sounds ship; the lion and the rhino stay silent (no true recording).
+
+## How a sound is chosen now
+
+Three new sources, behind one licence rule (`scripts/lib/media-sources.mjs`):
+iNaturalist (open API, research grade, `place_id=6681` India, `captive=false`),
+xeno-canto (API v3, `XENO_CANTO_API_KEY`) and Freesound (`FREESOUND_API_KEY`;
+the free preview MP3, so no OAuth). Keys live in `.env`; never print them.
+
+1. `npm run sound:candidates -- <id>` (`scripts/sound-candidates.mjs`, its
+   `WANTED` list) gathers up to six licensed candidates per sound, measures
+   each with `scripts/lib/audio_metrics.py` (signal over background, clipping,
+   steadiness, where the loudest stretch starts) and draws a spectrogram.
+   Output: `build/sound-candidates/<id>/report.json` + PNGs.
+2. A chooser (an agent, because nobody choosing can listen) reads numbers,
+   spectrogram and the source page, and answers a pick or NONE.
+3. The pick goes in `scripts/sound-picks.json` with its `start` and `why`;
+   NONE goes in `none` with its reason.
+4. `npm run fetch:sounds` fetches exactly the picks, cuts from `start`
+   (trim.py and loop.py take a start offset now; a mid-recording cut gets a
+   30 ms fade-in), and writes the credit, including "excerpt from Ns".
+5. The owner listens. Only then commit and deploy.
+
+## The fetcher used to choose sounds itself — removed
+
+A sound with no credit fell through to a Commons search and shipped the first
+hit that passed the licence check, unheard. For months the searches found
+nothing. On 2 October they did: the desert bed came back as a 1916 song with
+lyrics, the mountain bed as an American junco, the city as an American police
+siren, and the island as President Clinton's remarks in Palm Beach. Deleted
+before anything was committed. `scripts/lib/soundPlan.mjs` (`nextStep`, tested)
+now decides what the fetcher does, and an unpicked sound is silent.
+
+## What the choosers caught
+
+- iNaturalist "tiger" returned leopards and lions: the lookup had resolved the
+  genus *Panthera*. Fixed with `taxon_name=` plus an exact-species filter
+  (`sameTaxon`, tested).
+- "Big Lion Roar" is a human imitating a lion (its own page says so). The
+  real Gir recordings are cubs lost in noise. **Lion: silent.**
+- "Rhinoceros Trumpet" files are a French horn; the one "Indian rhinoceros"
+  file is a zoo recording (same-day uploads: a Siberian crane, a cockatoo).
+  **Rhino: silent.**
+- Sarahan monal and tragopan recordings are the captive pheasantry
+  (xeno-canto remarks say "captive bird"); one tragopan was "in the hand",
+  another lured with playback.
+- Freesound "India" by word: "Indian rhinoceros" is a species, not a place;
+  "goal" contained "goa"; the Andaman SEA is Thailand's coast too. `fsInIndia`
+  now needs whole words, ignores "Indian", and rejects a named other country.
+- "calm beach" was a synth pad; "Sundarbans Music" was music.
+- Indian giant squirrel and gaur: nothing usable (gaur: zero licensed
+  recordings anywhere). **Silent.**
+
+## Older sounds that failed the same rule
+
+- **forest** was "Birdsong Bourne Woods" (Surrey, England) with **0.6 s of
+  digital silence in every loop** (3.0–3.6 s, −180 dBFS). Replaced: Thekkady
+  (Periyar), Kerala.
+- **peacock** was "call in farm Slovakia". Replaced: a wild male at Ettikulam,
+  Kerala.
+- **elephant** names neither species nor place, but the only Indian
+  alternative was spliced snippets with no trumpet. Kept.
+- hornbill (Nelliyampathy, Kerala) and gibbon (Hoollongapar, Assam) are
+  Indian; ocean, river and sparrow are generic water and a cosmopolitan bird.
+
+## Two picks are not from India, flagged for the owner
+
+The camel (dromedaries in Morocco) and the desert bed (wind in the Atacama,
+Chile): no usable Indian recording of either exists. The island bed is the
+Indian coast (Pernem, Goa), not the islands. All three carry a warning chip
+on the listening page.
+
+## Licences
+
+Non-commercial is now allowed (owner's decision; free, ad-free site). Eleven
+sounds are NC and the credits page says so on each one ("Non-commercial
+licence: used here because Namaste India is free and carries no advertising").
+No-derivatives is never allowed: every sound is cut. The credits page used to
+treat only CC BY-SA as share-alike and would have dropped the notice from
+every NC-SA recording; it now matches `cc-by(-nc)?-sa`, and its test judges
+share-alike from the human-readable short name so the same blind spot fails.
+
+## Small things worth knowing
+
+- The temple bed loops at **19.8 s**, not 20: the length at which the manjira
+  beat lines up across the 3 s crossfade (`content/sounds.json` says so).
+- The temple bell is cut to 3 s: a knock follows the clean strike at 3.2 s.
+- xeno-canto can serve a WAV under a `.mp3` name; afconvert goes by extension.
+- A Freesound preview download can take minutes; the candidate tool times out
+  at 90 s and caps one-shots at 180 s, beds at 900 s.
+- The stamp now rings `chime-correct` when a new stamp lands (it was in the
+  wanted list for exactly that and never wired). The same sound is the
+  start-up sound check in `App.tsx`.
+- One Freesound "smooth whoosh" was made with ElevenLabs (AI). Generated
+  sound is not a recording; a chooser caught it from the page. Check.
+- In zsh an unquoted `$args` is ONE argument: a helper asked Freesound for
+  sound "undefined" and got an HTML page back. Use `${=args}` or literals.
+
+## Still open after this
+
+- Four animal cards have no photograph (western tragopan, markhor, sangai,
+  clouded leopard). iNaturalist could fill them now that NC is allowed, under
+  the same wild-and-located rule.
+- README, then Phase B (offline, per-place loading) and Phase C.
