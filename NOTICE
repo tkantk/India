@@ -65,20 +65,27 @@ simplified to SVG path data. See scripts/build-world.mjs.
 4. PHOTOGRAPHS — individual licences, see src/data/photo-credits.json
 --------------------------------------------------------------------------
 
-The 209 photographs in public/photos/ come from Wikimedia Commons and remain
-under their own individual licences: CC0, Public domain, CC BY 2.0, CC BY 2.5,
-CC BY 3.0, CC BY 4.0, CC BY-SA 2.0, CC BY-SA 3.0 and CC BY-SA 4.0. 194 of the
-209 require attribution. Most are landmarks; the rest are each state's own
-animal, one photograph per distinct species so two places naming the same
-species share it rather than each fetching their own.
+The 212 photographs in public/photos/ remain under their own individual
+licences: CC0, Public domain, CC BY 2.0, CC BY 2.5, CC BY 3.0, CC BY 4.0, CC
+BY-SA 2.0, CC BY-SA 3.0, CC BY-SA 4.0 and CC BY-NC 4.0. 197 of the 212 require
+attribution. Most are landmarks; the rest are each state's own animal, one
+photograph per distinct species so two places naming the same species share it
+rather than each fetching their own. 209 come from Wikimedia Commons; 3 (wild
+animals no Commons photograph showed honestly) come from iNaturalist, picked
+by hand and listed in scripts/photo-picks.json.
+
+NON-COMMERCIAL: 3 of them are licensed for non-commercial use only. They are
+used because Namaste India is free and carries no advertising, and they may
+not be reused commercially; each is marked as such at #/credits.
 
 Per-file artist, licence, licence URL, source page and ready-to-render
 attribution are in src/data/photo-credits.json, and are displayed in the app
 at #/credits.
 
-NOT MODIFIED: each file is a thumbnail rendered by Wikimedia's own servers and
-stored byte for byte as it was delivered. That is a change of format and size,
-not of content, so none of these is an adaptation.
+NOT MODIFIED: each file is stored byte for byte as it was delivered (a Commons
+thumbnail rendered by Wikimedia's own servers, or iNaturalist's own size).
+That is a change of format and size, not of content, so none of these is an
+adaptation.
 
 --------------------------------------------------------------------------
 5. SOUNDS — individual licences, see src/data/sound-credits.json
@@ -136,7 +143,9 @@ originals) are offered under the same licence as their sources:
 --------------------------------------------------------------------------
 
 The narration in public/audio/en/ is synthesised from the scripts in
-content/, which are MIT with the code. It currently uses the free macOS `say`
-voice; a paid ElevenLabs render is subject to that provider's own terms, which
-are not a licence this repository can grant. Regenerate it yourself with
-`npm run tts:draft`.
+content/, which are MIT with the code. It was rendered with ElevenLabs
+(npm run tts:final) under that provider's own terms, which are not a licence
+this repository can grant: the scripts are offered under MIT, the rendered
+audio is not relicensed by this repository. To produce audio of your own,
+render the scripts yourself (npm run tts:draft uses the free macOS voice;
+note that it writes into public/audio/en/).

@@ -585,12 +585,13 @@ does not.**
 
 ### Test-suite facts worth knowing before you trust a red (or green) run
 
-- **The speech suites are gated behind `CI || TTS_TESTS=1`.**
+- **The speech suites are gated behind macOS AND (`CI` or `TTS_TESTS=1`).**
   `scripts/tts.test.mjs` drives the *real* macOS `say` → `afconvert`
   pipeline, dozens of real synthesis calls — about fifteen minutes, against
-  the other 48 files' forty seconds. It runs automatically in CI (where the
-  time is cheap) and locally only when you explicitly ask for it with
-  `TTS_TESTS=1 npm test`. If you touch the render pipeline
+  the other files' forty seconds. **It never runs in CI**: CI is Ubuntu, and
+  the suite needs `say` and `afconvert` (`RUN = MACOS && WANTED`). This file
+  used to claim it ran there; it did not (corrected October 2026). It runs
+  only locally, when you ask for it with `TTS_TESTS=1 npm test`. If you touch the render pipeline
   (`scripts/tts.mjs`, `scripts/lib/cache.mjs`, `scripts/lib/runs.mjs`,
   either provider), run it with that flag before trusting the change.
   Three smaller macOS-only files (`scripts/lib/trim.test.mjs`,
