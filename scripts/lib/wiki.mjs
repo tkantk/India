@@ -16,7 +16,32 @@ export const EM_FILTER = [
   'UsageTerms', 'LicenseUrl', 'Restrictions', 'Copyrighted', 'NonFree',
 ].join('|')
 
-const ALLOWED_LICENCE = /^(cc0|pd|cc-by-\d(\.\d)?|cc-by-sa-\d(\.\d)?)$/i
+/**
+ * NON-COMMERCIAL IS ALLOWED, NO-DERIVATIVES NEVER IS — the owner's decision of
+ * 2026-10-02, and the line inside it that is not his to move.
+ *
+ * NC (CC BY-NC, CC BY-NC-SA) is allowed because this is a free personal site
+ * with no ads, no accounts and nothing sold, and because the best sources of
+ * real, located Indian wildlife — iNaturalist's observations and xeno-canto's
+ * bird recordings — are overwhelmingly NC. Every NC file is marked
+ * `nonCommercial: true` in its credit, so they can all be found and stripped
+ * if the site ever stops being non-commercial.
+ *
+ * ND (any "no derivatives" variant) stays out, and not as a preference: every
+ * sound this pipeline ships is cut, normalised and often looped, which makes
+ * it Adapted Material (scripts/lib/soundEdits.mjs), and ND forbids sharing
+ * adaptations at all. The pattern below cannot match "-nd", by construction.
+ */
+const ALLOWED_LICENCE = /^(cc0|pd|cc-by-\d(\.\d)?|cc-by-sa-\d(\.\d)?|cc-by-nc-\d(\.\d)?|cc-by-nc-sa-\d(\.\d)?)$/i
+
+/** The same allowlist, for a licence code that did not come from Commons'
+ *  extmetadata (media-sources.mjs normalises iNaturalist, xeno-canto and
+ *  Freesound licences into this one code format first). */
+export const licenceCodeOk = (code) => ALLOWED_LICENCE.test(String(code ?? ''))
+
+/** True for any non-commercial licence code — recorded on every credit so the
+ *  NC media can be found, and removed, in one pass. */
+export const isNonCommercial = (code) => /^cc-by-nc/i.test(String(code ?? ''))
 const GOOD_MIME = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const NOT_A_PHOTO = /collage|montage|composite|diagram|satellite|\bISS\d{3}|\bmaps?\b|\bplan\b|\bsketch\b|\blogo\b|\bseal\b/i
 
