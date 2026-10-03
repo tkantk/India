@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   licencePolicy, vet, vetAnimal, isZooPhoto, attribution, realWidth, stripQuery, UA,
   coordsInIndia, indiaLocalityRegex, textNamesIndia, localityVerdict, isNotLivingAnimal,
+  cleanCreditHtml,
 } from './wiki.mjs'
 
 const freeFile = {
@@ -515,5 +516,38 @@ describe('attribution', () => {
     const pd = { ...freeFile, extmetadata: { License: { value: 'pd' }, LicenseShortName: { value: 'Public domain' } } }
     expect(() => attribution(pd)).not.toThrow()
     expect(attribution(pd).licenceUrl).toBeNull()
+  })
+})
+
+describe('cleanCreditHtml — a credit may not load anything', () => {
+  // Two shipped credits fetched images from upload.wikimedia.org every time
+  // they rendered: a site that promises no requests to anyone else.
+  it('removes images, scripts and styles with their contents', () => {
+    const out = cleanCreditHtml('Ann <img alt="@" src="https://upload.wikimedia.org/x.png"> Lee<script>alert(1)</script><style>a{}</style>')
+    expect(out).toBe('Ann Lee')
+  })
+
+  it('flattens a template table to its words and keeps the web links', () => {
+    const out = cleanCreditHtml('<table class="t" style="w"><tr><td><a href="https://commons.wikimedia.org/wiki/User:T" title="x" class="y">Tim</a> took <i>this</i></td></tr></table>')
+    expect(out).toBe('<a href="https://commons.wikimedia.org/wiki/User:T">Tim</a> took <i>this</i>')
+  })
+
+  it('keeps the words of a mailto link but not the address', () => {
+    expect(cleanCreditHtml('email <a href="mailto:a@b.c">me</a>')).toBe('email me')
+  })
+
+  it('keeps a licence link\'s rel, and nothing else of its attributes', () => {
+    expect(cleanCreditHtml('<a class="x" href="https://creativecommons.org/licenses/by/4.0" rel="license noopener" style="c">CC BY 4.0</a>'))
+      .toBe('<a href="https://creativecommons.org/licenses/by/4.0" rel="license noopener">CC BY 4.0</a>')
+  })
+
+  it('takes the real href, not one inside a longer attribute name', () => {
+    expect(cleanCreditHtml('<a data-mw-original-href="http://en.wikipedia.org" href="https://en.wikipedia.org">en.wikipedia</a>'))
+      .toBe('<a href="https://en.wikipedia.org">en.wikipedia</a>')
+  })
+
+  it('leaves an ordinary credit as it was', () => {
+    const plain = '<a href="https://commons.wikimedia.org/wiki/User:A">A. Person</a>'
+    expect(cleanCreditHtml(plain)).toBe(plain)
   })
 })

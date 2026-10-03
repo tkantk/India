@@ -78,3 +78,17 @@ describe('sound-credits.json', () => {
     }
   })
 })
+
+describe('no credit loads anything from another server', () => {
+  // The site's founding rule (design spec §12) is no runtime requests to
+  // anyone else. Two shipped photo credits broke it: their Commons HTML
+  // carried <img> tags fetched from upload.wikimedia.org on every render.
+  const LOADS = /<(img|script|style|iframe|link|source|video|audio|object|embed|svg)\b|\ssrc(set)?\s*=|\sstyle\s*=|url\(/i
+  for (const [name, credits] of [['photo', photos], ['sound', sounds]]) {
+    it(`no ${name} credit's HTML can load anything`, () => {
+      for (const [id, c] of Object.entries(credits)) {
+        expect(LOADS.test(c.attributionHtml), `${name} ${id}: ${String(c.attributionHtml).match(LOADS)?.[0]}`).toBe(false)
+      }
+    })
+  }
+})

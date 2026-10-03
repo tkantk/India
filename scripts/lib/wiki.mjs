@@ -79,6 +79,41 @@ const text = html => (html ?? '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').t
 const absolutise = html => (html ?? '').replace(/href="\/\//g, 'href="https://')
 
 /**
+ * A credit may carry words, links to web pages and simple emphasis — and
+ * nothing that LOADS. Commons' `Artist` field is free HTML written by the
+ * uploader, and it is rendered verbatim (dangerouslySetInnerHTML) on the
+ * photo card and the credits page. Two shipped credits proved why that is
+ * not enough: the Golden Temple's carried an <img> of an "@" sign and the
+ * great egret's a whole template table with a "problem" icon, both fetched
+ * from upload.wikimedia.org — a request to another server, from a site whose
+ * founding rule is that it makes none (design spec §12). Found by the games
+ * task in October 2026, live on the Punjab and Puducherry pages.
+ *
+ * So: images, media, scripts, styles and embeds are removed with their
+ * contents; layout tags (tables, divs, spans, paragraphs) are flattened to
+ * their text; a link survives only as an http(s) link with its href and
+ * nothing else (a mailto: link keeps its words, not its address); <i>, <b>,
+ * <em>, <strong>, <bdi> survive without attributes. Whitespace is collapsed.
+ */
+export function cleanCreditHtml(html) {
+  let s = String(html ?? '')
+  s = s.replace(/<(script|style|svg|iframe|object|video|audio|picture|noscript)\b[\s\S]*?<\/\1\s*>/gi, ' ')
+  s = s.replace(/<(img|source|link|meta|embed|input|track|base)\b[^>]*>/gi, ' ')
+  // `\shref`, not `\bhref`: a word boundary also matches inside
+  // data-mw-original-href="…", which once kept the wrong address.
+  s = s.replace(/<a\b([^>]*?)\shref\s*=\s*"(https?:\/\/[^"]*)"([^>]*)>/gi, (_, pre, href, post) => {
+    // `rel` survives only as plain words ("license noopener"): it is what
+    // marks the licence link as the licence, for browsers and for CC.
+    const rel = `${pre} ${post}`.match(/\brel\s*=\s*"([a-z ]+)"/i)?.[1]
+    return rel ? `<a href="${href}" rel="${rel}">` : `<a href="${href}">`
+  })
+  s = s.replace(/<a\b(?![^>]*\shref\s*=\s*"https?:)[^>]*>([\s\S]*?)<\/a\s*>/gi, '$1')
+  s = s.replace(/<(\/?)(i|b|em|strong|bdi)\b[^>]*>/gi, '<$1$2>')
+  s = s.replace(/<(?!\/?(a|i|b|em|strong|bdi)\b)[^>]*>/gi, ' ')
+  return s.replace(/\s+/g, ' ').replace(/\s+([,.;:)])/g, '$1').trim()
+}
+
+/**
  * THE licence rule, for every kind of media. Photographs and bird calls differ
  * in mime type, pixel size and aspect ratio; they do not differ in one bit of
  * what makes a licence shippable, so both fetchers ask this same function.
@@ -383,7 +418,7 @@ export function attribution(ii) {
   const url = g('LicenseUrl') ?? null
   const page = ii.descriptionurl
   const isPublicDomain = code === 'pd' || code === 'cc0'
-  const artistHtml = absolutise(g('Artist')) || 'Unknown author'
+  const artistHtml = cleanCreditHtml(absolutise(g('Artist'))) || 'Unknown author'
   const licenceHtml = url ? `<a href="${url}" rel="license noopener">${short}</a>` : short
 
   return {
