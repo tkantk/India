@@ -26,6 +26,7 @@
       "id": "himachal-pradesh.card.animal",
       "kind": "card",
       "text": "Himachal's own bird is the western tragopan. To show off, the male puffs out a purple bib and puts up two blue horns. He is black with white specks all over him.",
+      "sfx": "western-tragopan",
       "species": "western-tragopan"
     },
     "food": {

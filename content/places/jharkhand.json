@@ -26,6 +26,7 @@
       "id": "jharkhand.card.animal",
       "kind": "card",
       "text": "The koel is Jharkhand's own bird. She lays her egg in a crow's nest and flies off. The crow sits on it, feeds the chick when it hatches, and never finds out.",
+      "sfx": "asian-koel",
       "species": "asian-koel"
     },
     "food": {

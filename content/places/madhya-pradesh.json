@@ -31,6 +31,7 @@
       "id": "madhya-pradesh.card.animal",
       "kind": "card",
       "text": "The paradise flycatcher is Madhya Pradesh's own bird. The male grows two long tail feathers, longer than the rest of him, that stream out behind as he flies.",
+      "sfx": "indian-paradise-flycatcher",
       "species": "indian-paradise-flycatcher"
     },
     "food": {

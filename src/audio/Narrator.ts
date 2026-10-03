@@ -34,9 +34,9 @@ const MAX_DECODED = 2
 const SETTLE_MS = 1200
 
 /** `sound-credits.json` is the manifest of the sounds that actually exist.
- *  Content references five that do not (`tiger-growl`, `camel`,
- *  `temple-bell`, and the `desert` and `city` beds); looking them up here
- *  means they are silent without even a 404 in the network log. */
+ *  Content can reference sounds that do not (as of October 2026, the lion
+ *  and the rhino, for which no true recording was found); looking them up
+ *  here means they are silent without even a 404 in the network log. */
 type SoundEntry = { file: string; kind: string }
 const SOUNDS = catalogue as unknown as Record<string, SoundEntry>
 

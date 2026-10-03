@@ -31,6 +31,7 @@
       "id": "chhattisgarh.card.animal",
       "kind": "card",
       "text": "The hill myna is Chhattisgarh's own bird. It is jet black with bare yellow patches on its head. Mynas kept as pets learn to copy the voices of people.",
+      "sfx": "common-hill-myna",
       "species": "common-hill-myna"
     },
     "food": {

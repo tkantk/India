@@ -36,6 +36,7 @@
       "id": "puducherry.card.animal",
       "kind": "card",
       "text": "The great egret comes to the lake here. He is a white bird as tall as a small child. He stands in shallow water without moving until a fish goes past, then spears it.",
+      "sfx": "great-egret",
       "species": "great-egret"
     },
     "food": {

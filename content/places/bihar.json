@@ -115,7 +115,7 @@
           {
             "word": 9,
             "do": "playSfx",
-            "arg": "whoosh-soft"
+            "arg": "ropeway"
           }
         ]
       }

@@ -26,6 +26,7 @@
       "id": "uttar-pradesh.card.animal",
       "kind": "card",
       "text": "The sarus crane is Uttar Pradesh's own bird, and the tallest flying bird there is: standing up it comes to about the height of a grown-up. Grey, with a bright red head.",
+      "sfx": "sarus-crane",
       "species": "sarus-crane"
     },
     "food": {

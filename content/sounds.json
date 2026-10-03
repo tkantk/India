@@ -1,6 +1,6 @@
 {
   "sfx": [
-    { "id": "tiger-growl",    "search": "tiger growl",              "note": "national animal, Grand Tour beat 7" },
+    { "id": "tiger-growl",    "search": "tiger growl",              "note": "national animal, Grand Tour beat 7; a captive tiger (Columbus Zoo), the owner's choice by ear" },
     { "id": "peacock-call",   "search": "peacock call",             "note": "national bird, Mor himself" },
     { "id": "elephant",       "search": "elephant trumpet",         "note": "Kerala, Assam" },
     { "id": "lion-roar",      "search": "lion roar",                "note": "Gujarat, Asiatic lion" },
@@ -10,10 +10,21 @@
     { "id": "indian-roller",  "search": "Indian roller call",       "note": "Odisha, Karnataka, Telangana; real Indian recording" },
     { "id": "gibbon",         "search": "hoolock gibbon",           "note": "north-east", "maxSeconds": 6 },
     { "id": "sparrow",        "search": "house sparrow chirp",      "note": "Delhi" },
-    { "id": "temple-bell",    "search": "temple bell single",       "note": "used on temple landmarks", "maxSeconds": 5 },
+    { "id": "temple-bell",    "search": "temple bell single",       "note": "used on temple landmarks; 3s holds the one clean strike, a knock follows at 3.2s" },
     { "id": "water-ripple",   "search": "water drop ripple",        "note": "lotus bloom, Grand Tour beat 9" },
-    { "id": "chime-correct",  "search": "gentle chime",             "note": "passport stamp earned", "maxSeconds": 2 },
-    { "id": "whoosh-soft",    "search": "soft whoosh",              "note": "state opening animation" }
+    { "id": "chime-correct",  "search": "gentle chime",             "note": "passport stamp earned, and the start-up sound check", "maxSeconds": 2 },
+    { "id": "steam-train",    "note": "Darjeeling toy train (West Bengal); the real engine, recorded in Darjeeling" },
+    { "id": "traffic-pass",   "note": "Bandra-Worli Sea Link (Maharashtra); a pass-by on the Mumbai-Pune highway" },
+    { "id": "ropeway",        "note": "Rajgir Ropeway (Bihar); a chairlift passing a tower, not recorded in India" },
+    { "id": "asian-koel",                   "note": "Jharkhand card; xeno-canto, wild, India" },
+    { "id": "black-francolin",              "note": "Haryana card; xeno-canto, wild, Kutch" },
+    { "id": "indian-paradise-flycatcher",   "note": "Madhya Pradesh card; xeno-canto, wild, India" },
+    { "id": "sarus-crane",                  "note": "Uttar Pradesh card; xeno-canto, wild, Keoladeo" },
+    { "id": "common-hill-myna",             "note": "Chhattisgarh card; wild, India" },
+    { "id": "himalayan-monal",              "note": "Uttarakhand card; wild, India (never the Sarahan pheasantry)" },
+    { "id": "great-egret",                  "note": "Puducherry card; wild, India" },
+    { "id": "greater-flamingo",             "note": "Gujarat and Diu cards; wild, India" },
+    { "id": "western-tragopan",             "note": "Himachal card; wild, India (never the Sarahan pheasantry)" }
   ],
   "ambience": [
     { "id": "desert",   "search": "desert wind",           "seconds": 20, "note": "Rajasthan" },
@@ -23,7 +34,7 @@
     { "id": "river",    "search": "river stream flowing",  "seconds": 20, "note": "Bihar, UP, West Bengal" },
     { "id": "city",     "search": "city street ambience",  "seconds": 20, "note": "Delhi, Mumbai" },
     { "id": "plains",   "search": "field insects wind",    "seconds": 20, "note": "Punjab, Haryana, MP" },
-    { "id": "temple",   "search": "temple bells chanting", "seconds": 20, "note": "Odisha, Tamil Nadu" },
+    { "id": "temple",   "search": "temple bells chanting", "seconds": 19.8, "note": "Tamil Nadu; 19.8s, not 20: the loop length at which the manjira beat lines up across the crossfade" },
     { "id": "island",   "search": "tropical beach palms",  "seconds": 20, "note": "Andamans, Lakshadweep" }
   ]
 }

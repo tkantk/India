@@ -26,6 +26,7 @@
       "id": "dadra-and-nagar-haveli-and-daman-and-diu.card.animal",
       "kind": "card",
       "text": "Flamingos come to the marsh in Diu. One stirs the mud with its feet, sucks water in through its beak and strains out the little creatures. That is what turns it pink.",
+      "sfx": "greater-flamingo",
       "species": "greater-flamingo"
     },
     "food": {

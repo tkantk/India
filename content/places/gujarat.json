@@ -31,6 +31,7 @@
       "id": "gujarat.card.animal",
       "kind": "card",
       "text": "The flamingo is Gujarat's own bird. It feeds with its head upside down in the water, stirring the mud with its feet. It is pink because of what it eats.",
+      "sfx": "greater-flamingo",
       "species": "greater-flamingo"
     },
     "food": {

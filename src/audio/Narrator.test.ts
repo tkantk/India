@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { Mock } from 'vitest'
 import { Narrator } from './Narrator'
+import soundCredits from '../data/sound-credits.json'
+import wanted from '../../content/sounds.json'
 
 /** One fake AudioBufferSourceNode. Kept so a test can end it naturally. */
 type FakeSource = {
@@ -156,11 +158,16 @@ describe('Narrator', () => {
   })
 
   it('does not even ask for a sound the build never fetched', async () => {
-    // `tiger-growl` is one of the five the content wants and we do not have.
-    // The manifest short-circuits it, so there is no 404 in the network log
-    // for a parent to worry about.
-    await expect(n.sfx('tiger-growl')).resolves.toBeUndefined()
-    await expect(n.ambient('desert')).resolves.toBeUndefined()
+    // A sound the content wants but nobody has picked (the lion and the rhino,
+    // as of October 2026) is short-circuited by the manifest, so there is no
+    // 404 in the network log for a parent to worry about. Derived from the two
+    // files rather than named: this test used to name the tiger and the desert
+    // bed, and went stale the day real recordings of both arrived.
+    const fetched = new Set(Object.keys(soundCredits))
+    const unfetched = [...wanted.sfx, ...wanted.ambience].map((s) => s.id).filter((id) => !fetched.has(id))
+    expect(unfetched.length, 'every wanted sound is fetched; this test needs a new example').toBeGreaterThan(0)
+    for (const id of unfetched) await expect(n.sfx(id)).resolves.toBeUndefined()
+    await expect(n.ambient('no-such-bed')).resolves.toBeUndefined()
     expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 

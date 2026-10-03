@@ -97,7 +97,7 @@
           {
             "word": 1,
             "do": "playSfx",
-            "arg": "whoosh-soft"
+            "arg": "steam-train"
           }
         ]
       }

@@ -1,0 +1,481 @@
+{
+  "_how": "Chosen from `npm run sound:candidates` reports by reading each candidate's measurements (signal-to-noise, clipping, steadiness), spectrogram, title and source page — then by the owner's ear on the listening page. Never chosen by the script. `start` is where the cut begins; `why` is what it was chosen on.",
+  "picks": {
+    "asian-koel": {
+      "source": "xc",
+      "ref": "1173494",
+      "title": "Asian Koel — song — Guwahati, Lower Assam Division, Assam",
+      "artist": "Lars Lachmann",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "pageUrl": "https://xeno-canto.org/1173494",
+      "download": "https://xeno-canto.org/1173494/download",
+      "place": "Guwahati, Lower Assam Division, Assam",
+      "inIndia": true,
+      "start": 55.95,
+      "measured": {
+        "snr_db": 22.5,
+        "spread_db": 16.9,
+        "clipped": 0,
+        "seconds": 61.79
+      },
+      "why": "Male 'ko-EL' song: two full rising whistles (1.4–1.8 kHz, clean harmonics) at 56.2 s and 58.0 s; dark background, no speech. Quality A, bird seen, no playback."
+    },
+    "black-francolin": {
+      "source": "xc",
+      "ref": "569064",
+      "title": "Black Francolin — song — Lala-Naliya Grassland Reserve, Kutch, Gujarat (approx location)",
+      "artist": "Jelle Scharringa",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "pageUrl": "https://xeno-canto.org/569064",
+      "download": "https://xeno-canto.org/569064/download",
+      "place": "Lala-Naliya Grassland Reserve, Kutch, Gujarat (approx location)",
+      "inIndia": true,
+      "start": 20,
+      "measured": {
+        "snr_db": 33.8,
+        "spread_db": 12.6,
+        "clipped": 0,
+        "seconds": 77.15
+      },
+      "why": "One complete harsh song phrase (chik, then four grating notes, 2–8 kHz) at 20.25–22.2 s on a quiet floor; SNR 34, quality A, bird seen, wild Kutch grassland."
+    },
+    "indian-paradise-flycatcher": {
+      "source": "xc",
+      "ref": "157482",
+      "title": "Indian Paradise Flycatcher — call — Phansad, Raigad, Maharashtra",
+      "artist": "Rajgopal Patil",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "pageUrl": "https://xeno-canto.org/157482",
+      "download": "https://xeno-canto.org/157482/download",
+      "place": "Phansad, Raigad, Maharashtra",
+      "inIndia": true,
+      "start": 16.3,
+      "measured": {
+        "snr_db": 17.4,
+        "spread_db": 8.7,
+        "clipped": 0,
+        "seconds": 19.75
+      },
+      "why": "Two loud harsh rising 'chwae' calls (harmonic, 1–8 kHz) at 16.4 s and 18.1 s, ~20 dB over faint forest birds. Quality A, seen."
+    },
+    "sarus-crane": {
+      "source": "xc",
+      "ref": "960253",
+      "title": "Sarus Crane — call, duet — Bharatpur Bird Sanctuary (near  Bharatpur), Bharatpur, Rajasthan",
+      "artist": "David Darrell-Lambert",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "pageUrl": "https://xeno-canto.org/960253",
+      "download": "https://xeno-canto.org/960253/download",
+      "place": "Bharatpur Bird Sanctuary (near  Bharatpur), Bharatpur, Rajasthan",
+      "inIndia": true,
+      "start": 4.35,
+      "measured": {
+        "snr_db": 42.5,
+        "spread_db": 41.6,
+        "clipped": 0,
+        "seconds": 34.64
+      },
+      "why": "A pair's trumpeting duet: two full harmonic phrases (4.45–5.35 s, 5.95–6.9 s), ~1 kHz fundamentals; near-silent floor (SNR 42), parabolic mic, wild Keoladeo."
+    },
+    "tiger-growl": {
+      "source": "freesound",
+      "ref": "347258",
+      "title": "tiger roards at zoo - edit.wav",
+      "artist": "jeremywen",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/jeremywen/sounds/347258/",
+      "download": "https://cdn.freesound.org/previews/347/347258_661365-hq.mp3",
+      "place": null,
+      "inIndia": null,
+      "start": 0.25,
+      "measured": {
+        "snr_db": 19.3,
+        "spread_db": 21.1,
+        "clipped": 0,
+        "seconds": 11.28
+      },
+      "why": "CAPTIVE — Columbus Zoo, Ohio, USA; chosen by the owner by ear over leaving the tiger silent. Two full, loud roars. No wild tiger recorded in India was usable: the first pick (a faint low call, Uttarakhand) was turned down."
+    },
+    "camel": {
+      "source": "freesound",
+      "ref": "693564",
+      "title": "Dromedaries mooing",
+      "artist": "schots",
+      "licence": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "pageUrl": "https://freesound.org/people/schots/sounds/693564/",
+      "download": "https://cdn.freesound.org/previews/693/693564_954919-hq.mp3",
+      "place": null,
+      "inIndia": null,
+      "start": 25.3,
+      "measured": {
+        "snr_db": 12.7,
+        "spread_db": 13.3,
+        "clipped": 0,
+        "seconds": 29.22
+      },
+      "why": "'Dromedaries complaining', a field recording from Morocco (one-humped camels only). A loud, rough harmonic grumble, no speech. Not recorded in India — flagged for the owner."
+    },
+    "temple-bell": {
+      "source": "freesound",
+      "ref": "58345",
+      "title": "temple1.wav",
+      "artist": "soundstew",
+      "licence": "http://creativecommons.org/licenses/by-nc/3.0/",
+      "pageUrl": "https://freesound.org/people/soundstew/sounds/58345/",
+      "download": "https://cdn.freesound.org/previews/58/58345_605091-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 61.9,
+      "measured": {
+        "snr_db": 31.4,
+        "spread_db": 23.8,
+        "clipped": 0,
+        "seconds": 68.97
+      },
+      "why": "'Recorded at a temple in East India.' One clean strike with inharmonic partials (640, 1760, 2300+ Hz) decaying over ~5 s, no speech."
+    },
+    "common-hill-myna": {
+      "source": "inat",
+      "ref": "s1722625",
+      "title": "Common Hill Myna — West Bengal 734424, India",
+      "artist": "Samayam thapa",
+      "licence": "cc-by-nc",
+      "pageUrl": "https://www.inaturalist.org/observations/331778159",
+      "download": "https://static.inaturalist.org/sounds/1722625.mp3?1766478279",
+      "place": "West Bengal 734424, India",
+      "inIndia": true,
+      "start": 8.5,
+      "measured": {
+        "snr_db": 42.9,
+        "spread_db": 30.9,
+        "clipped": 0,
+        "seconds": 14.42
+      },
+      "why": "Wild, research-grade (two IDs, not captive), West Bengal. Two loud, clean descending myna whistle-screeches (8.7 s, 10.3 s); SNR ~43 dB, no speech."
+    },
+    "himalayan-monal": {
+      "source": "xc",
+      "ref": "304567",
+      "title": "Himalayan Monal — call, song — Bhulkan, Chamoli, Uttarakhand",
+      "artist": "Viral joshi",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "pageUrl": "https://xeno-canto.org/304567",
+      "download": "https://xeno-canto.org/304567/download",
+      "place": "Bhulkan, Chamoli, Uttarakhand",
+      "inIndia": true,
+      "start": 41.8,
+      "measured": {
+        "snr_db": 17.1,
+        "spread_db": 18.4,
+        "clipped": 0,
+        "seconds": 58.75
+      },
+      "why": "Wild bird seen at Bhulkan, a remote Chamoli hamlet near Tungnath; quality A. Two full, classic rising 'kur-lieu' whistles (41.9 s, 44.3 s). Sarahan recordings rejected: XC remarks say 'captive bird'."
+    },
+    "great-egret": {
+      "source": "xc",
+      "ref": "116545",
+      "title": "Great Egret — call — Kaziranga National Park, Sohola Beel, Assam",
+      "artist": "Mike Nelson",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "pageUrl": "https://xeno-canto.org/116545",
+      "download": "https://xeno-canto.org/116545/download",
+      "place": "Kaziranga National Park, Sohola Beel, Assam",
+      "inIndia": true,
+      "start": 0,
+      "measured": {
+        "snr_db": 15.6,
+        "spread_db": 19.4,
+        "clipped": 0,
+        "seconds": 3.4
+      },
+      "why": "Kaziranga, bird seen (photo linked). Three loud, harsh 'kraak' croaks fill 0–2.9 s, SNR 15.6; a quieter trill from another bird under the second croak."
+    },
+    "greater-flamingo": {
+      "source": "xc",
+      "ref": "122887",
+      "title": "Greater Flamingo — call — Jamnagar, Gujarat",
+      "artist": "vir joshi",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "pageUrl": "https://xeno-canto.org/122887",
+      "download": "https://xeno-canto.org/122887/download",
+      "place": "Jamnagar, Gujarat",
+      "inIndia": true,
+      "start": 0,
+      "measured": {
+        "snr_db": 9.2,
+        "spread_db": 15.5,
+        "clipped": 0,
+        "seconds": 3.03
+      },
+      "why": "Jamnagar coast, 2013 (before the Vantara zoo existed), bird seen. Three clean goose-like honks with rich harmonics, one bird; only low wind rumble behind."
+    },
+    "western-tragopan": {
+      "source": "xc",
+      "ref": "1138373",
+      "title": "Western Tragopan — song — Buniyar",
+      "artist": "Ansar Ahmad",
+      "licence": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "pageUrl": "https://xeno-canto.org/1138373",
+      "download": "https://xeno-canto.org/1138373/download",
+      "place": "Buniyar",
+      "inIndia": true,
+      "start": 2,
+      "measured": {
+        "snr_db": 14.2,
+        "spread_db": 14.9,
+        "clipped": 0,
+        "seconds": 24.06
+      },
+      "why": "WEAKEST PICK — decide by ear. The only usable wild recording: Buniyar near Kazinag, male seen, no playback. Harmonic bleats match the male call, but it is a phone recording with hiss and a faint steady tone near 4.4 kHz. Sarahan (breeding centre), 'in the hand' and playback recordings rejected; the GHNP song (901654) is buried in other birds."
+    },
+    "desert": {
+      "source": "freesound",
+      "ref": "156045",
+      "title": "Wind blowing in the bush on the top of the mountain, in the desert of Atacama (Chile).",
+      "artist": "felix.blume",
+      "licence": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "pageUrl": "https://freesound.org/people/felix.blume/sounds/156045/",
+      "download": "https://cdn.freesound.org/previews/156/156045_1661766-hq.mp3",
+      "place": null,
+      "inIndia": false,
+      "start": 25.5,
+      "measured": {
+        "snr_db": 10.8,
+        "spread_db": 11.6,
+        "clipped": 0,
+        "seconds": 120.08
+      },
+      "why": "NOT INDIA — recorded in the Atacama Desert, Chile; no usable Indian recording exists (Jaisalmer: iPhone wind buffeting plus a camel). 25.5–48.5 s is only wind through scrub, a smooth rush with no voices or events. Owner decides."
+    },
+    "mountain": {
+      "source": "freesound",
+      "ref": "95234",
+      "title": "07091506_IndiaLadakhChemreVillage.wav",
+      "artist": "snotch",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/snotch/sounds/95234/",
+      "download": "https://cdn.freesound.org/previews/95/95234_1092023-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 9,
+      "measured": {
+        "snr_db": 10.5,
+        "spread_db": 11.9,
+        "clipped": 0,
+        "seconds": 94.47
+      },
+      "why": "A stream at Chemre village, Ladakh. 9–32 s is only rushing water and bubbles, one soft surge at 12.5 s; no voices. Rejected: chanting and call to prayer (religious, not 'mountain'), town voices."
+    },
+    "city": {
+      "source": "freesound",
+      "ref": "465692",
+      "title": "Old Delhi Street Ambience",
+      "artist": "Nielsvdb",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/Nielsvdb/sounds/465692/",
+      "download": "https://cdn.freesound.org/previews/465/465692_3315462-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 48.5,
+      "measured": {
+        "snr_db": 11.4,
+        "spread_db": 10.2,
+        "clipped": 0,
+        "seconds": 71.84
+      },
+      "why": "Old Delhi street. 48.5–71.5 s is an even wash of mopeds, tuk-tuks and scattered distant vendor voices; no loud horn or close conversation. Rejected: horn jams, a garbage truck's music, a gas stove."
+    },
+    "plains": {
+      "source": "freesound",
+      "ref": "690626",
+      "title": "North India Countryside Birds chirping .WAV",
+      "artist": "Audiobaaz911",
+      "licence": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "pageUrl": "https://freesound.org/people/Audiobaaz911/sounds/690626/",
+      "download": "https://cdn.freesound.org/previews/690/690626_15050538-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 38,
+      "measured": {
+        "snr_db": 8.1,
+        "spread_db": 9,
+        "clipped": 0,
+        "seconds": 65.04
+      },
+      "why": "Kaithal, Haryana — a wetland village edge on a June morning. 38–61 s is a dense, even bird chorus (2–4 kHz) with no rumble, speech or sudden events; spread 7 dB. Rejected: 'Music' files, barking dogs, vehicle thumps."
+    },
+    "island": {
+      "source": "freesound",
+      "ref": "803555",
+      "title": "Evening Ambience: House Near Beach with Crickets and Waves",
+      "artist": "Federico_Casazza",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/Federico_Casazza/sounds/803555/",
+      "download": "https://cdn.freesound.org/previews/803/803555_2549389-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 55,
+      "measured": {
+        "snr_db": 2.8,
+        "spread_db": 3.1,
+        "clipped": 0,
+        "seconds": 259.96
+      },
+      "why": "Recorded at Pernem, North Goa (geotagged) — an Indian coast, not the islands themselves; no Andaman or Lakshadweep recording exists. 55–78 s: steady evening crickets over distant gentle waves; no voices or gaps; spread 2.2 dB."
+    },
+    "forest": {
+      "source": "freesound",
+      "ref": "320511",
+      "title": "kerala-5.wav",
+      "artist": "xserra",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/xserra/sounds/320511/",
+      "download": "https://cdn.freesound.org/previews/320/320511_43-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 50.5,
+      "measured": {
+        "snr_db": 1.7,
+        "spread_db": 2.6,
+        "clipped": 0,
+        "seconds": 100.84
+      },
+      "why": "Replaces English woodland (Bourne Woods, Surrey) that had 0.6 s of digital silence in every loop. Geotagged forest at Thekkady (Periyar), Kerala, Western Ghats: an even insect chorus with a few bird whistles; spread ~2 dB."
+    },
+    "peacock-call": {
+      "source": "xc",
+      "ref": "677383",
+      "title": "Indian Peafowl — call — Ettikulam, Kannur, Kerala",
+      "artist": "Manoj Karingamadathil",
+      "licence": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "pageUrl": "https://xeno-canto.org/677383",
+      "download": "https://xeno-canto.org/677383/download",
+      "place": "Ettikulam, Kannur, Kerala",
+      "inIndia": true,
+      "start": 3.9,
+      "measured": {
+        "snr_db": 34.5,
+        "spread_db": 32.2,
+        "clipped": 0,
+        "seconds": 12.21
+      },
+      "why": "Replaces a captive farm bird in Slovakia. A wild adult male at Ettikulam, Kannur, Kerala (seen, no playback): three complete loud calls in the window over faint insects; SNR 34 dB against the farm bird's 10."
+    },
+    "temple": {
+      "source": "freesound",
+      "ref": "261867",
+      "title": "hindu ritual (Pūjā) in the temple with bells",
+      "artist": "bohitomi",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/bohitomi/sounds/261867/",
+      "download": "https://cdn.freesound.org/previews/261/261867_1376192-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 77,
+      "measured": {
+        "snr_db": 5.5,
+        "spread_db": 6.3,
+        "clipped": 0,
+        "seconds": 534.13
+      },
+      "why": "A puja in the Thillai Nataraja Temple, Chidambaram, Tamil Nadu: bells rung continuously over a steady manjira beat (about 50 people), no voice in the window; spread 3.3 dB. Looped at 19.8 s so the beat lines up."
+    },
+    "chime-correct": {
+      "source": "freesound",
+      "ref": "15401",
+      "title": "Tibetan bell.wav",
+      "artist": "djgriffin",
+      "licence": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "pageUrl": "https://freesound.org/people/djgriffin/sounds/15401/",
+      "download": "https://cdn.freesound.org/previews/15/15401_45941-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 0,
+      "measured": {
+        "snr_db": 22.3,
+        "spread_db": 12.4,
+        "clipped": 0,
+        "seconds": 6
+      },
+      "why": "Chosen by the owner by ear (round two). A real Tibetan ritual bell, bought in India, struck once: one strike, smooth decay, steady ring near 905 Hz. Replaces a jangle of small bells."
+    },
+    "steam-train": {
+      "source": "freesound",
+      "ref": "533584",
+      "title": "railway steam engine.ogg",
+      "artist": "devangjawale",
+      "licence": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "pageUrl": "https://freesound.org/people/devangjawale/sounds/533584/",
+      "download": "https://cdn.freesound.org/previews/533/533584_11759857-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 9.2,
+      "measured": {
+        "snr_db": 24,
+        "spread_db": 21.9,
+        "clipped": 0,
+        "seconds": 46.27
+      },
+      "why": "Chosen by the owner by ear. The Darjeeling toy train's steam engine starting, recorded from the platform in Darjeeling: six clean exhaust chuffs, no voices or whistle in the clip."
+    },
+    "traffic-pass": {
+      "source": "freesound",
+      "ref": "180432",
+      "title": "Traffic on Mumbai Pune highway at Talegaon",
+      "artist": "sankalp",
+      "licence": "https://creativecommons.org/licenses/by/4.0/",
+      "pageUrl": "https://freesound.org/people/sankalp/sounds/180432/",
+      "download": "https://cdn.freesound.org/previews/180/180432_1859932-hq.mp3",
+      "place": "India (title, tags or geotag)",
+      "inIndia": true,
+      "start": 190.8,
+      "measured": {
+        "snr_db": 16.6,
+        "spread_db": 9.3,
+        "clipped": 0,
+        "seconds": 241.39
+      },
+      "why": "Chosen by the owner by ear. The Mumbai–Pune highway at Talegaon, Maharashtra: one vehicle swells past over distant traffic and fades; engine only, no horn, no voices."
+    },
+    "ropeway": {
+      "source": "freesound",
+      "ref": "519459",
+      "title": "Passing Chairlift Tower",
+      "artist": "andriiperevodchyk",
+      "licence": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "pageUrl": "https://freesound.org/people/andriiperevodchyk/sounds/519459/",
+      "download": "https://cdn.freesound.org/previews/519/519459_2669559-hq.mp3",
+      "place": null,
+      "inIndia": null,
+      "start": 7.7,
+      "measured": {
+        "snr_db": 15.5,
+        "spread_db": 15.9,
+        "clipped": 0,
+        "seconds": 11.5
+      },
+      "why": "NOT INDIA — a ski-resort chairlift; chosen by the owner by ear. Riding through a tower: motor hum, the clatter of the wheels, release. Machinery only."
+    }
+  },
+  "none": {
+    "indian-giant-squirrel": "No clean recording: every candidate is faint, noisy or buried in birds; none shows a clear, dominant rattling call worth shipping.",
+    "lion-roar": "No real lion roar is usable. Gir recordings are cub calls lost in noise (SNR 4–9). 'Big Lion Roar' is a HUMAN imitating a roar (its own page says so); 'Demon_Lion_Monster' is sound design.",
+    "rhino": "No acceptable recording. The 'Indian rhinoceros' file is a zoo recording (same-day uploads: Siberian crane, Sumatran laughingthrush, cockatoo). 'Rhinoceros Trumpet' files are a French horn — rhinos do not trumpet.",
+    "gaur": "No licensed recording of a gaur exists in any of the three sources (iNaturalist, xeno-canto, Freesound): zero candidates passed the licence rule."
+  },
+  "spare": {
+    "_why": "Picked, but not fetched: nothing plays it. The whoosh stood in for three moments that now have their real sounds (steam-train, traffic-pass, ropeway). Move back into picks if a whoosh is ever wanted.",
+    "whoosh-soft": {
+      "source": "freesound",
+      "ref": "381853",
+      "title": "wind_gust_short_sqeeeek.wav",
+      "artist": "sqeeeek",
+      "licence": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "pageUrl": "https://freesound.org/people/sqeeeek/sounds/381853/",
+      "download": "https://cdn.freesound.org/previews/381/381853_4277312-hq.mp3",
+      "start": 0.4,
+      "why": "The owner preferred this to a swung bamboo cane (round two): a recorded gust of wind, smooth 1.4 s swell and fade."
+    }
+  }
+}

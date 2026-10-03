@@ -26,6 +26,7 @@
       "id": "uttarakhand.card.animal",
       "kind": "card",
       "text": "The monal is Uttarakhand's own bird. The male looks as if he were made of metal, green and copper and blue, all shining, with a white patch that only shows when he flies.",
+      "sfx": "himalayan-monal",
       "species": "himalayan-monal"
     },
     "food": {
