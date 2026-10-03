@@ -481,6 +481,44 @@
   font-size: 16px;
 }
 
+/* ------------------------------------------- the shelf, still arriving */
+
+/* `WaitingShelf` (PlaceScreen.tsx): the real shelf's box and rows, holding
+   nine blank plates while a place's own chunk is on its way. Its whole job
+   is to keep the layout what it will be — so every size here comes from the
+   SAME rules the real tiles use (`.place .tile`, the row heights, every
+   breakpoint below), and this block only takes things away.
+
+   `min-height` stands in for the `.tap` a real tile carries: a blank is not
+   a target and must not wear the class that says it is, but it must be
+   exactly as tall as the tile that will replace it.
+
+   Hidden for the first 300ms (`QUIET_MS`), when nearly every load has
+   already landed; after that, faint and flat — no lift, no word, no mark —
+   fading in once and then perfectly still. Nothing loops: a pulse would be
+   a spinner by another name. */
+.place .tile--blank {
+  min-height: var(--tap);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.place-shelf[data-waiting='slow'] .tile--blank {
+  visibility: visible;
+  opacity: 0.45;
+  box-shadow: none;
+  animation: place-blank-in 500ms ease-out both;
+}
+
+@keyframes place-blank-in {
+  from { opacity: 0; }
+  to { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .place-shelf[data-waiting='slow'] .tile--blank { animation: none; }
+}
+
 /* -------------------------------------------------- a place with no page */
 
 /* 32 of 36 places have nothing written. This is a page, not an error.

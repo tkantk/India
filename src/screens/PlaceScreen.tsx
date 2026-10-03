@@ -11,13 +11,13 @@ import { ReadAlong } from '../ui/ReadAlong'
 import { TourStage } from '../tour/TourStage'
 import { StateShape } from '../tour/effects/StateShape'
 import { subjectOf, subjectKeyForPlace } from '../tour/effects/subject'
-import { contentFor, WRITTEN } from '../content/places'
+import { reopen, usePlace, WRITTEN } from '../content/places'
+import type { PhotoCredit } from '../content/places'
+import { SHARED_CLIPS } from '../content/clips'
 import { addStamp } from '../passport/passport'
 import { Stamp } from '../passport/Stamp'
 import geo from '../data/geo.json'
-import timings from '../data/timings.json'
-import photoCredits from '../data/photo-credits.json'
-import type { Bbox, Clip } from '../types'
+import type { Bbox } from '../types'
 import type { Place } from '../../content/schema.ts'
 import './place.css'
 
@@ -104,7 +104,7 @@ type Page = {
   glyph?: GlyphName
   /** The photograph: for the five landmarks, and — since Task 5a fetched one
    *  for each of the four seed species — the animal card. Keyed by `species`
-   *  for the animal (see `pagesFor`'s own note); `PHOTOS` has no entry for a
+   *  for the animal (see `pagesFor`'s own note); `photos` has no entry for a
    *  species nobody has fetched yet (every one of the ~32 places still to be
    *  written), and this stays `undefined` for those, which is the correct,
    *  honest state: the plate below renders nothing for a card whose photo
@@ -133,14 +133,7 @@ type Page = {
   sfx?: string
 }
 
-type Credit = {
-  file: string
-  attributionRequired: boolean
-  attributionHtml: string
-}
-
-const CLIPS = timings as unknown as Record<string, Clip>
-const PHOTOS = photoCredits as unknown as Record<string, Credit>
+type Credit = PhotoCredit
 
 type GeoPlace = { name: string; type: 'state' | 'ut'; d: string; bbox: Bbox }
 const GEO = geo.places as unknown as Record<string, GeoPlace>
@@ -198,6 +191,28 @@ const NEW_STAMP = 'ui.stamp'
 const ARRIVE_MS = 900
 
 /**
+ * How long a place may take to arrive before the screen admits it is
+ * waiting at all.
+ *
+ * 300ms is the usual threshold below which a wait is not perceived as one —
+ * and showing an indicator for a load that finishes at 120ms is worse than
+ * showing nothing: it flashes, and a flash is the thing a child reads as
+ * "broken". A place's chunk is a few kilobytes from the site's own origin
+ * and was requested at the tap, so nearly every arrival lands inside this,
+ * a third of the way into the 900ms flight, and nothing is ever shown.
+ */
+const QUIET_MS = 300
+
+/**
+ * Five, because `content/schema.ts` says exactly five
+ * (`.length(5, 'every place needs exactly five landmarks')`). Only the
+ * waiting shelf's blank plates need the number before a place has arrived;
+ * importing it from the schema would pull zod into the app bundle for one
+ * integer.
+ */
+const LANDMARKS_PER_PLACE = 5
+
+/**
  * How much room round the state, as a fraction of its own longest side.
  *
  * NOT `Math.max(PLACE_PADDING, pinR)`, which is the right recipe everywhere
@@ -250,7 +265,10 @@ function speciesLabel(species: string): string {
   return [first[0].toUpperCase() + first.slice(1), ...rest].join(' ')
 }
 
-function pagesFor(place: Place): Page[] {
+/** A place's ten pages, given the place and the photo credits that arrived
+ *  in the same chunk with it (`places.ts`) — never the whole of
+ *  `photo-credits.json`, which no longer travels with this screen. */
+function pagesFor(place: Place, photos: Record<string, Credit>): Page[] {
   const pages: Page[] = [
     { id: 'intro', clipId: place.intro.id, word: place.name },
   ]
@@ -272,10 +290,10 @@ function pagesFor(place: Place): Page[] {
       // a dromedary is a photograph of a dromedary regardless of which
       // state is telling the story, so a place that shares a species with
       // another reuses the same fetch rather than paying for it twice.
-      // `PHOTOS` has an entry for each of the four seed species (Task 5a);
+      // `photos` has an entry for each of the four seed species (Task 5a);
       // it is `undefined` here only for a species nobody has fetched yet,
       // which `Page.photo`'s own note says is the correct, honest state.
-      photo: card.key === 'animal' ? PHOTOS[place.card.animal.species] : undefined,
+      photo: card.key === 'animal' ? photos[place.card.animal.species] : undefined,
     })
   }
   for (const landmark of place.landmarks) {
@@ -284,7 +302,7 @@ function pagesFor(place: Place): Page[] {
       clipId: landmark.line.id,
       word: landmark.short,
       alt: landmark.name,
-      photo: PHOTOS[landmark.id],
+      photo: photos[landmark.id],
       sfx: landmark.line.sfx,
     })
   }
@@ -312,8 +330,53 @@ type Props = {
 export function PlaceScreen({ slug, onPick, onHome }: Props) {
   const n = getNarrator()
   const map = useMapNodes()
-  const place = contentFor(slug)
   const land = GEO[slug]
+
+  /**
+   * THE PAGE ARRIVES IN TWO STEPS NOW, and only the second one waits.
+   *
+   * What the map already knows is here on the first frame: the state's
+   * shape and bbox (`geo.json`, in the main bundle because the map itself
+   * is), so the flight starts and the state is lit the instant the screen
+   * mounts, exactly as before. What only this place knows — its page, its
+   * clips, its photo credits — is its own chunk (`places.ts`), started the
+   * moment the tap became a navigation (`App.tsx`'s `visit`) and usually in
+   * hand within the first frames of the 900ms arrival flight.
+   *
+   * A place fetched earlier in the session is `ready` on the first render,
+   * and a slug with no file is `missing` on the first render — neither ever
+   * passes through `loading`.
+   */
+  const loaded = usePlace(slug)
+  const data = loaded.status === 'ready' ? loaded.data : undefined
+  const place = data?.place
+  /** A written place whose chunk is still on its way. */
+  const arriving = loaded.status === 'loading'
+
+  /**
+   * Every clip this page can say: its own (from its chunk) and the shared
+   * interface lines (`ui.tap-state`, `ui.all-heard`, `ui.stamp`), which live
+   * in the main bundle because every screen speaks them. One lookup for both,
+   * so nothing below has to know which half a line came from.
+   */
+  const clips = useMemo(
+    () => (data ? { ...SHARED_CLIPS, ...data.clips } : SHARED_CLIPS),
+    [data],
+  )
+
+  /**
+   * NOTHING EXTRA FOR THE FIRST `QUIET_MS`. A load that lands inside it —
+   * nearly all of them, a few kilobytes from the site's own origin — shows
+   * no sign it ever happened: no spinner flashed for a tenth of a second,
+   * which reads to a six-year-old as something going wrong. Only a load
+   * still out after that shows the shelf's empty plates (`WaitingShelf`).
+   */
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    if (!arriving) return
+    const t = setTimeout(() => setSlow(true), QUIET_MS)
+    return () => clearTimeout(t)
+  }, [arriving])
 
   /**
    * Has a real gesture ever unlocked audio THIS SESSION.
@@ -336,8 +399,12 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
   const unlocked = useSyncExternalStore(n.subscribe, () => n.everUnlocked)
 
   /**
-   * The pages of this place, or — for one of the 32 with nothing written —
-   * a single page whose line is `ui.tap-state`, "Tap a state to visit it."
+   * The pages of this place, or — for a place with nothing written, or one
+   * whose page would not load — a single page whose line is `ui.tap-state`,
+   * "Tap a state to visit it." While the place is still arriving there are
+   * no pages at all yet: the intro opens itself the moment they land (`open`
+   * is already 0), so a Play pressed in that gap is answered by the intro
+   * starting a beat later rather than by a second, competing start.
    *
    * Not a nicety. `Controls` takes `onPlayPause` as a required prop
    * precisely because no control may be pressable and do nothing, and with
@@ -347,12 +414,14 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    * line gives the page a voice, gives the caption something to light up,
    * and gives both Play and "Say it again" something true to do.
    */
-  const pages = useMemo(
+  const pages = useMemo<Page[]>(
     () =>
-      place
-        ? pagesFor(place)
-        : [{ id: 'not-yet', clipId: 'ui.tap-state', word: land?.name ?? slug }],
-    [land, place, slug],
+      data
+        ? pagesFor(data.place, data.photos)
+        : arriving
+          ? []
+          : [{ id: 'not-yet', clipId: 'ui.tap-state', word: land?.name ?? slug }],
+    [arriving, data, land, slug],
   )
   /** Which page is open. 0 is the intro, which opens itself on arrival. */
   const [open, setOpen] = useState(0)
@@ -384,7 +453,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
   const subjectKey = subjectKeyForPlace(place?.ambience)
   const subject = subjectOf(subjectKey)
   const page: Page | undefined = pages[open]
-  const clip = page ? CLIPS[page.clipId] ?? null : null
+  const clip = page ? clips[page.clipId] ?? null : null
 
   /**
    * Everything that could be heard: the pages that actually have a rendered
@@ -393,7 +462,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
    * rendered yet must not make "you have heard everything here" permanently
    * unreachable. All ten exist for the four seed places today.
    */
-  const completable = useMemo(() => pages.filter((p) => CLIPS[p.clipId]), [pages])
+  const completable = useMemo(() => pages.filter((p) => clips[p.clipId]), [clips, pages])
   const allHeard = Boolean(place) && completable.length > 0 && completable.every((p) => heard.has(p.id))
 
   /**
@@ -412,8 +481,8 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
     // The stamp is earned whether or not there is a line to say about it —
     // a missing clip must never cost a child his stamp.
     const isNew = addStamp(slug)
-    const id = isNew && CLIPS[NEW_STAMP] ? NEW_STAMP : ALL_HEARD
-    const line = CLIPS[id]
+    const id = isNew && clips[NEW_STAMP] ? NEW_STAMP : ALL_HEARD
+    const line = clips[id]
     if (!line) return
     setFreshStamp(isNew)
     setEnding(id)
@@ -427,7 +496,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
     n.onEnd = () => { if (live) setCelebrating(false) }
     void n.play(line).catch(() => { if (live) setCelebrating(false) })
     return () => { live = false }
-  }, [allHeard, n, slug])
+  }, [allHeard, clips, n, slug])
 
   // ------------------------------------------------------------ arriving
 
@@ -527,8 +596,9 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
       // prefetching them all would evict everything and, on an older iPad,
       // crash with no catchable error.
       const next = pages[open + 1]
-      if (next && CLIPS[next.clipId]) {
-        try { await n.prefetch([CLIPS[next.clipId]]) } catch { /* decoded on its turn */ }
+      const nextClip = next && clips[next.clipId]
+      if (nextClip) {
+        try { await n.prefetch([nextClip]) } catch { /* decoded on its turn */ }
       }
     })()
 
@@ -536,7 +606,7 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
       live = false
       if (n.onEnd === handleEnd) n.onEnd = null
     }
-  }, [clip, n, open, page, pages, unlocked])
+  }, [clip, clips, n, open, page, pages, unlocked])
 
   // ---------------------------------------------------------- the bar
 
@@ -597,7 +667,17 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
   } as CSSProperties
 
   return (
-    <main className="india place" data-place={slug} data-empty={place ? undefined : 'true'} style={vars}>
+    <main
+      className="india place"
+      data-place={slug}
+      // Still arriving is NOT empty: the layout a written place will have is
+      // the one it must have from the first frame — the shelf's room
+      // reserved, the caption lane its full height — or the stage would
+      // resize under the arrival flight the moment the tiles landed.
+      data-empty={place || arriving ? undefined : 'true'}
+      aria-busy={arriving || undefined}
+      style={vars}
+    >
       <h1 className="visually-hidden">{place?.name ?? land?.name ?? 'This place'}</h1>
 
       <TourStage
@@ -619,11 +699,18 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
         // be dragged off the screen entirely.
         explorable
       >
-        {/* The state's own border, drawn on the geography and traceable. */}
-        {land && <StateShape d={land.d} subject={subjectKey} />}
+        {/* The state's own border, drawn on the geography and traceable.
+            Not while the place is still arriving: the border is drawn in the
+            place's own colour (`subjectKey`, from its `ambience`), which
+            only its chunk knows, and a 2.2-second pencil line that changed
+            colour halfway round would be the one jarring thing on this
+            page. The state is already lit and already being flown to; the
+            line starts the moment the page lands. Same for the name plate,
+            printed on that same page tone. */}
+        {land && !arriving && <StateShape d={land.d} subject={subjectKey} />}
 
         {/* The name plate — the page's title, in the corner of the picture. */}
-        {(place || land) && (
+        {!arriving && (place || land) && (
           <p className="place-name">
             <span className="place-name__word">{place?.name ?? land?.name}</span>
             <span className="place-name__kind">
@@ -671,14 +758,17 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
           <div
             className="say"
             data-page={celebrating ? ending : (page?.id ?? '')}
-            data-quiet={(celebrating ? CLIPS[ending] : clip) ? undefined : 'true'}
+            data-quiet={(celebrating ? clips[ending] : clip) ? undefined : 'true'}
           >
-            <ReadAlong clip={celebrating ? CLIPS[ending] ?? null : clip} />
+            <ReadAlong clip={celebrating ? clips[ending] ?? null : clip} />
           </div>
         </div>
 
-        {!place && <NotWrittenYet name={land?.name ?? slug} onPick={onPick} />}
+        {loaded.status === 'missing' && <NotWrittenYet name={land?.name ?? slug} onPick={onPick} />}
+        {loaded.status === 'failed' && <CouldNotOpen name={land?.name ?? slug} />}
       </TourStage>
+
+      {arriving && <WaitingShelf slow={slow} />}
 
       {place && (
         <div className="place-shelf">
@@ -892,6 +982,64 @@ function Greeting({ script }: { script: string }) {
 }
 
 /**
+ * THE SHELF, BEFORE ITS TILES HAVE ARRIVED: the same box, the same two rows,
+ * the same nine plates — blank.
+ *
+ * WHY RENDER ANYTHING AT ALL WHILE WAITING. The shelf is a real flow sibling
+ * of the stage (place.css: "WHAT CLEARS THE FIXED BAR IS THE SHELF"), so a
+ * page without one gives the map the whole height of the screen — and the
+ * moment the tiles landed, the stage would shrink under a camera that had
+ * just framed the state for the taller box. Reserving the shelf's exact room
+ * from the first frame is what lets the arrival flight frame once and stay
+ * framed.
+ *
+ * INVISIBLE FOR `QUIET_MS`, then faint empty plates — a page whose pictures
+ * have not been pasted in yet. No spinner, no words, nothing that moves once
+ * it is there: a calm "something is coming", in the shapes of the things
+ * that are coming. Never targets (spans, `pointer-events: none`) and hidden
+ * from assistive technology; `aria-busy` on the page says it instead.
+ */
+function WaitingShelf({ slow }: { slow: boolean }) {
+  return (
+    <div className="place-shelf" data-waiting={slow ? 'slow' : 'quiet'} aria-hidden="true">
+      <div className="place-shelf__row place-shelf__row--cards">
+        {CARDS.map((c) => <span key={c.key} className="tile tile--blank" />)}
+      </div>
+      <div className="place-shelf__row place-shelf__row--landmarks">
+        {Array.from({ length: LANDMARKS_PER_PLACE }, (_, i) => (
+          <span key={i} className="tile tile--blank" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * THE PAGE WOULD NOT LOAD — the one way this screen can fail that it could
+ * not before, now that a place arrives as its own chunk instead of being in
+ * the script from the start.
+ *
+ * Not "We have not been to Kerala yet": that would be a lie about a place
+ * that IS written. And not a dead end: the map is still there and still
+ * answers a tap on any other state, the bar's Home still goes home, and
+ * "Tap a state to visit it." is still the line Play says. "Try again"
+ * reloads the page (`reopen`, in places.ts, says why a reload and not a
+ * second `import()`), which lands back here.
+ */
+function CouldNotOpen({ name }: { name: string }) {
+  return (
+    <div className="place-empty">
+      <p className="place-empty__line">{name} would not open just now.</p>
+      <div className="place-empty__row">
+        <button type="button" className="tap tile" onClick={reopen}>
+          <span className="tile__word">Try again</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/**
  * ALL THIRTY-SIX PLACES ARE NOW WRITTEN, so a child cannot reach this page
  * through the map any more. It stays because it is what he would see if a
  * content file ever went missing, and because the tour tells every child to
@@ -903,6 +1051,9 @@ function Greeting({ script }: { script: string }) {
  * this comment used to say "thirty-two of the thirty-six have no page yet",
  * and four tests used Gujarat as their example, and all five went stale the
  * hour the last place was written. Do not point them back at a real name.
+ *
+ * `WRITTEN` is names and slugs only, from the build-time index — offering
+ * every place that exists must never mean fetching every place that exists.
  */
 function NotWrittenYet({ name, onPick }: { name: string; onPick?: (slug: string) => void }) {
   return (

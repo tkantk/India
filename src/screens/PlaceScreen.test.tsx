@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeAll, beforeEach } from 'vitest'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PlaceScreen } from './PlaceScreen'
 import geo from '../data/geo.json'
 import photoCredits from '../data/photo-credits.json'
 import rajasthan from '../../content/places/rajasthan.json'
-import { WRITTEN } from '../content/places'
+import { loadPlace, reopen, WRITTEN } from '../content/places'
 import { addStamp, hasStamp, resetPassportForTests } from '../passport/passport'
 import type { Bbox, Clip, Cue } from '../types'
 
@@ -138,8 +138,61 @@ vi.mock('../data/geo.json', async () => {
   }
 })
 
+/**
+ * HOLDING A PLACE IN THE AIR, for the "arriving" block at the bottom.
+ *
+ * Every loader is the REAL one — the build-time split through the real
+ * plugin, the same chunk the app fetches — with one thing added in front of
+ * it: a gate a test can hold shut, then open or break. That is exactly what
+ * a slow or failing network does to the real thing and nothing more, so the
+ * screen under test cannot tell this from a real slow load. A slug with no
+ * gate set loads straight through, so every other test in this file is
+ * untouched by it.
+ */
+const { gates } = vi.hoisted(() => ({ gates: new Map<string, Promise<void>>() }))
+vi.mock('virtual:place-data', async (importOriginal) => {
+  const real = await importOriginal<typeof import('virtual:place-data')>()
+  return {
+    ...real,
+    LOADERS: new Map(
+      [...real.LOADERS].map(([slug, load]) => [slug, async () => { await gates.get(slug); return load() }]),
+    ),
+  }
+})
+
+/**
+ * `reopen` reloads the whole page, which jsdom cannot do. Everything else in
+ * `places.ts` is the real thing; only the reload is replaced, so a test can
+ * see that "Try again" asked for one.
+ */
+vi.mock('../content/places', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../content/places')>()),
+  reopen: vi.fn(),
+}))
+
 const RAJASTHAN = geo.places.rajasthan as unknown as { bbox: Bbox }
 const CREDITS = photoCredits as unknown as Record<string, { attributionHtml: string }>
+
+/**
+ * EVERY PLACE THIS FILE OPENS IS FETCHED BEFORE THE FIRST TEST RUNS.
+ *
+ * A place's page is its own chunk now (`src/content/places.ts`), so a place
+ * nobody has asked for yet is `loading` on its first render. Every test in
+ * this file is about the page itself — its tiles, its narration, its stamp —
+ * and is written to the moment the page is THERE, which in the app is the
+ * common case: the tap that navigated here already started the fetch
+ * (`App.tsx`'s `visit`), and a place seen once is `ready` on every later
+ * first render. Fetching them up front puts every test on exactly that path,
+ * through the real loader and the real build-time split, without one of
+ * them having to wait for it.
+ *
+ * The arriving path — the empty shelf, the quiet first 300ms, a load that
+ * fails — is the last describe block's whole subject, on places no other
+ * test here opens.
+ */
+beforeAll(async () => {
+  await Promise.all(['rajasthan', 'delhi', 'kerala'].map(loadPlace))
+})
 
 beforeEach(() => {
   played.length = 0
@@ -587,6 +640,113 @@ describe('PlaceScreen', () => {
       expect(played).not.toContain('audio/en/ui.stamp.m4a')
       expect(played[played.length - 1]).toBe('audio/en/ui.all-heard.m4a')
       expect(screen.queryByTestId('place-stamp')).toBeNull()
+    })
+  })
+
+  /**
+   * A place's page is its own chunk (`src/content/places.ts`), fetched when
+   * the tap navigates. Usually it lands inside the first frames of the
+   * arrival flight; these are the times it does not. Each test uses a place
+   * nobody else in this file opens, so it really is arriving for the first
+   * time — a place seen once is `ready` for the rest of the page's life.
+   */
+  describe('arriving: a page still on its way', () => {
+    /** Hold `slug`'s chunk back until the test says otherwise. */
+    const hold = (slug: string) => {
+      let open!: () => void
+      let shut!: (e: Error) => void
+      gates.set(slug, new Promise<void>((resolve, reject) => { open = resolve; shut = reject }))
+      return {
+        land: () => act(async () => { open(); await loadPlace(slug) }),
+        fail: () => act(async () => { shut(new Error('offline')); await loadPlace(slug).catch(() => {}) }),
+      }
+    }
+    const blanks = (c: HTMLElement) => c.querySelectorAll('.tile--blank')
+    const waiting = (c: HTMLElement) => c.querySelector('.place-shelf[data-waiting]')?.getAttribute('data-waiting')
+
+    afterEach(() => { vi.useRealTimers() })
+
+    it('flies and lights the state at once, keeps the shelf\'s room, and shows nothing extra for 300ms', async () => {
+      vi.useFakeTimers()
+      const goa = hold('goa')
+      const { container } = render(<PlaceScreen slug="goa" />)
+      const main = container.querySelector('main')!
+
+      // What the map already knows does not wait: the flight is under way.
+      expect(flights).toHaveLength(1)
+      // Still arriving is not "not written" — no apology, and the page's
+      // own layout (not the empty one) from the first frame.
+      expect(screen.queryByText(/We have not been/)).toBeNull()
+      expect(main.hasAttribute('data-empty')).toBe(false)
+      expect(main.getAttribute('aria-busy')).toBe('true')
+      // The shelf is there, holding nine blank plates — and they are not
+      // buttons: nothing on this page is pressable and dead.
+      expect(blanks(container)).toHaveLength(9)
+      expect(tiles()).toHaveLength(0)
+      expect(waiting(container)).toBe('quiet')
+      // Nothing said yet, and nothing drawn in a colour the page has not
+      // told us yet.
+      expect(played).toEqual([])
+      expect(container.querySelector('.place-name')).toBeNull()
+
+      act(() => { vi.advanceTimersByTime(299) })
+      expect(waiting(container)).toBe('quiet')
+      act(() => { vi.advanceTimersByTime(1) })
+      expect(waiting(container)).toBe('slow')
+
+      vi.useRealTimers()
+      await goa.land()
+      // The whole page lands together: tiles, title, its own voice.
+      expect(blanks(container)).toHaveLength(0)
+      expect(tiles()).toHaveLength(9)
+      expect(container.querySelector('.place-name')?.textContent).toContain('Goa')
+      expect(main.hasAttribute('aria-busy')).toBe(false)
+      expect(played).toEqual(['audio/en/goa.intro.m4a'])
+      // And the flight it started on arrival was the only one.
+      expect(flights).toHaveLength(1)
+    })
+
+    it('never shows the blank plates at all when the page lands inside the quiet 300ms', async () => {
+      vi.useFakeTimers()
+      const assam = hold('assam')
+      const { container } = render(<PlaceScreen slug="assam" />)
+      act(() => { vi.advanceTimersByTime(120) })
+      expect(waiting(container)).toBe('quiet')
+
+      await assam.land()
+      act(() => { vi.advanceTimersByTime(1000) })
+      expect(container.querySelector('.place-shelf[data-waiting]')).toBeNull()
+      expect(tiles()).toHaveLength(9)
+    })
+
+    it('says so when the page would not load, and "Try again" reloads — never a dead end, never a lie', async () => {
+      const bihar = hold('bihar')
+      const { container } = render(<PlaceScreen slug="bihar" />)
+      await bihar.fail()
+
+      expect(screen.getByText('Bihar would not open just now.')).toBeInTheDocument()
+      // Bihar IS written: the "not been here yet" page would be untrue.
+      expect(screen.queryByText(/We have not been/)).toBeNull()
+      expect(container.querySelector('.tile--blank')).toBeNull()
+      // Still a voice, so the bar's Play has something true to do.
+      expect(played).toEqual(['audio/en/ui.tap-state.m4a'])
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Try again' }))
+      expect(reopen).toHaveBeenCalled()
+    })
+
+    it('opens a place already fetched complete on the first render — no waiting frame at all', () => {
+      const { container } = render(<PlaceScreen slug="rajasthan" />)
+      expect(container.querySelector('.place-shelf[data-waiting]')).toBeNull()
+      expect(container.querySelector('main')?.hasAttribute('aria-busy')).toBe(false)
+      expect(tiles()).toHaveLength(9)
+    })
+
+    it('sends a slug with no page straight to "not been here yet", never through waiting', () => {
+      const { container } = render(<PlaceScreen slug={UNWRITTEN_SLUG} />)
+      expect(container.querySelector('.place-shelf')).toBeNull()
+      expect(container.querySelector('main')?.hasAttribute('aria-busy')).toBe(false)
+      expect(screen.getByText(new RegExp(`We have not been to ${UNWRITTEN_NAME} yet`))).toBeInTheDocument()
     })
   })
 })

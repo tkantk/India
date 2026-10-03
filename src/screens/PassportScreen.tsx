@@ -5,11 +5,12 @@ import { ReadAlong } from '../ui/ReadAlong'
 import { Stamp } from '../passport/Stamp'
 import { stampedSlugs } from '../passport/passport'
 import geo from '../data/geo.json'
-import timings from '../data/timings.json'
-import type { Clip } from '../types'
+// Only the interface lines this page speaks (`ui.passport`,
+// `ui.passport-hint`) — the shared half of the clips, never every place's.
+import { SHARED_CLIPS } from '../content/clips'
 import './passport.css'
 
-const CLIPS = timings as unknown as Record<string, Clip>
+const CLIPS = SHARED_CLIPS
 const GEO = geo.places as unknown as Record<string, { name: string }>
 
 /** Every place the map draws — the passport's 36 slots. Derived from the

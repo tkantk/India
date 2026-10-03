@@ -29,9 +29,10 @@
  * copies of a viewport list is how they drift apart unnoticed.
  *
  * THE PLACES are read off `content/places/*.json` at run time, not hand-
- * listed — the same reason `src/content/places.ts` is a glob and not an
- * index (see that file's own comment): a fifth place landing tomorrow makes
- * this gate check it with no second edit here.
+ * listed — the same reason the app's own list of places is built from that
+ * directory at build time (`scripts/vite-place-data.mjs`) and never kept by
+ * hand: a new place landing tomorrow makes this gate check it with no
+ * second edit here.
  *
  * WHY A REAL BROWSER, AGAIN. jsdom does no layout and no hit testing. Every
  * question here — is a credit legible, is a touch target really 104px, is a

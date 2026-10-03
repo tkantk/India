@@ -15,7 +15,10 @@ import { subjectKeyFor } from './effects/subject'
 import { WATERS } from './effects/art/Sea'
 import { isTracing, subscribeTracing } from './effects/tracing'
 import content from '../../content/tour.json'
-import timings from '../data/timings.json'
+// The tour's own clips and the interface lines, and nothing else — not the
+// whole of `timings.json`, whose 36 places' clips now travel with those
+// places (`src/content/clips.ts` says how the two halves are cut).
+import { SHARED_CLIPS } from '../content/clips'
 import geo from '../data/geo.json'
 import hit from '../data/hit.json'
 import type { Bbox, Clip, Cue, Invite } from '../types'
@@ -70,7 +73,7 @@ import './grandTour.css'
 
 type Beat = { id: string; clip: Clip }
 
-const CLIPS = timings as unknown as Record<string, Clip>
+const CLIPS = SHARED_CLIPS
 
 /**
  * The running order, taken from the authored content and paired with the

@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite'
 import { configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import placeData from './scripts/vite-place-data.mjs'
 
 /**
  * The landmark photographs used to be stripped from `dist/` by a plugin here,
@@ -17,7 +18,14 @@ import react from '@vitejs/plugin-react'
  */
 
 export default defineConfig({
-  plugins: [react()],
+  /**
+   * `placeData` cuts each place's page, clips and photo credits into a chunk
+   * of its own, loaded when that place is opened rather than before the
+   * start gate can draw — see `scripts/vite-place-data.mjs` for the whole
+   * argument. It is listed here, not in a build-only block, because the dev
+   * server and Vitest resolve the same three virtual modules the build does.
+   */
+  plugins: [react(), placeData()],
   base: './',
   server: { host: true },
   preview: { host: true },

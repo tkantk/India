@@ -1,12 +1,27 @@
-import { useState } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import { Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import { StartGate } from './screens/StartGate'
 import { IndiaScreen } from './screens/IndiaScreen'
 import { PlaceScreen } from './screens/PlaceScreen'
-import { Credits } from './screens/Credits'
 import { PassportScreen } from './screens/PassportScreen'
 import { getNarrator } from './audio/Narrator'
+import { prefetchPlace } from './content/places'
+
+/**
+ * THE CREDITS PAGE IS ITS OWN CHUNK. It is the one screen that reads every
+ * photograph's and every sound's full credit record — all of
+ * `photo-credits.json`, 189 KB — and it is an adult's page, reached through
+ * a small link on the map's credit line that most sessions never touch. So
+ * it is fetched when that link is followed, not parsed before the start gate
+ * can draw. (`sound-credits.json` stays in the main bundle regardless: the
+ * narration engine reads it to know which sounds exist.)
+ *
+ * `fallback={null}`: the page arrives in a moment from the site's own
+ * origin, and a grown-up who just tapped "credits" is better served by a
+ * blank frame for that moment than by a spinner flashing up and away.
+ */
+const Credits = lazy(() => import('./screens/Credits').then((m) => ({ default: m.Credits })))
 
 // The engine is built on first use, which is inside the tap handler: iOS only
 // gives a usable AudioContext to a real gesture. Both calls are guarded
@@ -27,6 +42,31 @@ const playTestSound = async () => {
 }
 
 /**
+ * Go to a place — and START FETCHING IT FIRST, in that order.
+ *
+ * A place's page, clips and photo credits are its own chunk now
+ * (`content/places.ts`). The tap that brings a child here is the earliest
+ * moment anything knows which one he wants, so the request goes out right
+ * here, before React has even begun building the place's screen — which is
+ * real time on an old iPad (the whole map is re-mounted) — and the screen's
+ * own load, once it mounts, simply joins the request already in the air.
+ * By the time the 900ms arrival flight is a third of the way through, the
+ * page is nearly always there.
+ *
+ * Every way into a place goes through here: a state tapped on the tour's
+ * map, a neighbour tapped on a place's own map (or offered on its "not been
+ * here yet" page), a stamp tapped in the passport. A deep link has no tap to
+ * get ahead of; the screen starts that load itself.
+ */
+function useVisit() {
+  const navigate = useNavigate()
+  return useCallback((slug: string) => {
+    prefetchPlace(slug)
+    navigate(`/place/${slug}`)
+  }, [navigate])
+}
+
+/**
  * The two screens that navigate, wrapped where `useNavigate` is legal.
  *
  * Nothing below `IndiaScreen` may call a router hook: `GrandTour`,
@@ -37,9 +77,10 @@ const playTestSound = async () => {
  */
 function IndiaRoute() {
   const navigate = useNavigate()
+  const visit = useVisit()
   return (
     <IndiaScreen
-      onPickState={(slug) => navigate(`/place/${slug}`)}
+      onPickState={visit}
       onPassport={() => navigate('/passport')}
     />
   )
@@ -47,9 +88,10 @@ function IndiaRoute() {
 
 function PassportRoute() {
   const navigate = useNavigate()
+  const visit = useVisit()
   return (
     <PassportScreen
-      onPick={(slug) => navigate(`/place/${slug}`)}
+      onPick={visit}
       onHome={() => navigate('/')}
     />
   )
@@ -65,12 +107,13 @@ function PassportRoute() {
  */
 function PlaceRoute() {
   const navigate = useNavigate()
+  const visit = useVisit()
   const { slug = '' } = useParams()
   return (
     <PlaceScreen
       key={slug}
       slug={slug}
-      onPick={(next) => navigate(`/place/${next}`)}
+      onPick={visit}
       onHome={() => navigate('/')}
     />
   )
@@ -111,7 +154,7 @@ function App() {
             grown-up reloading the iPad here must land here, not back at the
             start. The screen itself waits for a real tap before it speaks. */}
         <Route path="/passport" element={<PassportRoute />} />
-        <Route path="/credits" element={<Credits />} />
+        <Route path="/credits" element={<Suspense fallback={null}><Credits /></Suspense>} />
       </Routes>
     </MotionConfig>
   )

@@ -30,11 +30,13 @@ const at = (path: string) =>
   render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>)
 
 describe('routing', () => {
-  it('serves the credits page at /credits', () => {
+  it('serves the credits page at /credits', async () => {
     // The whole point of the route: a deep link an adult — or a licensor —
     // can be handed. Under HashRouter in production that is #/credits.
+    // `findBy`, not `getBy`: the page is its own chunk now (App.tsx's
+    // `lazy`), fetched when the route is visited.
     at('/credits')
-    expect(screen.getByRole('heading', { level: 1, name: /credits and licences/i }))
+    expect(await screen.findByRole('heading', { level: 1, name: /credits and licences/i }))
       .toBeVisible()
   })
 
