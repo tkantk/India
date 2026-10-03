@@ -44,6 +44,25 @@ jobs:
       # before the first page loads. This relaxes it for this throwaway VM
       # only, instead of turning the sandbox off in the scripts themselves.
       - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      # The app sets its type in `system-ui`: San Francisco on the iPads and
+      # iPhones it is for, but DejaVu Sans on this Ubuntu VM, which is wider
+      # and taller. The first run here failed on exactly that: three iPad
+      # rows reported the caption overlapping Mor by 2.2 px, rows that pass on
+      # a Mac. Inter is the closest freely installable match to San
+      # Francisco's metrics, so make it the system and sans-serif face here.
+      - name: Use a San Francisco-like system font
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-inter
+          mkdir -p ~/.config/fontconfig
+          cat > ~/.config/fontconfig/fonts.conf <<'EOF'
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+          <fontconfig>
+            <alias binding="strong"><family>system-ui</family><prefer><family>Inter</family></prefer></alias>
+            <alias binding="strong"><family>sans-serif</family><prefer><family>Inter</family></prefer></alias>
+          </fontconfig>
+          EOF
+          fc-cache -f >/dev/null && fc-match system-ui && fc-match sans-serif
       - run: npm ci
       - run: npm run validate
       - run: npm run probe:map
