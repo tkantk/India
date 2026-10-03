@@ -29,7 +29,8 @@
     "tour:strip": "node scripts/tour-strip.mjs",
     "place:strip": "node scripts/place-strip.mjs",
     "fact:check": "node scripts/fact-check.mjs",
-    "shot": "node scripts/shot.mjs"
+    "shot": "node scripts/shot.mjs",
+    "sound:candidates": "node --env-file-if-exists=.env scripts/sound-candidates.mjs"
   },
   "dependencies": {
     "motion": "^13.1.1",

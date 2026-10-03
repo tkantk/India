@@ -28,6 +28,7 @@ describe('the mirrored DSP constants', () => {
   it('matches trim.py', () => {
     expect(TRIM.peakCeilingDbfs).toBe(constant(trimPy, 'PEAK_CEILING_DBFS'))
     expect(TRIM.fadeSeconds).toBe(constant(trimPy, 'FADE_SECONDS'))
+    expect(TRIM.fadeInSeconds).toBe(constant(trimPy, 'FADE_IN_SECONDS'))
   })
 
   it('matches loop.py', () => {
@@ -78,5 +79,21 @@ describe('modificationsFor', () => {
     for (const edit of ['trimmed', 'normalised', 'crossfade']) {
       expect(bed, `a bed notice must mention ${edit}`).toContain(edit)
     }
+  })
+})
+
+describe('an excerpt from a longer field recording', () => {
+  // The CC notice must let anyone find the same stretch in the original, and
+  // must not claim a fade-in on a clip that starts at the top of its file.
+  it('says where it was cut from, and that it was faded in', () => {
+    const m = modificationsFor('sfx', { start: 55.95 }, 3)
+    expect(m).toMatch(/^excerpt from 55\.95s, /)
+    expect(m).toContain('30ms fade-in')
+  })
+
+  it('says neither for a clip that starts at the beginning', () => {
+    const m = modificationsFor('sfx', {}, 3)
+    expect(m).not.toContain('excerpt')
+    expect(m).not.toContain('fade-in')
   })
 })

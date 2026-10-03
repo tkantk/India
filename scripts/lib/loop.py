@@ -67,7 +67,11 @@ def seamless(a, sr, seconds, fade):
 
 def main():
     src, dst, seconds, fade = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
+    # Optional start, for the same reason trim.py takes one: a long field
+    # recording's opening seconds are where the recordist was still settling.
+    start = float(sys.argv[5]) if len(sys.argv) > 5 else 0.0
     a, sr = read(src)
+    a = a[int(round(start * sr)):]
     out = normalise(seamless(a, sr, seconds, fade))
     write(dst, out, sr)
     rms = 20 * np.log10(float(np.sqrt(np.mean(out ** 2))) + 1e-12)

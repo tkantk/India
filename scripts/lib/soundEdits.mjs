@@ -28,6 +28,8 @@ export const TRIM = {
   peakCeilingDbfs: -1,
   /** trim.py: FADE_SECONDS */
   fadeSeconds: 0.15,
+  /** trim.py: FADE_IN_SECONDS — applied only when the cut starts mid-recording */
+  fadeInSeconds: 0.03,
   /** `content/sounds.json` may override per sound with `maxSeconds`. */
   defaultMaxSeconds: 3,
 }
@@ -72,9 +74,13 @@ const wasTruncated = (seconds, cap) =>
  * @param seconds the duration MEASURED off the encoded file, if it is known
  */
 export function modificationsFor(kind, item = {}, seconds = undefined) {
+  // An excerpt from a longer field recording says where it was cut from —
+  // the CC "indicate if changes were made" notice should let anyone find the
+  // same stretch in the original.
+  const from = item.start > 0 ? `excerpt from ${secs(item.start)}, ` : ''
   if (kind === 'ambience') {
     const want = item.seconds ?? LOOP.defaultSeconds
-    return [
+    return from + [
       `trimmed to ${secs(want)}`,
       `loudness-normalised to ${LOOP.targetRmsDbfs} dBFS RMS with a ${LOOP.peakCeilingDbfs} dBFS peak ceiling`,
       `${secs(LOOP.crossfadeSeconds)} equal-power crossfade loop`,
@@ -85,6 +91,7 @@ export function modificationsFor(kind, item = {}, seconds = undefined) {
   const parts = []
   if (wasTruncated(seconds, cap)) parts.push(`trimmed to ${secs(cap)}`)
   parts.push(`peak-normalised to ${TRIM.peakCeilingDbfs} dBFS`)
+  if (item.start > 0) parts.push(`${ms(TRIM.fadeInSeconds)} fade-in`)
   parts.push(`${ms(TRIM.fadeSeconds)} fade-out`)
-  return parts.join(', ')
+  return from + parts.join(', ')
 }

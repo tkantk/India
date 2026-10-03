@@ -59,13 +59,38 @@ def fade_out(a, sr, fade_seconds):
     return out
 
 
+def fade_in(a, sr, fade_seconds):
+    """Only needed when the cut starts partway into a recording: there the
+    first sample can land mid-waveform, which is an audible click. 30 ms is
+    far too short to hear as a fade but long enough to remove the step."""
+    n = min(int(round(fade_seconds * sr)), len(a))
+    if n <= 0:
+        return a
+    out = a.copy()
+    out[:n] = out[:n] * np.linspace(0.0, 1.0, n, dtype=np.float32)
+    return out
+
+
+FADE_IN_SECONDS = 0.03
+
+
 def main():
     src, dst, max_seconds = sys.argv[1], sys.argv[2], float(sys.argv[3])
+    # Optional: where in the source the one-shot starts. Short Commons clips
+    # begin on the sound and need none, so it defaults to 0 and nothing that
+    # already ships changes. A FIELD recording (iNaturalist, xeno-canto,
+    # Freesound) usually opens on handling noise, and the animal calls twenty
+    # seconds in — keeping its first three seconds would ship three seconds
+    # of somebody's sleeve. audio_metrics.py's `best_start` says where to cut.
+    start = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
     a, sr = read(src)
+    a = a[int(round(start * sr)):]
     want = int(round(max_seconds * sr))
     if len(a) > want:
         a = a[:want]
     out = fade_out(normalise_peak(a), sr, FADE_SECONDS)
+    if start > 0:
+        out = fade_in(out, sr, FADE_IN_SECONDS)
     write(dst, out, sr)
     peak = 20 * np.log10(float(np.max(np.abs(out))) + 1e-12)
     print(f"{dst}: {len(out)/sr:.2f}s, peak {peak:.1f} dBFS")
