@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
- * Source the sound effects and ambient beds from Wikimedia Commons, cut them
- * to size, and write `src/data/sound-credits.json`.
+ * Fetch the sound effects and ambient beds that were PICKED, cut them to
+ * size, and write `src/data/sound-credits.json`.
+ *
+ * Picks live in scripts/sound-picks.json (from iNaturalist, xeno-canto or
+ * Freesound, chosen with `npm run sound:candidates`). The older sounds came
+ * from Wikimedia Commons and are kept and credit-refreshed from the exact
+ * file each names. Nothing is ever searched for and shipped: a sound with no
+ * pick stays silent (scripts/lib/soundPlan.mjs says why).
  *
  *   node scripts/fetch-sounds.mjs              the whole job
  *   node scripts/fetch-sounds.mjs --offline    credits only, no network at all
@@ -21,23 +27,36 @@ import { execFileSync } from 'node:child_process'
 import {
   api, sleep, licencePolicy, attribution, stripQuery, COMMONS, EM_FILTER, UA,
 } from './lib/wiki.mjs'
+import { attributionFor, licenceOk } from './lib/media-sources.mjs'
 import { toMonoWav, toM4a, durationOf } from './lib/encode.mjs'
 import { LOOP, TRIM, modificationsFor } from './lib/soundEdits.mjs'
+import { nextStep } from './lib/soundPlan.mjs'
 
 /** No network at all: refresh what can be derived from disk, and stop. */
 const OFFLINE = process.argv.includes('--offline')
 
 const want = JSON.parse(readFileSync('content/sounds.json', 'utf8'))
+
+/**
+ * RECORDINGS PICKED FROM SOURCES BEYOND COMMONS — iNaturalist, xeno-canto,
+ * Freesound. Commons has almost no real recordings of Indian wildlife or
+ * Indian places; these do. Each pick is the exact candidate
+ * `npm run sound:candidates` found and measured, copied with its licence,
+ * recordist and page, plus:
+ *   start  where the cut begins — the measured best moment, because a field
+ *          recording rarely opens on the sound itself (trim.py / loop.py)
+ *   why    the measurement it was chosen on
+ * A pick overrides the Commons search for that id. Nothing here is chosen by
+ * the script; see scripts/sound-picks.json's own `_how` note.
+ */
+const PICKS_FILE = 'scripts/sound-picks.json'
+const PICKS = existsSync(PICKS_FILE) ? JSON.parse(readFileSync(PICKS_FILE, 'utf8')).picks ?? {} : {}
 const CREDITS = 'src/data/sound-credits.json'
 const credits = existsSync(CREDITS) ? JSON.parse(readFileSync(CREDITS, 'utf8')) : {}
 const tmp = mkdtempSync(join(tmpdir(), 'sfx-'))
 mkdirSync('public/audio/sfx', { recursive: true })
 mkdirSync('public/audio/ambience', { recursive: true })
 mkdirSync('src/data', { recursive: true })
-
-/** Commons audio search returns Wiktionary pronunciations: humans saying the
- *  word, not the animal. Without this filter the site ships people talking. */
-const PRONUNCIATION = /^(de|en|fr|nl|ru|es|it|pt|pl)-|^ll-q\d+/i
 
 const II_PROPS = {
   prop: 'imageinfo', iiprop: 'url|size|mime|extmetadata', iiextmetadatafilter: EM_FILTER,
@@ -55,22 +74,6 @@ const relFor = (kind, id) => `${kind === 'sfx' ? 'audio/sfx' : 'audio/ambience'}
 
 /** The licence rule is shared with the photo pipeline; only the media checks
  *  below it differ. Returns the first hit that passes, or null. */
-async function commonsAudio(term) {
-  const j = await api(COMMONS, {
-    action: 'query', generator: 'search', gsrnamespace: '6', gsrlimit: '12',
-    gsrsearch: `filetype:audio ${term}`, ...II_PROPS,
-  })
-  const pages = (j.query?.pages ?? []).sort((a, b) => a.index - b.index)
-  for (const p of pages) {
-    if (PRONUNCIATION.test(p.title.replace(/^File:/, ''))) continue
-    const ii = p.imageinfo?.[0]; if (!ii) continue
-    const licence = licencePolicy(ii, ON_COMMONS)
-    if (!licence.ok) { console.log(`    reject ${p.title}: ${licence.why}`); continue }
-    return { fileTitle: p.title, ii }
-  }
-  return null
-}
-
 /** Metadata for one already-chosen file, by exact title. Never downloads. */
 async function fileInfo(fileTitle) {
   const j = await api(COMMONS, { action: 'query', titles: fileTitle, ...II_PROPS })
@@ -115,9 +118,68 @@ const problems = []
  * fields existed is refreshed in place from the file it already names, which
  * costs one metadata request and no bytes.
  */
+/** Download, cut and credit one picked recording. */
+async function fetchPick(kind, item, pick) {
+  const out = join(dirFor(kind), `${item.id}.m4a`)
+  const lic = licenceOk(pick)
+  if (!lic.ok) {
+    problems.push(`${item.id}: pick ${pick.source}:${pick.ref} licence "${pick.licence}" does not pass`)
+    console.log(`  ${item.id}: PICK REJECTED — licence ${pick.licence}`)
+    return
+  }
+  const res = await fetch(pick.download, { headers: { 'User-Agent': UA }, redirect: 'follow' })
+  if (!res.ok) { console.log(`  ${item.id}: pick download HTTP ${res.status}`); return }
+  const raw = join(tmp, `${item.id}.pick`)
+  writeFileSync(raw, Buffer.from(await res.arrayBuffer()))
+  const wav = join(tmp, `${item.id}.wav`)
+  toMonoWav(raw, wav)
+  const start = String(pick.start ?? 0)
+  if (kind === 'ambience') {
+    const looped = join(tmp, `${item.id}.loop.wav`)
+    execFileSync('python3', ['scripts/lib/loop.py', wav, looped,
+      String(item.seconds ?? LOOP.defaultSeconds), String(LOOP.crossfadeSeconds), start], { stdio: 'inherit' })
+    toM4a(looped, out, 56000)
+  } else {
+    const cut = join(tmp, `${item.id}.cut.wav`)
+    execFileSync('python3', ['scripts/lib/trim.py', wav, cut,
+      String(item.maxSeconds ?? TRIM.defaultMaxSeconds), start], { stdio: 'inherit' })
+    toM4a(cut, out, 64000)
+  }
+  const seconds = Math.round(durationOf(out) * 100) / 100
+  credits[item.id] = {
+    file: relFor(kind, item.id),
+    kind,
+    url: pick.download,
+    fileTitle: pick.title,
+    seconds,
+    modifications: modificationsFor(kind, { ...item, start: pick.start ?? 0 }, seconds),
+    ...attributionFor(pick),
+  }
+  console.log(`  ${item.id}: ${credits[item.id].licenceShort} — ${pick.source}:${pick.ref} (${pick.title})`)
+}
+
 async function grab(kind, item) {
   let have = credits[item.id]
   const out = join(dirFor(kind), `${item.id}.m4a`)
+  const pick = PICKS[item.id]
+  const step = nextStep({ have, onDisk: existsSync(out), pick })
+
+  if (step === 'already-picked') { console.log(`  ${item.id}: already have it (${pick.source})`); return }
+  if (step === 'fetch-pick') {
+    if (OFFLINE) { console.log(`  ${item.id}: picked but not on disk, and --offline`); return }
+    await fetchPick(kind, item, pick)
+    await sleep(1100)
+    return
+  }
+  // A credit from a source other than Commons has no Commons file to refresh
+  // from — asking Commons for it would report it "gone" and fail every run.
+  if (step === 'keep') { console.log(`  ${item.id}: already have it (${have.source})`); return }
+  if (step === 'unpicked') {
+    // Silent until someone picks it. See scripts/lib/soundPlan.mjs for the
+    // run that shipped a 1916 song as the desert when this searched instead.
+    console.log(`  ${item.id}: not picked — silent`)
+    return
+  }
 
   if (have && existsSync(out)) {
     // The modification notice costs nothing to recompute and no network at
@@ -160,44 +222,6 @@ async function grab(kind, item) {
     console.log(`  ${item.id}: credit refreshed — ${credits[item.id].licenceShort}`)
     return
   }
-
-  if (OFFLINE) { console.log(`  ${item.id}: not on disk, and --offline`); return }
-
-  const hit = await commonsAudio(item.search)
-  await sleep(1000)
-  if (!hit) { console.log(`  ${item.id}: NOT FOUND for "${item.search}"`); return }
-
-  const res = await fetch(stripQuery(hit.ii.url), { headers: { 'User-Agent': UA } })
-  if (!res.ok) { console.log(`  ${item.id}: download HTTP ${res.status}`); return }
-  const raw = join(tmp, `${item.id}.src`)
-  writeFileSync(raw, Buffer.from(await res.arrayBuffer()))
-
-  const wav = join(tmp, `${item.id}.wav`)
-  toMonoWav(raw, wav)
-
-  // The numbers come from soundEdits.mjs, which is also what writes the
-  // `modifications` notice — one source, so the notice cannot describe a
-  // pipeline that no longer exists.
-  if (kind === 'ambience') {
-    const looped = join(tmp, `${item.id}.loop.wav`)
-    execFileSync('python3', [
-      'scripts/lib/loop.py', wav, looped,
-      String(item.seconds ?? LOOP.defaultSeconds), String(LOOP.crossfadeSeconds),
-    ], { stdio: 'inherit' })
-    toM4a(looped, out, 56000)
-  } else {
-    // Trim. A one-shot fires on a single narrated word, so it must be short —
-    // raw Commons sources run to 96 seconds and would still be playing several
-    // sentences later, over the top of the narration.
-    const cut = join(tmp, `${item.id}.cut.wav`)
-    execFileSync('python3', [
-      'scripts/lib/trim.py', wav, cut, String(item.maxSeconds ?? TRIM.defaultMaxSeconds),
-    ], { stdio: 'inherit' })
-    toM4a(cut, out, 64000)
-  }
-
-  credits[item.id] = creditFor(kind, item, hit.fileTitle, hit.ii)
-  console.log(`  ${item.id}: ${credits[item.id].licenceShort} — ${hit.fileTitle}`)
 }
 
 /**
@@ -228,8 +252,11 @@ const missing = [...want.sfx, ...want.ambience].filter(i => !credits[i.id])
 console.log(`\n${Object.keys(credits).length} sounds`)
 const attributed = Object.values(credits).filter(c => c.attributionRequired).length
 console.log(`${attributed} of them legally require a visible credit and licence link`)
-const adapted = Object.values(credits).filter(c => /^cc-by-sa/i.test(c.licence)).length
+// NC-SA is share-alike too: this once counted CC BY-SA alone.
+const adapted = Object.values(credits).filter(c => /^cc-by(-nc)?-sa/i.test(c.licence)).length
 console.log(`${adapted} are share-alike, so the edited file must be offered under the same licence`)
+const nc = Object.values(credits).filter(c => /^cc-by-nc/i.test(c.licence)).length
+console.log(`${nc} are non-commercial, each marked as such on the credits page`)
 if (problems.length) {
   console.log(`\n${problems.length} credit problem(s):`)
   for (const p of problems) console.log(`  ${p}`)
@@ -240,8 +267,8 @@ if (OFFLINE) {
   // missing, but that is yesterday's news and must not fail today's run.
   console.log(`\n--offline: credits refreshed from disk. ${missing.length} sound(s) still unsourced.`)
 } else if (missing.length) {
-  console.log(`${missing.length} not found on Commons. Get a free Freesound token at`)
-  console.log(`https://freesound.org/apiv2/apply/ and hand-pick these:`)
-  for (const m of missing) console.log(`  ${m.id}  (${m.search})`)
+  console.log(`${missing.length} not yet picked, so silent. Measure candidates with`)
+  console.log('`npm run sound:candidates -- <id>` and add a pick to scripts/sound-picks.json:')
+  for (const m of missing) console.log(`  ${m.id}  (${m.search ?? m.note ?? ''})`)
   process.exitCode = 1
 }
