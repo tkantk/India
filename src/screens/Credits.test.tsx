@@ -145,6 +145,31 @@ describe('the credits page', () => {
     for (const s of sources) expect(note, `the sounds note does not mention ${NAMES[s]}`).toContain(NAMES[s])
   })
 
+  // The same two promises the sounds make, for the photographs: since
+  // October 2026 three animal photographs come from iNaturalist under
+  // CC BY-NC, so "from Wikimedia Commons" stopped being true of all of them.
+  it('marks every non-commercial photograph as non-commercial', () => {
+    render(<Credits />)
+    const nc = Object.entries(PHOTOS).filter(([, c]) => /^cc-by-nc/i.test(c.licence))
+    for (const [id] of nc) {
+      expect(screen.getByTestId(`credit-photo-${id}`).textContent, `${id} is not marked non-commercial`)
+        .toMatch(/non-commercial/i)
+    }
+    for (const [id, c] of Object.entries(PHOTOS)) {
+      if (/^cc-by-nc/i.test(c.licence)) continue
+      expect(screen.getByTestId(`credit-photo-${id}`).textContent, `${id} is wrongly marked non-commercial`)
+        .not.toMatch(/non-commercial/i)
+    }
+  })
+
+  it('names where the photographs really came from', () => {
+    render(<Credits />)
+    const note = screen.getByRole('region', { name: /photographs/i }).querySelector('.credits__note')?.textContent ?? ''
+    const fromInat = Object.values(PHOTOS).some((c) => (c as { source?: string }).source === 'inat')
+    expect(note).toContain('Wikimedia Commons')
+    if (fromInat) expect(note).toContain('iNaturalist')
+  })
+
   it('does not claim the photographs were adapted, because they were not', () => {
     render(<Credits />)
     const section = screen.getByRole('region', { name: /photographs/i })

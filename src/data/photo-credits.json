@@ -2738,5 +2738,50 @@
     "attributionRequired": true,
     "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Mithun,_Glao_Lake.jpg",
     "attributionHtml": "<a href=\"https://commons.wikimedia.org/wiki/User:Rohitjahnavi\" title=\"User:Rohitjahnavi\">Rohit Naniwadekar</a>, <a href=\"https://creativecommons.org/licenses/by-sa/3.0\" rel=\"license noopener\">CC BY-SA 3.0</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Mithun,_Glao_Lake.jpg\">via Wikimedia Commons</a>"
+  },
+  "western-tragopan": {
+    "file": "photos/western-tragopan.jpg",
+    "width": 1024,
+    "fileTitle": "Western Tragopan — Kullu, IN-HP, IN",
+    "source": "inat",
+    "artist": "soarexcursions",
+    "licence": "cc-by-nc-4.0",
+    "licenceShort": "CC BY-NC 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+    "attributionRequired": true,
+    "descriptionUrl": "https://www.inaturalist.org/observations/67968284",
+    "nonCommercial": true,
+    "attributionHtml": "soarexcursions, <a href=\"https://creativecommons.org/licenses/by-nc/4.0/\" rel=\"license noopener\">CC BY-NC 4.0</a>, <a href=\"https://www.inaturalist.org/observations/67968284\">via iNaturalist</a>",
+    "locality": "confirmed"
+  },
+  "sangai": {
+    "file": "photos/sangai.jpg",
+    "width": 1024,
+    "fileTitle": "Sangai — Manipur, IN",
+    "source": "inat",
+    "artist": "connk",
+    "licence": "cc-by-nc-4.0",
+    "licenceShort": "CC BY-NC 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+    "attributionRequired": true,
+    "descriptionUrl": "https://www.inaturalist.org/observations/30287426",
+    "nonCommercial": true,
+    "attributionHtml": "connk, <a href=\"https://creativecommons.org/licenses/by-nc/4.0/\" rel=\"license noopener\">CC BY-NC 4.0</a>, <a href=\"https://www.inaturalist.org/observations/30287426\">via iNaturalist</a>",
+    "locality": "confirmed"
+  },
+  "clouded-leopard": {
+    "file": "photos/clouded-leopard.jpg",
+    "width": 1024,
+    "fileTitle": "Mainland Clouded Leopard — Arunachal Pradesh, IN",
+    "source": "inat",
+    "artist": "Aparajita Datta",
+    "licence": "cc-by-nc-4.0",
+    "licenceShort": "CC BY-NC 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+    "attributionRequired": true,
+    "descriptionUrl": "https://www.inaturalist.org/observations/332823218",
+    "nonCommercial": true,
+    "attributionHtml": "Aparajita Datta, <a href=\"https://creativecommons.org/licenses/by-nc/4.0/\" rel=\"license noopener\">CC BY-NC 4.0</a>, <a href=\"https://www.inaturalist.org/observations/332823218\">via iNaturalist</a>",
+    "locality": "confirmed"
   }
 }

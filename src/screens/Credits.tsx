@@ -70,6 +70,10 @@ const soundSources = (sounds: Record<string, SoundCredit>) => {
 }
 
 const PHOTOS: Record<string, Credit> = photoCredits
+/** Photo credits use `source` for the Commons search tier that found a
+ *  file ("override", "lead"…); only a picked photograph from outside
+ *  Commons says where it came from, and today that means iNaturalist. */
+const INAT_PHOTOS = Object.values(PHOTOS).filter((c) => (c as Credit & { source?: string }).source === 'inat').length
 const SOUNDS: Record<string, SoundCredit> = soundCredits
 
 /** "File:LotusDelhi.jpg" is a Commons address; "LotusDelhi.jpg" is a name. */
@@ -97,12 +101,22 @@ function Attribution({ html }: { html: string }) {
   return <p className="credit-item__by" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
+function NonCommercial() {
+  return (
+    <p className="credit-item__edit">
+      Non-commercial licence: used here because Namaste India is free and carries no
+      advertising. It may not be reused for commercial purposes.
+    </p>
+  )
+}
+
 function PhotoItem({ id, credit }: { id: string; credit: Credit }) {
   return (
     <li className="credit-item" data-testid={`credit-photo-${id}`}>
       <h3 className="credit-item__title">{nameOf(credit.fileTitle)}</h3>
       <p className="credit-item__file">{credit.file}</p>
       <Attribution html={credit.attributionHtml} />
+      {isNonCommercial(credit.licence) && <NonCommercial />}
     </li>
   )
 }
@@ -120,12 +134,7 @@ function SoundItem({ id, credit }: { id: string; credit: SoundCredit }) {
           same licence as the source.</>
         )}
       </p>
-      {isNonCommercial(credit.licence) && (
-        <p className="credit-item__edit">
-          Non-commercial licence: used here because Namaste India is free and carries no
-          advertising. It may not be reused for commercial purposes.
-        </p>
-      )}
+      {isNonCommercial(credit.licence) && <NonCommercial />}
     </li>
   )
 }
@@ -199,13 +208,22 @@ export function Credits() {
         <section className="credits__section" aria-labelledby="credits-photos">
           <h2 id="credits-photos">Photographs</h2>
           <p className="credits__note">
-            {Object.keys(PHOTOS).length} photographs from Wikimedia Commons —
-            landmarks, and (since Task 5a) each state's own animal, fetched by
-            species rather than by common name so the picture is the right
-            animal. Each one is a thumbnail rendered by Wikimedia's own
-            servers and stored unaltered — a change of size and format, not
-            of content, so none of them has been adapted. They are part of
-            the deployed site.
+            {Object.keys(PHOTOS).length} photographs: landmarks, and each
+            state's own animal, fetched by species rather than by common name
+            so the picture is the right animal.{' '}
+            {INAT_PHOTOS > 0 ? (
+              <>
+                {Object.keys(PHOTOS).length - INAT_PHOTOS} come from Wikimedia
+                Commons, as thumbnails rendered by Wikimedia's own servers;{' '}
+                {INAT_PHOTOS} wild animals no Commons photograph showed honestly
+                come from iNaturalist, as served.
+              </>
+            ) : (
+              <>All come from Wikimedia Commons, as thumbnails rendered by Wikimedia's own servers.</>
+            )}{' '}
+            Every one is stored unaltered — a change of size and format at
+            most, not of content, so none of them has been adapted. They are
+            part of the deployed site.
           </p>
           <ul className="credits__list">
             {Object.entries(PHOTOS).map(([id, credit]) => (

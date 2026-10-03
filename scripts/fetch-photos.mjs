@@ -5,6 +5,7 @@ import {
   api, vet, vetAnimal, attribution, realWidth, stripQuery, sleep,
   EN, WD, COMMONS, EM_FILTER, UA, indiaLocalityRegex, localityVerdict,
 } from './lib/wiki.mjs'
+import { attributionFor, licenceOk } from './lib/media-sources.mjs'
 
 const OUT = 'public/photos'
 const CREDITS = 'src/data/photo-credits.json'
@@ -280,6 +281,22 @@ const NO_PHOTOGRAPH = {
   'Clouded leopard': 'every free candidate is a pelt, a stamp, outside India, or the Bornean species',
 }
 
+/**
+ * PHOTOGRAPHS CHOSEN BY A PERSON FROM OUTSIDE COMMONS, keyed by photo id
+ * (an animal's `species`, a landmark's `id`). The sound pipeline's
+ * `scripts/sound-picks.json`, for photographs: each pick is a candidate
+ * object from `scripts/lib/media-sources.mjs` (today iNaturalist, which the
+ * owner's October 2026 non-commercial decision opened up), chosen by eye on
+ * a review page and approved by the owner, and it wins over every Commons
+ * tier and over NO_PHOTOGRAPH. NO_PHOTOGRAPH's reasons stay true of Commons;
+ * a pick is simply a better source than Commons had.
+ *
+ * Stored byte for byte as iNaturalist served its "large" size — no resize,
+ * no crop — so the credits page's "unaltered" stays true.
+ */
+const PHOTO_PICKS_FILE = 'scripts/photo-picks.json'
+const PHOTO_PICKS = existsSync(PHOTO_PICKS_FILE) ? JSON.parse(readFileSync(PHOTO_PICKS_FILE, 'utf8')).picks ?? {} : {}
+
 function landmarks() {
   const out = []
   for (const f of readdirSync('content/places').filter(f => f.endsWith('.json')).sort()) {
@@ -458,6 +475,25 @@ const leads = await leadImages(todo.map(l => l.query))
 const failures = []
 
 for (const lm of todo) {
+  const pick = PHOTO_PICKS[lm.id]
+  if (pick) {
+    const lic = licenceOk(pick)
+    if (!lic.ok) { failures.push(lm); console.log(`  ${lm.id}: PICK REJECTED — licence ${pick.licence}`); continue }
+    const res = await fetch(pick.download, { headers: { 'User-Agent': UA } })
+    if (!res.ok) { failures.push(lm); console.log(`  ${lm.id}: pick download HTTP ${res.status}`); continue }
+    const bytes = Buffer.from(await res.arrayBuffer())
+    writeFileSync(join(OUT, `${lm.id}.jpg`), bytes)
+    credits[lm.id] = {
+      file: `photos/${lm.id}.jpg`,
+      width: pick.width ?? null,
+      fileTitle: pick.title,
+      ...attributionFor(pick),
+      ...(lm.kind === 'animal' ? { locality: 'confirmed' } : {}),
+    }
+    console.log(`  ${lm.id}: ${credits[lm.id].licenceShort} — ${pick.source}:${pick.ref} (picked)`)
+    await sleep(1000)
+    continue
+  }
   if (NO_PHOTOGRAPH[lm.query]) {
     // Deliberately absent, not failed — see NO_PHOTOGRAPH's own note. This
     // is NOT pushed onto `failures`, because failures are things a human

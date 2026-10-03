@@ -1,0 +1,53 @@
+{
+  "_how": "Photographs from outside Wikimedia Commons, chosen by eye and approved by the owner on a review page before they ship. Read by scripts/fetch-photos.mjs, where a pick wins over every Commons tier and over NO_PHOTOGRAPH. Stored byte for byte as served (iNaturalist \"large\"), never resized or cropped.",
+  "picks": {
+    "western-tragopan": {
+      "source": "inat",
+      "ref": "p109950172",
+      "title": "Western Tragopan — Kullu, IN-HP, IN",
+      "artist": "soarexcursions",
+      "licence": "cc-by-nc",
+      "pageUrl": "https://www.inaturalist.org/observations/67968284",
+      "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/109950172/large.jpg",
+      "place": "Kullu, IN-HP, IN",
+      "lat": 31.6241229954,
+      "lon": 77.4762977571,
+      "inIndia": true,
+      "width": 1024,
+      "why": "Approved by the owner by eye (3 Oct 2026). A wild male in the Great Himalayan National Park, Kullu, beside a female koklass pheasant; the only wild photograph in India on iNaturalist. The location rules out the Sarahan pheasantry."
+    },
+    "sangai": {
+      "source": "inat",
+      "ref": "p47309919",
+      "title": "Sangai — Manipur, IN",
+      "artist": "connk",
+      "licence": "cc-by-nc",
+      "pageUrl": "https://www.inaturalist.org/observations/30287426",
+      "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/47309919/large.jpg",
+      "place": "Manipur, IN",
+      "lat": 24.4596627909,
+      "lon": 93.8229083936,
+      "inIndia": true,
+      "width": 1024,
+      "why": "Approved by the owner by eye (3 Oct 2026), option A of three framings of the same wild stag at Keibul Lamjao, Manipur; identified to the subspecies Rucervus eldii eldii. Every other sangai photographed in India is in a zoo."
+    },
+    "clouded-leopard": {
+      "source": "inat",
+      "ref": "p604099194",
+      "title": "Mainland Clouded Leopard — Arunachal Pradesh, IN",
+      "artist": "Aparajita Datta",
+      "licence": "cc-by-nc",
+      "pageUrl": "https://www.inaturalist.org/observations/332823218",
+      "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/604099194/large.jpg",
+      "place": "Arunachal Pradesh, IN",
+      "lat": 27.5462342654,
+      "lon": 96.5999010727,
+      "inIndia": true,
+      "width": 1024,
+      "why": "Approved by the owner by eye (3 Oct 2026). A wild clouded leopard on a night camera trap, Namdapha National Park, Arunachal Pradesh (not Meghalaya), with the monitoring programme's label printed on the photograph."
+    }
+  },
+  "none": {
+    "markhor": "No wild markhor photographed in India exists on iNaturalist: the four Indian records are zoo animals (Darjeeling, Nainital) and every wild one is in Pakistan. The card stays without a photograph."
+  }
+}
