@@ -1,0 +1,59 @@
+name: Layout gates
+
+# The browser gates — the checks that caught every real layout bug so far —
+# used to run only when someone remembered to run them on a laptop. They drive
+# the production build in real headless Chrome across the device list in
+# scripts/lib/devices.mjs, so they are too slow for every push (place:strip
+# alone is about an hour on a fast laptop) but cheap to run on a schedule:
+# GitHub Actions is free for a public repository.
+#
+# It deploys nothing and needs no secrets. It reports: a red run means a
+# screen broke on some device, and the screenshots it took are kept as an
+# artifact so the failure can be seen, not just read about.
+
+on:
+  schedule:
+    # Mondays, 03:30 UTC (09:00 in India): quiet hours, and early enough in
+    # the week to fix whatever it finds.
+    - cron: '30 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gates
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      CHROME: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # 24, for the same reason deploy.yml gives: validate and the probes
+          # import TypeScript through Node's native type stripping.
+          node-version: 24
+          cache: npm
+      # Ubuntu 24.04 forbids unprivileged user namespaces through AppArmor,
+      # and Chrome's sandbox needs one: without this, every launch dies
+      # before the first page loads. This relaxes it for this throwaway VM
+      # only, instead of turning the sandbox off in the scripts themselves.
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - run: npm ci
+      - run: npm run validate
+      - run: npm run probe:map
+      - run: npm run probe:camera
+      - run: npm run tour:strip
+      - run: npm run place:strip
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gate-screenshots
+          path: build/
+          if-no-files-found: ignore
+          retention-days: 14
