@@ -571,11 +571,19 @@ describe('PlaceScreen', () => {
       expect(screen.queryByTestId('place-stamp')).toBeNull()
     })
 
+    it('rings the stamp chime when a new stamp lands', async () => {
+      const user = userEvent.setup()
+      render(<PlaceScreen slug="rajasthan" />)
+      await hearEverything(user)
+      expect(narrator.sfx).toHaveBeenCalledWith('chime-correct')
+    })
+
     it('never tells a child he earned a stamp he already had', async () => {
       const user = userEvent.setup()
       addStamp('rajasthan')
       render(<PlaceScreen slug="rajasthan" />)
       await hearEverything(user)
+      expect(narrator.sfx).not.toHaveBeenCalledWith('chime-correct')
       expect(played).not.toContain('audio/en/ui.stamp.m4a')
       expect(played[played.length - 1]).toBe('audio/en/ui.all-heard.m4a')
       expect(screen.queryByTestId('place-stamp')).toBeNull()

@@ -418,6 +418,11 @@ export function PlaceScreen({ slug, onPick, onHome }: Props) {
     setFreshStamp(isNew)
     setEnding(id)
     setCelebrating(true)
+    // The chime content/sounds.json reserved for exactly this — "passport
+    // stamp earned" — and that nothing played until now. A one-shot, fired
+    // with the line the way a tile's own sfx is; a missing file is silence
+    // (the engine's documented contract), so it needs no guard here.
+    if (isNew) void n.sfx('chime-correct')
     let live = true
     n.onEnd = () => { if (live) setCelebrating(false) }
     void n.play(line).catch(() => { if (live) setCelebrating(false) })
